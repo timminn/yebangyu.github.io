@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Web | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/web/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-17T14:28:14+08:00</updated>
+  <updated>2015-10-17T15:03:19+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -84,7 +84,7 @@ bundle install
 
 <h3>编写文章</h3>
 
-<p>运行<code>rake new_past['helloworld']</code></p>
+<p>运行<code>rake new_post['helloworld']</code></p>
 
 <p>这样就可以在<strong>octopress/source/_posts</strong> 下生成一个<strong>markdown</strong>文件，然后就可以开始通过编辑该文件来写文章了。我一般使用<strong>Cmd Markdown</strong> 编辑阅读器来写文章，很适合我这样的新手</p>
 
