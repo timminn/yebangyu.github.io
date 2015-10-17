@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-17T16:33:57+08:00</updated>
+  <updated>2015-10-17T23:24:46+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -211,7 +211,7 @@ gem sources -l
 
 <p>请特别注意，第一行里，是<strong>https</strong>，而不是<strong>http</strong>。</p>
 
-<p>修改Gemfile下的文件，把将第一行的"<a href="http://rubygems.org/">http://rubygems.org/</a>&ldquo; 改为"<a href="https://ruby.taobao.org/">https://ruby.taobao.org/</a>&rdquo; (不包含引号，你懂的)</p>
+<p>修改Gemfile下的文件，把将第一行的<a href="http://rubygems.org/">http://rubygems.org/</a> 改为<a href="https://ruby.taobao.org/">https://ruby.taobao.org/</a></p>
 
 <p>然后，依次执行如下命令</p>
 
@@ -224,7 +224,7 @@ bundle install
 <pre><code>rake install
 </code></pre>
 
-<p>环境基本上就配置好了，运行<code>rake preview</code>，然后打开<a href="http://127.0.0.1:4000/">http://127.0.0.1:4000/</a> 看看效果吧，恩，本地的效果。接下去就要发布到<strong>github</strong>上了。</p>
+<p>环境基本上就配置好了，运行<code>rake preview</code>，然后打开<a href="http://127.0.0.1:4000/">http://127.0.0.1:4000/</a> 看看效果吧，恩，本地的效果。接下去就要写文章，继而发布到<strong>github</strong>上了。</p>
 
 <h3>编写文章</h3>
 
