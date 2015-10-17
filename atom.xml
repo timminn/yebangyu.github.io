@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-17T15:48:02+08:00</updated>
+  <updated>2015-10-17T16:33:57+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -240,14 +240,7 @@ bundle install
 
 <p>运行命令，<code>rake deploy</code> ，将文章发布到<strong>github</strong>上。</p>
 
-<p>运行如下命令，将源文件推送到<strong>github</strong>上。</p>
-
-<pre><code>git add .
-git commit -m “your message”
-git push origin source
-</code></pre>
-
-<p>这样一篇文章就发布出去了。</p>
+<p>这样一篇文章就发布出去了。以后写新文章或者更改文章后，只需要<code>rake generate</code> 然后 <code>rake deploy</code> 就可以啦</p>
 ]]></content>
   </entry>
   
