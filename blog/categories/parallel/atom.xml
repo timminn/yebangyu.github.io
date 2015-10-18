@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parallel | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/parallel/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-18T12:41:54+08:00</updated>
+  <updated>2015-10-18T12:46:19+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -99,7 +99,7 @@ d = 4;
 
 <p>b=2绝对不会在a=1之前执行，d=4绝对不会在a=1之前执行，c=3绝对不会在a=1之后执行。</p>
 
-<p>lock和unlock中包含了memory barrier。由于memory barrier和乱序执行是对着干的，而乱序执行一般是优化的手段和方法，因此memory barrier往往是影响性能的重要因素。</p>
+<p>lock和unlock中包含了memory barrier。由于memory barrier和乱序执行是对着干的，用来防止乱序执行的；而乱序执行一般是优化的手段和方法，因此memory barrier往往带来性能下降。</p>
 
 <h3>Cache Misses</h3>
 
@@ -113,11 +113,11 @@ d = 4;
 
 <p>书中举了一个相对简单的例子：cpu 0需要对一个变量进行cas操作，检查自己的cache，发现没有。这时候：</p>
 
-<p>1，它通过Interconnect去cpu1的cache，发现木有。</p>
+<p>1，它通过Interconnect(cpu0 &amp; cpu1)去cpu1的cache检查，发现木有。</p>
 
 <p>2，请求发给System Interconnect，检查剩下的3个die（本图里，每两个cores组成一个die）得知cache位于由cpu6和cpu7 组成的那个die里。</p>
 
-<p>3，请求发给由cpu6 和cpu 7组成的那个die里的Interconnect(cpu6 &amp; cpu7)，得知cache位于cpu 7的cache里。</p>
+<p>3，请求发给由cpu6 和cpu 7组成的那个die里的Interconnect(cpu6 &amp; cpu7)，得知cacheline位于cpu 7的cache里。</p>
 
 <p>4，cpu7 把cacheline发送给Interconnect(cpu6 &amp; cpu7), and flushes the cacheline from its cache</p>
 
