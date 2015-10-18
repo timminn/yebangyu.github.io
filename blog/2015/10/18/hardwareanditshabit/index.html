@@ -1,0 +1,346 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Hardware and Its Habit - Yebangyu's Blog</title>
+  <meta name="author" content="Yebangyu">
+
+  
+  <meta name="description" content="最近在阅读《Is parallel programming hard》这本书，本篇就是整理其中第三章《Hardware and its habit》，不是单纯的翻译，只是一个总结，略有补充。 这章介绍了影响CPU执行效率的几个因素。具体包括： 流水线被打断
+内存访问
+原子操作
+Memory &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Yebangyu's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Yebangyu's Blog</a></h1>
+  
+    <h2>Specialized in Machine Learning and C++.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="www.yebangyu.org">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About Me</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Hardware and Its Habit</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-10-18T12:29:44+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:29 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>最近在阅读《Is parallel programming hard》这本书，本篇就是整理其中第三章《Hardware and its habit》，不是单纯的翻译，只是一个总结，略有补充。</p>
+
+<p>这章介绍了影响CPU执行效率的几个因素。具体包括：</p>
+
+<blockquote><ul>
+<li>流水线被打断</li>
+<li>内存访问</li>
+<li>原子操作</li>
+<li>Memory Barrier</li>
+<li>Cache Misses</li>
+<li>IO 操作</li>
+</ul>
+</blockquote>
+
+<!--more-->
+
+
+<p>这其中，前面两个，流水线被打断以及内存访问主要针对串行程序，而后面四个主要针对并行程序，因为在并行程序中显得更为突出。</p>
+
+<h3>流水线被打断</h3>
+
+<p>现代CPU执行指令采用流水线设计和指令预取机制，而影响流水的两种重要情况是停机等待和分支判断失败。前者是CPU没有足够的信息来判断取哪些指令（例如，涉及到C++中的虚函数时）。而分支判断失败，则是取了指令but没取对。例如</p>
+
+<pre><code>int a = get();
+if (a == 1 )
+{
+  //A
+}
+else
+{
+  //B
+}
+</code></pre>
+
+<p>假设CPU预取指令A。当预测失败时（a不等于1），流水线中A的指令需要被冲刷（flush），继而载入B指令。冲刷流水线和载入B指令都是非常昂贵的操作，因此这深深地影响了效率。</p>
+
+<p>因此，在实际编程时，应该将最有可能执行的代码放到最前面。在gcc中内置提供了likely和unlikely宏，来优化程序分支判断。</p>
+
+<pre><code>#define  likely(x)        __builtin_expect(!!(x), 1) 
+#define  unlikely(x)      __builtin_expect(!!(x), 0) 
+</code></pre>
+
+<p>因此，上面的程序可以改写为：</p>
+
+<pre><code>int a = get();
+if (unlikely（a == 1 )) //根据实际情况选择unlikely或者likely
+{
+  //A
+}
+else
+{
+  //B
+}
+</code></pre>
+
+<h3>内存访问</h3>
+
+<p>这个不用说了，内存访问是昂贵操作，相对于寄存器、cache而言。</p>
+
+<p>在上世纪的系统中，从内存中读一个值的速度要比CPU执行一条指令快速。后来，由于CPU的快速发展以及内存容量的增大，这种局面发生了改变。你能想象只有4KB内存的机器吗？现在，光是cache都不止4KB了。</p>
+
+<p>数组通常有比较好的内存访问模式，也就是说访问了a[0]，就可以将a[1],a[2],a[3]等存进cache，等访问到a[1]时不需要去访问内存了。但是一般用指针实现的链表的访问模式则比较差。恩，所谓的数据局部性。</p>
+
+<h3>原子操作</h3>
+
+<p>gcc内置提供了一系列的原子操作，包括著名的用于CAS(compare and swap)的__sync_bool_compare_and_swap等。当多个线程对一个内存变量进行原子操作时，往往依赖于硬件支持。在x86下，原子操作时，锁住总线，防止其他cpu core访问该内存单元。</p>
+
+<h3>Memory Barrier</h3>
+
+<p>CPU对指令可能采取乱序执行，以达到优化的目的。但是，并发访问的锁破坏了这种机制。</p>
+
+<pre><code>c = 3;
+lock.lock();
+a = 1;
+b = 2;
+lock.unlock();
+d = 4;
+</code></pre>
+
+<p>b=2绝对不会在a=1之前执行，d=4绝对不会在a=1之前执行，c=3绝对不会在a=1之后执行。</p>
+
+<p>lock和unlock中包含了memory barrier。由于memory barrier和乱序执行是对着干的，而乱序执行一般是优化的手段和方法，因此memory barrier往往是影响性能的重要因素。</p>
+
+<h3>Cache Misses</h3>
+
+<p>先贴一张现代CPU和cache架构粗略图。</p>
+
+<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/cpuand%20cache.png" alt="cmd-markdown-logo" /></p>
+
+<p>多个CPU core，一个内存。cacheline是cache块单位，一般在32到256字节左右。cacheline是这张图中不同模块的数据交互元素。</p>
+
+<p>当cpu需要进行内存写入操作时，需要先把包含那个变量的cacheline读入自己的cache，并且确保其他的cpu cores不包含该cacheline。</p>
+
+<p>书中举了一个相对简单的例子：cpu 0需要对一个变量进行cas操作，检查自己的cache，发现没有。这时候：</p>
+
+<p>1，它通过Interconnect去cpu1的cache，发现木有。</p>
+
+<p>2，请求发给System Interconnect，检查剩下的3个die（本图里，每两个cores组成一个die）得知cache位于由cpu6和cpu7 组成的那个die里。</p>
+
+<p>3，请求发给由cpu6 和cpu 7组成的那个die里的Interconnect(cpu6 &amp; cpu7)，得知cache位于cpu 7的cache里。</p>
+
+<p>4，cpu7 把cacheline发送给Interconnect(cpu6 &amp; cpu7), and flushes the cacheline from its cache</p>
+
+<p>5，Interconnect(cpu6 &amp; cpu7)将cacheline发送给System Interconnect。</p>
+
+<p>6，System Interconnect将cacheline发送给Interconnect（cpu0 &amp; cpu1）</p>
+
+<p>7，Interconnect（cpu0 &amp; cpu1）将cacheline存入cpu0的cache里。</p>
+
+<p>是啊，这已经是简单的情况了。想想看，有没有什么可能更复杂？</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Yebangyu</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2015-10-18T12:29:44+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:29 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/parallel/'>parallel</a>, <a class='category' href='/blog/categories/programming/'>programming</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit/" data-via="" data-counturl="http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/10/17/whattodoinmaster/" title="Previous Post: 计算机读研的若干建议">&laquo; 计算机读研的若干建议</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+  <section>
+    <h1>Comments</h1>
+    <div id="comments" aria-live="polite"><!-- 多说评论框 start -->
+<div class="ds-thread" data-thread-key="/blog/2015/10/18/hardwareanditshabit" data-title="Hardware and Its habit" data-url="http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit/"></div>
+<!-- 多说评论框 end -->
+<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+<script type="text/javascript">
+    var duoshuoQuery = {short_name:"msmvp"};
+    (function() {
+
+        var ds = document.createElement('script');
+        ds.type = 'text/javascript';ds.async = true;
+        ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+        ds.charset = 'UTF-8';
+        (document.getElementsByTagName('head')[0]
+         || document.getElementsByTagName('body')[0]).appendChild(ds);
+     })();
+ </script>
+ <!-- 多说公共JS代码 end --></div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2015/10/18/hardwareanditshabit/">Hardware and Its Habit</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/10/17/whattodoinmaster/">计算机读研的若干建议</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/10/17/howtoinstalloctopress/">Windows下OctoPress环境搭建</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>Yebangyu</h1>
+  <p>福建人。热爱篮球、游泳、NBA、唱歌</p>
+  <p>帝都码农一枚</p>
+  <p>机器学习和推荐系统研究者</p>
+  <p>更多介绍，可以看About Me</p>
+</section>
+<section>
+ <h1>Categories</h1>
+ <ul id="categories">
+  <li class='category'><a href='/blog/categories/life/'>life (1)</a></li>
+<li class='category'><a href='/blog/categories/parallel/'>parallel (1)</a></li>
+<li class='category'><a href='/blog/categories/programming/'>programming (1)</a></li>
+<li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
+
+ </ul>
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2015 - Yebangyu -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Programming | Yebangyu's Blog]]></title>
+  <link href="http://www.yebangyu.org/blog/categories/programming/atom.xml" rel="self"/>
+  <link href="http://www.yebangyu.org/"/>
+  <updated>2015-10-18T12:41:54+08:00</updated>
+  <id>http://www.yebangyu.org/</id>
+  <author>
+    <name><![CDATA[Yebangyu]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Hardware and Its Habit]]></title>
+    <link href="http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit/"/>
+    <updated>2015-10-18T12:29:44+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit</id>
+    <content type="html"><![CDATA[<p>最近在阅读《Is parallel programming hard》这本书，本篇就是整理其中第三章《Hardware and its habit》，不是单纯的翻译，只是一个总结，略有补充。</p>
+
+<p>这章介绍了影响CPU执行效率的几个因素。具体包括：</p>
+
+<blockquote><ul>
+<li>流水线被打断</li>
+<li>内存访问</li>
+<li>原子操作</li>
+<li>Memory Barrier</li>
+<li>Cache Misses</li>
+<li>IO 操作</li>
+</ul>
+</blockquote>
+
+<!--more-->
+
+
+<p>这其中，前面两个，流水线被打断以及内存访问主要针对串行程序，而后面四个主要针对并行程序，因为在并行程序中显得更为突出。</p>
+
+<h3>流水线被打断</h3>
+
+<p>现代CPU执行指令采用流水线设计和指令预取机制，而影响流水的两种重要情况是停机等待和分支判断失败。前者是CPU没有足够的信息来判断取哪些指令（例如，涉及到C++中的虚函数时）。而分支判断失败，则是取了指令but没取对。例如</p>
+
+<pre><code>int a = get();
+if (a == 1 )
+{
+  //A
+}
+else
+{
+  //B
+}
+</code></pre>
+
+<p>假设CPU预取指令A。当预测失败时（a不等于1），流水线中A的指令需要被冲刷（flush），继而载入B指令。冲刷流水线和载入B指令都是非常昂贵的操作，因此这深深地影响了效率。</p>
+
+<p>因此，在实际编程时，应该将最有可能执行的代码放到最前面。在gcc中内置提供了likely和unlikely宏，来优化程序分支判断。</p>
+
+<pre><code>#define  likely(x)        __builtin_expect(!!(x), 1) 
+#define  unlikely(x)      __builtin_expect(!!(x), 0) 
+</code></pre>
+
+<p>因此，上面的程序可以改写为：</p>
+
+<pre><code>int a = get();
+if (unlikely（a == 1 )) //根据实际情况选择unlikely或者likely
+{
+  //A
+}
+else
+{
+  //B
+}
+</code></pre>
+
+<h3>内存访问</h3>
+
+<p>这个不用说了，内存访问是昂贵操作，相对于寄存器、cache而言。</p>
+
+<p>在上世纪的系统中，从内存中读一个值的速度要比CPU执行一条指令快速。后来，由于CPU的快速发展以及内存容量的增大，这种局面发生了改变。你能想象只有4KB内存的机器吗？现在，光是cache都不止4KB了。</p>
+
+<p>数组通常有比较好的内存访问模式，也就是说访问了a[0]，就可以将a[1],a[2],a[3]等存进cache，等访问到a[1]时不需要去访问内存了。但是一般用指针实现的链表的访问模式则比较差。恩，所谓的数据局部性。</p>
+
+<h3>原子操作</h3>
+
+<p>gcc内置提供了一系列的原子操作，包括著名的用于CAS(compare and swap)的__sync_bool_compare_and_swap等。当多个线程对一个内存变量进行原子操作时，往往依赖于硬件支持。在x86下，原子操作时，锁住总线，防止其他cpu core访问该内存单元。</p>
+
+<h3>Memory Barrier</h3>
+
+<p>CPU对指令可能采取乱序执行，以达到优化的目的。但是，并发访问的锁破坏了这种机制。</p>
+
+<pre><code>c = 3;
+lock.lock();
+a = 1;
+b = 2;
+lock.unlock();
+d = 4;
+</code></pre>
+
+<p>b=2绝对不会在a=1之前执行，d=4绝对不会在a=1之前执行，c=3绝对不会在a=1之后执行。</p>
+
+<p>lock和unlock中包含了memory barrier。由于memory barrier和乱序执行是对着干的，而乱序执行一般是优化的手段和方法，因此memory barrier往往是影响性能的重要因素。</p>
+
+<h3>Cache Misses</h3>
+
+<p>先贴一张现代CPU和cache架构粗略图。</p>
+
+<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/cpuand%20cache.png" alt="cmd-markdown-logo" /></p>
+
+<p>多个CPU core，一个内存。cacheline是cache块单位，一般在32到256字节左右。cacheline是这张图中不同模块的数据交互元素。</p>
+
+<p>当cpu需要进行内存写入操作时，需要先把包含那个变量的cacheline读入自己的cache，并且确保其他的cpu cores不包含该cacheline。</p>
+
+<p>书中举了一个相对简单的例子：cpu 0需要对一个变量进行cas操作，检查自己的cache，发现没有。这时候：</p>
+
+<p>1，它通过Interconnect去cpu1的cache，发现木有。</p>
+
+<p>2，请求发给System Interconnect，检查剩下的3个die（本图里，每两个cores组成一个die）得知cache位于由cpu6和cpu7 组成的那个die里。</p>
+
+<p>3，请求发给由cpu6 和cpu 7组成的那个die里的Interconnect(cpu6 &amp; cpu7)，得知cache位于cpu 7的cache里。</p>
+
+<p>4，cpu7 把cacheline发送给Interconnect(cpu6 &amp; cpu7), and flushes the cacheline from its cache</p>
+
+<p>5，Interconnect(cpu6 &amp; cpu7)将cacheline发送给System Interconnect。</p>
+
+<p>6，System Interconnect将cacheline发送给Interconnect（cpu0 &amp; cpu1）</p>
+
+<p>7，Interconnect（cpu0 &amp; cpu1）将cacheline存入cpu0的cache里。</p>
+
+<p>是啊，这已经是简单的情况了。想想看，有没有什么可能更复杂？</p>
+]]></content>
+  </entry>
+  
+</feed>
