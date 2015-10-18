@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-18T13:31:17+08:00</updated>
+  <updated>2015-10-18T13:46:35+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -39,7 +39,7 @@
 
 <h3>流水线被打断</h3>
 
-<p>现代<strong>CPU</strong>执行指令采用流水线设计和指令预取机制，而影响流水的两种重要情况是停机等待和分支判断失败。前者是<strong>CPU</strong>没有足够的信息来判断取哪些指令（例如，涉及到<strong>C++</strong>中的虚函数时）。而分支判断失败，则是取了指令but没取对。例如</p>
+<p>现代<strong>CPU</strong>执行指令采用流水线设计和指令预取机制，而影响流水的两种重要情况是停机等待和分支判断失败。前者是<strong>CPU</strong>没有足够的信息来判断取哪些指令（例如，涉及到<strong>C++</strong>中的虚函数时）。而分支判断失败，则是取了指令<strong>but</strong>没取对。例如</p>
 
 <pre><code>int a = get();
 if (a == 1)
@@ -77,7 +77,7 @@ else
 
 <p>这个不用说了，内存访问是昂贵操作，相对于寄存器、<strong>cache</strong>而言。</p>
 
-<p>在上世纪的系统中，从内存中读一个值的速度要比<strong>CPU</strong>执行一条指令快速。后来，由于CPU的快速发展以及内存容量的增大，这种局面发生了改变。你能想象只有<strong>4KB</strong>内存的机器吗？现在，光是<strong>cache</strong>都不止<strong>4KB</strong>了。</p>
+<p>在上世纪的系统中，从内存中读一个值的速度要比<strong>CPU</strong>执行一条指令快速。后来，由于<strong>CPU</strong>的快速发展以及内存容量的增大，这种局面发生了改变。你能想象只有<strong>4KB</strong>内存的机器吗？现在，光是<strong>cache</strong>都不止<strong>4KB</strong>了。</p>
 
 <p>数组通常有比较好的内存访问模式，也就是说访问了<strong>a[0]</strong>，就可以将<strong>a[1]</strong>,<strong>a[2]</strong>,<strong>a[3]</strong>等存进<strong>cache</strong>，等访问到<strong>a[1]</strong>时不需要去访问内存了。但是一般用指针实现的链表的访问模式则比较差。恩，所谓的数据局部性。</p>
 
@@ -117,7 +117,7 @@ d = 4;
 
 <p>2，请求发给<strong>System</strong> <strong>Interconnect</strong>，检查剩下的3个<strong>die</strong>（本图里，每两个<strong>cores</strong>组成一个<strong>die</strong>）得知<strong>cache</strong>位于由<strong>cpu6</strong>和<strong>cpu7</strong> 组成的那个<strong>die</strong>里。</p>
 
-<p>3，请求发给由<strong>cpu6</strong> 和<strong>cpu 7</strong>组成的那个<strong>die</strong>里的<strong>Interconnect</strong>(<strong>cpu6</strong> &amp; <strong>cpu7</strong>)，得知<strong>cacheline</strong>位于<strong>cpu 7</strong>的<strong>cache</strong>里。</p>
+<p>3，请求发给由<strong>cpu6</strong> 和<strong>cpu 7</strong>组成的那个<strong>die</strong>里的<strong>Interconnect</strong>(<strong>cpu6</strong> <strong>&amp;</strong> <strong>cpu7</strong>)，得知<strong>cacheline</strong>位于<strong>cpu 7</strong>的<strong>cache</strong>里。</p>
 
 <p>4，<strong>cpu7</strong> 把<strong>cacheline</strong>发送给<strong>Interconnect</strong>(<strong>cpu6 &amp; cpu7</strong>), <strong>and flushes the cacheline from its cache</strong></p>
 
