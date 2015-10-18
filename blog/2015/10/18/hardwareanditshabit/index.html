@@ -179,25 +179,25 @@ d = 4;
 
 <p>多个<strong>CPU</strong> <strong>core</strong>，一个内存。<strong>cacheline</strong>是<strong>cache</strong>块单位，一般在<strong>32</strong>到<strong>256</strong>字节左右。<strong>cacheline</strong>是这张图中不同模块的数据交互元素。</p>
 
-<p>每两个<strong>cpu</strong> <strong>cores</strong>和<strong>Interconnect</strong>组成一个<strong>die</strong>，同一个<strong>die</strong>中的<strong>cpu</strong> <strong>cores</strong>通过<strong>interconnect</strong>来沟通。不同<strong>die</strong>里的<strong>cpu</strong> <strong>cores</strong>通过<strong>System</strong> <strong>Interconnect</strong>来沟通。</p>
+<p>每两个<strong>cpu</strong> <strong>core</strong>和<strong>Interconnect</strong>组成一个<strong>die</strong>，同一个<strong>die</strong>中的<strong>cpu</strong> <strong>core</strong>通过<strong>Interconnect</strong>来沟通。不同<strong>die</strong>里的<strong>cpu</strong> <strong>core</strong>通过<strong>System</strong> <strong>Interconnect</strong>来沟通。</p>
 
-<p>当<strong>cpu</strong>需要进行内存写入操作时，需要先把包含那个变量的<strong>cacheline</strong>读入自己的<strong>cache</strong>，并且确保其他的<strong>cpu</strong> <strong>cores</strong>不包含该<strong>cacheline</strong>。</p>
+<p>当<strong>cpu</strong>需要进行内存写入操作时，需要先把包含那个变量的<strong>cacheline</strong>读入自己的<strong>cache</strong>，并且确保其他的<strong>cpu</strong> <strong>core</strong>不包含该<strong>cacheline</strong>。</p>
 
 <p>书中举了一个相对简单的例子：<strong>cpu 0</strong>需要对一个变量进行<strong>cas</strong>操作，检查自己的<strong>cache</strong>，发现没有。这时候：</p>
 
-<p>1，cpu0发送请求给<strong>Interconnect</strong>(<strong>cpu0 &amp; cpu1</strong>)，后者检查<strong>cpu1</strong>的<strong>cache</strong>，发现木有。</p>
+<p>1，<strong>cpu 0</strong>发送请求给<strong>Interconnect</strong>(<strong>cpu 0 &amp; cpu 1</strong>)，后者检查<strong>cpu 1</strong>的<strong>cache</strong>，发现木有。</p>
 
-<p>2，<strong>Interconnect</strong>(<strong>cpu0 &amp; cpu1</strong>)将请求发给<strong>System</strong> <strong>Interconnect</strong>，后者检查剩下的3个<strong>die</strong>，得知<strong>cacheline</strong>位于由<strong>cpu6</strong>和<strong>cpu7</strong> 组成的那个<strong>die</strong>里。</p>
+<p>2，<strong>Interconnect</strong>(<strong>cpu 0 &amp; cpu 1</strong>)将请求发给<strong>System</strong> <strong>Interconnect</strong>，后者检查剩下的<strong>3</strong>个<strong>die</strong>，得知<strong>cacheline</strong>位于由<strong>cpu 6</strong>和<strong>cpu 7</strong> 组成的那个<strong>die</strong>里。</p>
 
-<p>3，请求被发给由<strong>cpu6</strong> 和<strong>cpu 7</strong>组成的那个<strong>die</strong>里的<strong>Interconnect</strong>(<strong>cpu6</strong> <strong>&amp;</strong> <strong>cpu7</strong>)，它同时检查<strong>cpu6</strong>和<strong>cpu7</strong>的<strong>cache</strong>，得知<strong>cacheline</strong>位于<strong>cpu 7</strong>的<strong>cache</strong>里。</p>
+<p>3，请求被发给由<strong>cpu 6</strong> 和<strong>cpu 7</strong>组成的那个<strong>die</strong>里的<strong>Interconnect</strong>(<strong>cpu 6</strong> <strong>&amp;</strong> <strong>cpu 7</strong>)，它同时检查<strong>cpu 6</strong>和<strong>cpu 7</strong>的<strong>cache</strong>，得知<strong>cacheline</strong>位于<strong>cpu 7</strong>的<strong>cache</strong>里。</p>
 
-<p>4，<strong>cpu7</strong> 把<strong>cacheline</strong>发送给<strong>Interconnect</strong>(<strong>cpu6 &amp; cpu7</strong>), <strong>and flushes the cacheline from its cache</strong>，以保证<strong>cache</strong>一致性</p>
+<p>4，<strong>cpu 7</strong> 把<strong>cacheline</strong>发送给<strong>Interconnect</strong>(<strong>cpu 6 &amp; cpu 7</strong>), <strong>and flushes the cacheline from its cache</strong>，以保证<strong>cache</strong>一致性</p>
 
-<p>5，<strong>Interconnect</strong>(<strong>cpu6 &amp; cpu7</strong>)将<strong>cacheline</strong>发送给<strong>System</strong> <strong>Interconnect</strong>。</p>
+<p>5，<strong>Interconnect</strong>(<strong>cpu 6 &amp; cpu 7</strong>)将<strong>cacheline</strong>发送给<strong>System</strong> <strong>Interconnect</strong>。</p>
 
-<p>6，<strong>System</strong> <strong>Interconnect</strong>将<strong>cacheline</strong>发送给<strong>Interconnect</strong>(<strong>cpu0 &amp; cpu1</strong>)</p>
+<p>6，<strong>System</strong> <strong>Interconnect</strong>将<strong>cacheline</strong>发送给<strong>Interconnect</strong>(<strong>cpu 0 &amp; cpu 1</strong>)</p>
 
-<p>7，<strong>Interconnect</strong>（<strong>cpu0 &amp; cpu1</strong>）将<strong>cacheline</strong>存入<strong>cpu0</strong>的<strong>cache</strong>里。</p>
+<p>7，<strong>Interconnect</strong>（<strong>cpu 0 &amp; cpu 1</strong>）将<strong>cacheline</strong>存入<strong>cpu 0</strong>的<strong>cache</strong>里。</p>
 
 <p>是啊，这已经是简单的情况了。想想看，有没有什么可能更复杂？</p>
 </div>
