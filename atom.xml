@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-18T13:05:41+08:00</updated>
+  <updated>2015-10-18T13:31:17+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,7 +18,7 @@
     <link href="http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit/"/>
     <updated>2015-10-18T12:29:44+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit</id>
-    <content type="html"><![CDATA[<p>最近在阅读《Is parallel programming hard》这本书，本篇就是整理其中第三章《Hardware and its habit》，不是单纯的翻译，只是一个总结，略有补充。</p>
+    <content type="html"><![CDATA[<p>最近在最近在阅读《<strong>Is parallel programming hard</strong>》这本书，本篇就是整理其中第三章《<strong>Hardware and its habit</strong>》，不是单纯的翻译，只是一个总结，略有补充。</p>
 
 <p>这章介绍了影响CPU执行效率的几个因素。具体包括：</p>
 
@@ -39,10 +39,10 @@
 
 <h3>流水线被打断</h3>
 
-<p>现代CPU执行指令采用流水线设计和指令预取机制，而影响流水的两种重要情况是停机等待和分支判断失败。前者是CPU没有足够的信息来判断取哪些指令（例如，涉及到C++中的虚函数时）。而分支判断失败，则是取了指令but没取对。例如</p>
+<p>现代<strong>CPU</strong>执行指令采用流水线设计和指令预取机制，而影响流水的两种重要情况是停机等待和分支判断失败。前者是<strong>CPU</strong>没有足够的信息来判断取哪些指令（例如，涉及到<strong>C++</strong>中的虚函数时）。而分支判断失败，则是取了指令but没取对。例如</p>
 
 <pre><code>int a = get();
-if (a == 1 )
+if (a == 1)
 {
   //A
 }
@@ -52,9 +52,9 @@ else
 }
 </code></pre>
 
-<p>假设CPU预取指令A。当预测失败时（a不等于1），流水线中A的指令需要被冲刷（flush），继而载入B指令。冲刷流水线和载入B指令都是非常昂贵的操作，因此这深深地影响了效率。</p>
+<p>假设<strong>CPU</strong>预取指令<strong>A</strong>。当预测失败时（<strong>a</strong>不等于<strong>1</strong>），流水线中<strong>A</strong>的指令需要被冲刷（<strong>flush</strong>），继而载入<strong>B</strong>指令。冲刷流水线和载入<strong>B</strong>指令都是非常昂贵的操作，因此这深深地影响了效率。</p>
 
-<p>因此，在实际编程时，应该将最有可能执行的代码放到最前面。在gcc中内置提供了likely和unlikely宏，来优化程序分支判断。</p>
+<p>因此，在实际编程时，应该将最有可能执行的代码放到最前面。在<strong>gcc</strong>中内置提供了<strong>likely</strong>和<strong>unlikely</strong>宏，来优化程序分支判断。</p>
 
 <pre><code>#define  likely(x)        __builtin_expect(!!(x), 1) 
 #define  unlikely(x)      __builtin_expect(!!(x), 0) 
@@ -63,7 +63,7 @@ else
 <p>因此，上面的程序可以改写为：</p>
 
 <pre><code>int a = get();
-if (unlikely（a == 1 )) //根据实际情况选择unlikely或者likely
+if (unlikely(a == 1)) //根据实际情况选择unlikely或者likely
 {
   //A
 }
@@ -75,19 +75,19 @@ else
 
 <h3>内存访问</h3>
 
-<p>这个不用说了，内存访问是昂贵操作，相对于寄存器、cache而言。</p>
+<p>这个不用说了，内存访问是昂贵操作，相对于寄存器、<strong>cache</strong>而言。</p>
 
-<p>在上世纪的系统中，从内存中读一个值的速度要比CPU执行一条指令快速。后来，由于CPU的快速发展以及内存容量的增大，这种局面发生了改变。你能想象只有4KB内存的机器吗？现在，光是cache都不止4KB了。</p>
+<p>在上世纪的系统中，从内存中读一个值的速度要比<strong>CPU</strong>执行一条指令快速。后来，由于CPU的快速发展以及内存容量的增大，这种局面发生了改变。你能想象只有<strong>4KB</strong>内存的机器吗？现在，光是<strong>cache</strong>都不止<strong>4KB</strong>了。</p>
 
-<p>数组通常有比较好的内存访问模式，也就是说访问了a[0]，就可以将a[1],a[2],a[3]等存进cache，等访问到a[1]时不需要去访问内存了。但是一般用指针实现的链表的访问模式则比较差。恩，所谓的数据局部性。</p>
+<p>数组通常有比较好的内存访问模式，也就是说访问了<strong>a[0]</strong>，就可以将<strong>a[1]</strong>,<strong>a[2]</strong>,<strong>a[3]</strong>等存进<strong>cache</strong>，等访问到<strong>a[1]</strong>时不需要去访问内存了。但是一般用指针实现的链表的访问模式则比较差。恩，所谓的数据局部性。</p>
 
 <h3>原子操作</h3>
 
-<p>gcc内置提供了一系列的原子操作，包括著名的用于CAS(compare and swap)的__sync_bool_compare_and_swap等。当多个线程对一个内存变量进行原子操作时，往往依赖于硬件支持。在x86下，原子操作时，锁住总线，防止其他cpu core访问该内存单元。</p>
+<p><strong>gcc</strong>内置提供了一系列的原子操作，包括著名的用于<strong>CAS</strong>(<strong>compare</strong> <strong>and</strong> <strong>swap</strong>)的<strong>__sync_bool_compare_and_swap</strong>等。当多个线程对一个内存变量进行原子操作时，往往依赖于硬件支持。在<strong>x86</strong>下，原子操作时，锁住总线，防止其他<strong>cpu</strong> <strong>core</strong>访问该内存单元。</p>
 
 <h3>Memory Barrier</h3>
 
-<p>CPU对指令可能采取乱序执行，以达到优化的目的。但是，并发访问的锁破坏了这种机制。</p>
+<p><strong>CPU</strong>对指令可能采取乱序执行，以达到优化的目的。但是，并发访问的锁破坏了这种机制。</p>
 
 <pre><code>c = 3;
 lock.lock();
@@ -97,35 +97,35 @@ lock.unlock();
 d = 4;
 </code></pre>
 
-<p>b=2绝对不会在a=1之前执行，d=4绝对不会在a=1之前执行，c=3绝对不会在a=1之后执行。</p>
+<p><strong>b=2</strong>绝对不会在<strong>a=1</strong>之前执行，<strong>d=4</strong>绝对不会在<strong>a=1</strong>之前执行，<strong>c=3</strong>绝对不会在<strong>a=1</strong>之后执行。</p>
 
-<p>lock和unlock中包含了memory barrier。由于memory barrier和乱序执行是对着干的，用来防止乱序执行的；而乱序执行一般是优化的手段和方法，因此memory barrier往往带来性能下降。</p>
+<p><strong>lock</strong>和<strong>unlock</strong>中包含了<strong>memory</strong> <strong>barrier</strong>。由于<strong>memory</strong> <strong>barrier</strong>和乱序执行是对着干的，用来防止乱序执行的；而乱序执行一般是优化的手段和方法，因此<strong>memory</strong> <strong>barrier</strong>往往带来性能下降。</p>
 
 <h3>Cache Misses</h3>
 
-<p>先贴一张现代CPU和cache架构粗略图。</p>
+<p>先贴一张现代<strong>CPU</strong>和<strong>cache</strong>架构粗略图。</p>
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/cpuand%20cache.png" alt="cmd-markdown-logo" /></p>
 
-<p>多个CPU core，一个内存。cacheline是cache块单位，一般在32到256字节左右。cacheline是这张图中不同模块的数据交互元素。</p>
+<p>多个<strong>CPU</strong> <strong>core</strong>，一个内存。<strong>cacheline</strong>是<strong>cache</strong>块单位，一般在<strong>32</strong>到<strong>256</strong>字节左右。<strong>cacheline</strong>是这张图中不同模块的数据交互元素。</p>
 
-<p>当cpu需要进行内存写入操作时，需要先把包含那个变量的cacheline读入自己的cache，并且确保其他的cpu cores不包含该cacheline。</p>
+<p>当<strong>cpu</strong>需要进行内存写入操作时，需要先把包含那个变量的<strong>cacheline</strong>读入自己的<strong>cache</strong>，并且确保其他的<strong>cpu</strong> <strong>cores</strong>不包含该<strong>cacheline</strong>。</p>
 
-<p>书中举了一个相对简单的例子：cpu 0需要对一个变量进行cas操作，检查自己的cache，发现没有。这时候：</p>
+<p>书中举了一个相对简单的例子：<strong>cpu 0</strong>需要对一个变量进行<strong>cas</strong>操作，检查自己的<strong>cache</strong>，发现没有。这时候：</p>
 
-<p>1，它通过Interconnect(cpu0 &amp; cpu1)去cpu1的cache检查，发现木有。</p>
+<p>1，它通过<strong>Interconnect</strong>(<strong>cpu0 &amp; cpu1</strong>)去<strong>cpu1</strong>的<strong>cache</strong>检查，发现木有。</p>
 
-<p>2，请求发给System Interconnect，检查剩下的3个die（本图里，每两个cores组成一个die）得知cache位于由cpu6和cpu7 组成的那个die里。</p>
+<p>2，请求发给<strong>System</strong> <strong>Interconnect</strong>，检查剩下的3个<strong>die</strong>（本图里，每两个<strong>cores</strong>组成一个<strong>die</strong>）得知<strong>cache</strong>位于由<strong>cpu6</strong>和<strong>cpu7</strong> 组成的那个<strong>die</strong>里。</p>
 
-<p>3，请求发给由cpu6 和cpu 7组成的那个die里的Interconnect(cpu6 &amp; cpu7)，得知cacheline位于cpu 7的cache里。</p>
+<p>3，请求发给由<strong>cpu6</strong> 和<strong>cpu 7</strong>组成的那个<strong>die</strong>里的<strong>Interconnect</strong>(<strong>cpu6</strong> &amp; <strong>cpu7</strong>)，得知<strong>cacheline</strong>位于<strong>cpu 7</strong>的<strong>cache</strong>里。</p>
 
-<p>4，cpu7 把cacheline发送给Interconnect(cpu6 &amp; cpu7), and flushes the cacheline from its cache</p>
+<p>4，<strong>cpu7</strong> 把<strong>cacheline</strong>发送给<strong>Interconnect</strong>(<strong>cpu6 &amp; cpu7</strong>), <strong>and flushes the cacheline from its cache</strong></p>
 
-<p>5，Interconnect(cpu6 &amp; cpu7)将cacheline发送给System Interconnect。</p>
+<p>5，<strong>Interconnect</strong>(<strong>cpu6 &amp; cpu7</strong>)将<strong>cacheline</strong>发送给<strong>System</strong> <strong>Interconnect</strong>。</p>
 
-<p>6，System Interconnect将cacheline发送给Interconnect（cpu0 &amp; cpu1）</p>
+<p>6，<strong>System</strong> <strong>Interconnect</strong>将<strong>cacheline</strong>发送给<strong>Interconnect</strong>（<strong>cpu0 &amp; cpu1</strong>）</p>
 
-<p>7，Interconnect（cpu0 &amp; cpu1）将cacheline存入cpu0的cache里。</p>
+<p>7，<strong>Interconnect</strong>（<strong>cpu0 &amp; cpu1</strong>）将<strong>cacheline</strong>存入<strong>cpu0</strong>的<strong>cache</strong>里。</p>
 
 <p>是啊，这已经是简单的情况了。想想看，有没有什么可能更复杂？</p>
 ]]></content>
