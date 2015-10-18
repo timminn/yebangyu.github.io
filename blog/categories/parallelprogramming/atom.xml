@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parallelprogramming | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/parallelprogramming/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-18T14:57:04+08:00</updated>
+  <updated>2015-10-18T21:16:18+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -20,7 +20,7 @@
     <id>http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit</id>
     <content type="html"><![CDATA[<p>最近在阅读《<strong>Is parallel programming hard</strong>》这本书，本篇就是整理其中第三章《<strong>Hardware and its habit</strong>》，不是单纯的翻译，只是一个总结，略有补充。</p>
 
-<p>这章介绍了影响CPU执行效率的几个因素。具体包括：</p>
+<p>这章介绍了影响<strong>CPU</strong>执行效率的几个因素。具体包括：</p>
 
 <blockquote><ul>
 <li>流水线被打断</li>
@@ -117,7 +117,7 @@ d = 4;
 
 <p>1，<strong>cpu 0</strong>发送请求给<strong>Interconnect</strong>(<strong>cpu 0 &amp; cpu 1</strong>)，后者检查<strong>cpu 1</strong>的<strong>cache</strong>，发现木有。</p>
 
-<p>2，<strong>Interconnect</strong>(<strong>cpu 0 &amp; cpu 1</strong>)将请求发给<strong>System</strong> <strong>Interconnect</strong>，后者检查剩下的<strong>3</strong>个<strong>die</strong>，得知<strong>cacheline</strong>位于由<strong>cpu 6</strong>和<strong>cpu 7</strong> 组成的那个<strong>die</strong>里。</p>
+<p>2，<strong>Interconnect</strong>(<strong>cpu 0 &amp; cpu 1</strong>)将请求发给<strong>System</strong> <strong>Interconnect</strong>，后者检查其他的<strong>3</strong>个<strong>die</strong>，得知<strong>cacheline</strong>位于由<strong>cpu 6</strong>和<strong>cpu 7</strong> 组成的那个<strong>die</strong>里。</p>
 
 <p>3，请求被发给由<strong>cpu 6</strong> 和<strong>cpu 7</strong>组成的那个<strong>die</strong>里的<strong>Interconnect</strong>(<strong>cpu 6</strong> <strong>&amp;</strong> <strong>cpu 7</strong>)，它同时检查<strong>cpu 6</strong>和<strong>cpu 7</strong>的<strong>cache</strong>，得知<strong>cacheline</strong>位于<strong>cpu 7</strong>的<strong>cache</strong>里。</p>
 
@@ -129,7 +129,7 @@ d = 4;
 
 <p>7，<strong>Interconnect</strong>（<strong>cpu 0 &amp; cpu 1</strong>）将<strong>cacheline</strong>存入<strong>cpu 0</strong>的<strong>cache</strong>里。</p>
 
-<p>是啊，这已经是简单的情况了。想想看，有没有什么可能更复杂？</p>
+<p>是啊，这已经是简单的情况了。想想看，什么情况下更复杂？</p>
 ]]></content>
   </entry>
   
