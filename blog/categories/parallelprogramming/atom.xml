@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Parallel | Yebangyu's Blog]]></title>
-  <link href="http://www.yebangyu.org/blog/categories/parallel/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Parallelprogramming | Yebangyu's Blog]]></title>
+  <link href="http://www.yebangyu.org/blog/categories/parallelprogramming/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-18T12:46:19+08:00</updated>
+  <updated>2015-10-18T12:57:15+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
