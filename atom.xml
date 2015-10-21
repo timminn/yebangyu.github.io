@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-21T22:48:12+08:00</updated>
+  <updated>2015-10-21T23:00:23+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -97,7 +97,7 @@ lock.unlock();
 d = 4;
 </code></pre>
 
-<p><strong>b=2</strong>绝对不会在<strong>a=1</strong>之前执行，<strong>d=4</strong>绝对不会在<strong>a=1</strong>之前执行，<strong>c=3</strong>绝对不会在<strong>a=1</strong>之后执行。</p>
+<p><code>d=4</code>绝对不会在<code>a=1</code>之前执行，<code>c=3</code>绝对不会在<code>a=1</code>之后执行。</p>
 
 <p><strong>lock</strong>和<strong>unlock</strong>中包含了<strong>memory</strong> <strong>barrier</strong>。由于<strong>memory</strong> <strong>barrier</strong>和乱序执行是对着干的，用来防止乱序执行的；而乱序执行一般是优化的手段和方法，因此<strong>memory</strong> <strong>barrier</strong>往往带来性能下降。</p>
 
