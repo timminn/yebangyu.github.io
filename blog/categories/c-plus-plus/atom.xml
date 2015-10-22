@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
+  <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
+  <link href="http://www.yebangyu.org/"/>
+  <updated>2015-10-23T00:10:51+08:00</updated>
+  <id>http://www.yebangyu.org/</id>
+  <author>
+    <name><![CDATA[Yebangyu]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[C++中逗号表达式的一个应用]]></title>
+    <link href="http://www.yebangyu.org/blog/2015/10/22/atrickofcomma/"/>
+    <updated>2015-10-22T23:55:35+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2015/10/22/atrickofcomma</id>
+    <content type="html"><![CDATA[<p>假设我们的程序需要调用三个函数<strong>f</strong>，<strong>g</strong>，<strong>h</strong>。其中<strong>f</strong>和<strong>h</strong>可能失败，可能成功，而<strong>g</strong>一定成功。<strong>f</strong>和<strong>h</strong>有返回值，<strong>g</strong>没有返回值。我们可能得写这样的代码：</p>
+
+<pre><code>if (f()!=SUCCESS) {
+  //abort
+} else {
+  g();
+  if (h()!=SUCCESS) {
+  }
+}
+</code></pre>
+
+<p>由于<strong>g</strong>没有返回值，因此这么写似乎是天经地义的。有没有优雅点的写法？</p>
+
+<!--more-->
+
+
+<p>借助于逗号表达式，我们可以这样：</p>
+
+<pre><code>if (f()!=SUCCESS){
+} else if (g(),false) { //逗号表达式
+  //we will never be here...
+} else if(g()!=SUCCESS) {
+}
+</code></pre>
+
+<p>形式上更加优美，但是和之前的写法相比可读性较差，并且使用了三次比较，之前只需要两次比较。</p>
+
+<p>在<strong>C++</strong>中，逗号表达式有时候是一种很有用的工具：(<strong>A,B,C</strong>)，则从左到右求值，最后<strong>C</strong>的（返回）值作为整个表达式的值。</p>
+]]></content>
+  </entry>
+  
+</feed>
