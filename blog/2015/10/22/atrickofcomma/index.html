@@ -97,7 +97,7 @@
 }
 </code></pre>
 
-<p>由于<strong>g</strong>没有返回值，因此这么写似乎是天经地义的。有没有优雅点的写法？</p>
+<p>由于<strong>g</strong>没有返回值，因此这么写似乎是天经地义的。能不能优雅点？</p>
 
 <!--more-->
 
@@ -107,7 +107,7 @@
 <pre><code>if (f()!=SUCCESS){
 } else if (g(),false) { //逗号表达式
   //we will never be here...
-} else if(g()!=SUCCESS) {
+} else if (g()!=SUCCESS) {
 }
 </code></pre>
 
