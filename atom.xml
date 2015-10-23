@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-23T00:23:12+08:00</updated>
+  <updated>2015-10-23T23:58:26+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -57,7 +57,7 @@
     <content type="html"><![CDATA[<p>最近帮很多朋友<strong>review</strong>他们的简历，总结起来存在以下问题：</p>
 
 <blockquote><ul>
-<li>简历太多页了</li>
+<li>简历太多页</li>
 </ul>
 </blockquote>
 
@@ -79,7 +79,7 @@
 
 <p>自我评价最多一句话，不要一坨一坨。建议不要写自我评价，太水太扯了。</p>
 
-<p>学校的logo。坦白说，大家只对你是哪个学校的有兴趣，对你学校的<strong>logo</strong>不感冒。</p>
+<p>学校的<strong>logo</strong>。坦白说，大家只对你是哪个学校的有兴趣，对你学校的<strong>logo</strong>不感冒。</p>
 
 <p>照片。招程序员不是招礼仪公关小姐啊大哥。颜值不是特别高就算了吧。</p>
 
@@ -144,14 +144,14 @@
 <p>包括联系邮箱里写<strong>QQ</strong>邮箱和用<strong>QQ</strong>邮箱发简历。很多公司已经把<strong>QQ</strong>邮箱拉入黑名单。平常用<strong>QQ</strong>聊天就算了，发邮件你还用<strong>QQ</strong>邮箱？</p>
 
 <blockquote><ul>
-<li>简历文件格式用<strong>doc</strong></li>
+<li>文件格式用<strong>doc</strong></li>
 </ul>
 </blockquote>
 
 <p>建议只发<strong>pdf</strong>格式，<strong>doc</strong>格式容易出现各种显示问题。</p>
 
 <blockquote><ul>
-<li>简历文件名太随意</li>
+<li>文件名太随意</li>
 </ul>
 </blockquote>
 
@@ -257,7 +257,7 @@ d = 4;
 
 <p>每两个<strong>cpu</strong> <strong>core</strong>和<strong>Interconnect</strong>组成一个<strong>die</strong>，同一个<strong>die</strong>中的<strong>cpu</strong> <strong>core</strong>通过<strong>Interconnect</strong>来沟通。不同<strong>die</strong>里的<strong>cpu</strong> <strong>core</strong>通过<strong>System</strong> <strong>Interconnect</strong>来沟通。</p>
 
-<p>当<strong>cpu</strong>需要进行内存写入操作时，需要先把包含那个变量的<strong>cacheline</strong>读入自己的<strong>cache</strong>，并且确保其他的<strong>cpu</strong> <strong>core</strong>不包含该<strong>cacheline</strong>。</p>
+<p>某个<strong>core</strong>需要对内存变量进行修改时，该变量的<strong>cacheline</strong>如果位于别的<strong>core</strong>的<strong>cache</strong>里，这种情况下的<strong>cache miss</strong>代价很大。</p>
 
 <p>书中举了一个相对简单的例子：<strong>cpu 0</strong>需要对一个变量进行<strong>cas</strong>操作，检查自己的<strong>cache</strong>，发现没有。这时候：</p>
 

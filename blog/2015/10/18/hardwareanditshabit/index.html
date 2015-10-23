@@ -180,7 +180,7 @@ d = 4;
 
 <p>每两个<strong>cpu</strong> <strong>core</strong>和<strong>Interconnect</strong>组成一个<strong>die</strong>，同一个<strong>die</strong>中的<strong>cpu</strong> <strong>core</strong>通过<strong>Interconnect</strong>来沟通。不同<strong>die</strong>里的<strong>cpu</strong> <strong>core</strong>通过<strong>System</strong> <strong>Interconnect</strong>来沟通。</p>
 
-<p>当<strong>cpu</strong>需要进行内存写入操作时，需要先把包含那个变量的<strong>cacheline</strong>读入自己的<strong>cache</strong>，并且确保其他的<strong>cpu</strong> <strong>core</strong>不包含该<strong>cacheline</strong>。</p>
+<p>某个<strong>core</strong>需要对内存变量进行修改时，该变量的<strong>cacheline</strong>如果位于别的<strong>core</strong>的<strong>cache</strong>里，这种情况下的<strong>cache miss</strong>代价很大。</p>
 
 <p>书中举了一个相对简单的例子：<strong>cpu 0</strong>需要对一个变量进行<strong>cas</strong>操作，检查自己的<strong>cache</strong>，发现没有。这时候：</p>
 
