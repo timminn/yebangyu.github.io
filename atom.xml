@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-25T22:23:03+08:00</updated>
+  <updated>2015-10-25T22:26:01+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -113,9 +113,9 @@ wait
   
   <entry>
     <title type="html"><![CDATA[C++中逗号表达式的一个应用]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/10/22/a-trick-of-comma/"/>
+    <link href="http://www.yebangyu.org/blog/2015/10/22/atrickofcomma/"/>
     <updated>2015-10-22T23:55:35+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/10/22/a-trick-of-comma</id>
+    <id>http://www.yebangyu.org/blog/2015/10/22/atrickofcomma</id>
     <content type="html"><![CDATA[<p>假设我们的程序需要调用三个函数<strong>f</strong>，<strong>g</strong>，<strong>h</strong>。其中<strong>f</strong>和<strong>h</strong>可能失败，可能成功，而<strong>g</strong>一定成功。<strong>f</strong>和<strong>h</strong>有返回值，<strong>g</strong>没有返回值。我们可能得写这样的代码：</p>
 
 <pre><code>if (f()!=SUCCESS) {
@@ -149,9 +149,9 @@ wait
   
   <entry>
     <title type="html"><![CDATA[Review简历心得和建议]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/10/22/tips-for-writing-cv/"/>
+    <link href="http://www.yebangyu.org/blog/2015/10/22/tipsforwritingcv/"/>
     <updated>2015-10-22T22:39:33+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/10/22/tips-for-writing-cv</id>
+    <id>http://www.yebangyu.org/blog/2015/10/22/tipsforwritingcv</id>
     <content type="html"><![CDATA[<p>最近帮很多朋友<strong>review</strong>他们的简历，总结起来存在以下问题：</p>
 
 <blockquote><ul>
@@ -259,9 +259,9 @@ wait
   
   <entry>
     <title type="html"><![CDATA[Hardware and Its Habit]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/10/18/hardware-and-its-habit/"/>
+    <link href="http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit/"/>
     <updated>2015-10-18T12:29:44+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/10/18/hardware-and-its-habit</id>
+    <id>http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit</id>
     <content type="html"><![CDATA[<p>最近在阅读《<strong>Is parallel programming hard</strong>》这本书，本篇就是整理其中第三章《<strong>Hardware and its habit</strong>》，不是单纯的翻译，只是一个总结，略有补充。</p>
 
 <p>这章介绍了影响<strong>CPU</strong>执行效率的几个因素。具体包括：</p>
@@ -379,9 +379,9 @@ d = 4;
   
   <entry>
     <title type="html"><![CDATA[读研如何提高技术之我见]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/10/17/what-to-do-in-master/"/>
+    <link href="http://www.yebangyu.org/blog/2015/10/17/whattodoinmaster/"/>
     <updated>2015-10-17T14:34:04+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/10/17/what-to-do-in-master</id>
+    <id>http://www.yebangyu.org/blog/2015/10/17/whattodoinmaster</id>
     <content type="html"><![CDATA[<p>你想进什么公司，和你读什么计算机方向，关系不是很大。只要是理工科的学生，面对技术岗位，其实机会是差不多的。</p>
 
 <p>至于你想什么职位，那显然和你的专业/方向关系较大，比如说很多大数据职位，就明确表示要求你<strong>DM</strong>/<strong>ML</strong>/<strong>NLP</strong>/<strong>IR</strong>背景，但是这也只是说这些
@@ -523,9 +523,9 @@ d = 4;
   
   <entry>
     <title type="html"><![CDATA[Windows下OctoPress环境搭建]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/10/17/how-to-install-Octopress/"/>
+    <link href="http://www.yebangyu.org/blog/2015/10/17/howtoinstalloctopress/"/>
     <updated>2015-10-17T11:28:19+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/10/17/how-to-install-Octopress</id>
+    <id>http://www.yebangyu.org/blog/2015/10/17/howtoinstalloctopress</id>
     <content type="html"><![CDATA[<hr />
 
 <p>近期学习了如何搭建个人博客的方法，这里备忘一下，如果能帮助到别人，那就更好了。</p>
