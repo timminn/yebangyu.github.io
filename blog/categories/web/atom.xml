@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Web | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/web/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-25T22:20:52+08:00</updated>
+  <updated>2015-10-25T22:23:03+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Windows下OctoPress环境搭建]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/10/17/howtoinstalloctopress/"/>
+    <link href="http://www.yebangyu.org/blog/2015/10/17/how-to-install-Octopress/"/>
     <updated>2015-10-17T11:28:19+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/10/17/howtoinstalloctopress</id>
+    <id>http://www.yebangyu.org/blog/2015/10/17/how-to-install-Octopress</id>
     <content type="html"><![CDATA[<hr />
 
 <p>近期学习了如何搭建个人博客的方法，这里备忘一下，如果能帮助到别人，那就更好了。</p>
