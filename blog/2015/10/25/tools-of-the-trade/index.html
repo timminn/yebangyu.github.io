@@ -153,7 +153,9 @@ wait
 }
 </code></pre>
 
-<p>把其中<strong>t2</strong>的时间设置为<strong>0</strong>，<strong>t1</strong>的控制则是通过更改调整执行循环次数（图上所谓的<strong>100K</strong>、<strong>100M</strong>神马的）。图上的横坐标为线程数目，纵坐标代表单个线程<strong>acquire</strong>次数乘以<strong>n</strong>然后除以所有线程的<strong>acquire</strong>总数），也就是\frac{cn}{C} 理想情况下，这个值应该是<strong>1.0</strong>。</p>
+<p>把其中<strong>t2</strong>的时间设置为<strong>0</strong>，<strong>t1</strong>的控制则是通过更改调整执行循环次数（图上所谓的<strong>100K</strong>、<strong>100M</strong>神马的）。图上的横坐标为线程数目，纵坐标代表 $\frac {C}{nc}$ ，其中<strong>C</strong>是<strong>n</strong>个线程总共的<strong>acquisition</strong>数目，<strong>c</strong>是单个线程<strong>acquisition</strong>数目。</p>
+
+<p>理想情况下，这个值应该是<strong>1.0</strong>。</p>
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/figure4.10.jpg" alt="expriments for rwl" /></p>
 
@@ -304,7 +306,22 @@ wait
 
     </div>
   </div>
-  <footer role="contentinfo"><p>
+  <footer role="contentinfo"><!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+<p>
   Copyright &copy; 2015 - Yebangyu -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>

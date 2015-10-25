@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parallelprogramming | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/parallelprogramming/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-25T22:33:52+08:00</updated>
+  <updated>2015-10-25T23:19:51+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -85,7 +85,9 @@ wait
 }
 </code></pre>
 
-<p>把其中<strong>t2</strong>的时间设置为<strong>0</strong>，<strong>t1</strong>的控制则是通过更改调整执行循环次数（图上所谓的<strong>100K</strong>、<strong>100M</strong>神马的）。图上的横坐标为线程数目，纵坐标代表单个线程<strong>acquire</strong>次数乘以<strong>n</strong>然后除以所有线程的<strong>acquire</strong>总数），也就是\frac{cn}{C} 理想情况下，这个值应该是<strong>1.0</strong>。</p>
+<p>把其中<strong>t2</strong>的时间设置为<strong>0</strong>，<strong>t1</strong>的控制则是通过更改调整执行循环次数（图上所谓的<strong>100K</strong>、<strong>100M</strong>神马的）。图上的横坐标为线程数目，纵坐标代表 $\frac {C}{nc}$ ，其中<strong>C</strong>是<strong>n</strong>个线程总共的<strong>acquisition</strong>数目，<strong>c</strong>是单个线程<strong>acquisition</strong>数目。</p>
+
+<p>理想情况下，这个值应该是<strong>1.0</strong>。</p>
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/figure4.10.jpg" alt="expriments for rwl" /></p>
 
