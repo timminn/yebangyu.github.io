@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parallelprogramming | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/parallelprogramming/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-31T19:39:42+08:00</updated>
+  <updated>2015-10-31T20:08:22+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -63,7 +63,7 @@ int b = i;//强制从内存中读取实时的i的值
 
 <p><strong>__thread</strong>是<strong>gcc</strong>内置的用于多线程编程的基础设施。用<strong>__thread</strong>修饰的变量，每个线程都拥有一份实体，相互独立，互不干扰。举个例子：</p>
 
-<pre><code>#include&lt;iostream&gt;  
+<pre><code class="c++">#include&lt;iostream&gt;  
 #include&lt;pthread.h&gt;  
 #include&lt;unistd.h&gt;  
 using namespace std;  
@@ -72,22 +72,22 @@ void* thread1(void* arg);
 void* thread2(void* arg);  
 int main()
 {  
-    pthread_t pthread1;
-    pthread_t pthread2;  
-    pthread_create(&amp;pthread1, NULL, thread1, NULL);  
-    pthread_create(&amp;pthread2, NULL, thread2, NULL);  
-    pthread_join(pthread1, NULL);  
-    pthread_join(pthread2, NULL);  
-    return 0;  
+  pthread_t pthread1;
+  pthread_t pthread2;  
+  pthread_create(&amp;pthread1, NULL, thread1, NULL);
+  pthread_create(&amp;pthread2, NULL, thread2, NULL);
+  pthread_join(pthread1, NULL);  
+  pthread_join(pthread2, NULL);  
+  return 0;  
 }  
 void* thread1(void* arg)
 {  
-    cout&lt;&lt;++i&lt;&lt;endl;//输出 2  
+  cout&lt;&lt;++i&lt;&lt;endl;//输出 2  
 }  
 void* thread2(void* arg)
 {  
-    sleep(1); //等待thread1完成更新
-    cout&lt;&lt;++i&lt;&lt;endl;//输出 2，而不是3
+  sleep(1); //等待thread1完成更新
+  cout&lt;&lt;++i&lt;&lt;endl;//输出 2，而不是3
 } 
 </code></pre>
 
@@ -101,7 +101,7 @@ void* thread2(void* arg)
 
 <p>为了优化，现代编译器和<strong>CPU</strong>可能会乱序执行指令。例如：</p>
 
-<pre><code>int a = 1;
+<pre><code class="c++">int a = 1;
 int b = 2;
 int c = 3;
 b = c;
