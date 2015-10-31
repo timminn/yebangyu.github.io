@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parallelprogramming | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/parallelprogramming/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-31T20:08:22+08:00</updated>
+  <updated>2015-10-31T20:14:31+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -93,7 +93,7 @@ void* thread2(void* arg)
 
 <p>需要注意的是：</p>
 
-<p>1，<strong>__thread</strong>可以修饰全局变量、函数的静态变量，但是无法修饰函数的局部变量</p>
+<p>1，<strong>__thread</strong>可以修饰全局变量、函数的静态变量，但是无法修饰函数的局部变量。</p>
 
 <p>2，被<strong>__thread</strong>修饰的变量必须初始化，且必须在编译期初始化，无法在运行期初始化。</p>
 
@@ -122,9 +122,9 @@ a = 2;
 
 <p>3，<strong>full barrier</strong>。以上两种的合集。</p>
 
-<p>啊，所以，很容易知道，加锁，也就是<strong>lock</strong>对应<strong>acquire barrier</strong>，释放锁，也就是<strong>unlock</strong>对应<strong>release barrier</strong>。哦，那么<strong>full barrier</strong>呢？</p>
+<p>啊，所以，很容易知道，加锁，也就是<strong>lock</strong>对应<strong>acquire barrier</strong>；释放锁，也就是<strong>unlock</strong>对应<strong>release barrier</strong>。哦，那么<strong>full barrier</strong>呢？</p>
 
-<h3>__sync_synchronize</h3>
+<h2>__sync_synchronize</h2>
 
 <p><code>__sync_synchronize</code>就是一种<strong>full barrier</strong>。</p>
 
