@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parallelprogramming | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/parallelprogramming/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-10-31T19:27:26+08:00</updated>
+  <updated>2015-10-31T19:37:51+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -23,7 +23,7 @@
 <blockquote><ul>
 <li>volatile</li>
 <li>__thread</li>
-<li>memory barrier</li>
+<li>Memory Barrier</li>
 <li>__sync_synchronize</li>
 </ul>
 </blockquote>
@@ -97,7 +97,7 @@ void* thread2(void* arg)
 
 <p>2，被<strong>__thread</strong>修饰的变量必须初始化，且必须在编译期初始化，无法在运行期初始化。</p>
 
-<h2>memory barrier</h2>
+<h2>Memory Barrier</h2>
 
 <p>为了优化，现代编译器和<strong>CPU</strong>可能会乱序执行指令。例如：</p>
 
@@ -114,21 +114,21 @@ a = 2;
 
 <p>一个最典型的例子是用锁保护临界区。如果临界区的代码被拉到加锁前或者释放锁之后执行，那么将导致不明确的结果，往往让人不开心的结果。</p>
 
-<p>还有，比如随意将读数据和写数据乱序，那么本来是先读后写，变成先写后读就导致后面读到了脏的数据。因此，<strong>memory barrier</strong>就是用来防止乱序执行的。具体说来，<strong>memory barrier</strong>包括三种：</p>
+<p>还有，比如随意将读数据和写数据乱序，那么本来是先读后写，变成先写后读就导致后面读到了脏的数据。因此，<strong>Memory Barrier</strong>就是用来防止乱序执行的。具体说来，<strong>Memory Barrier</strong>包括三种：</p>
 
-<p>1，<strong>acquire barrier</strong>。<strong>acquire barrier</strong>之后的指令不能也不会被拉到之前执行。</p>
+<p>1，<strong>acquire barrier</strong>。<strong>acquire barrier</strong>之后的指令不能也不会被拉到该<strong>acquire barrier</strong>之前执行。</p>
 
-<p>2，<strong>release barrier</strong>。<strong>release barrier</strong>之前的指令不能也不会被拉到之后执行。</p>
+<p>2，<strong>release barrier</strong>。<strong>release barrier</strong>之前的指令不能也不会被拉到该<strong>release barrier</strong>之后执行。</p>
 
 <p>3，<strong>full barrier</strong>。以上两种的合集。</p>
 
-<p>啊，所以，很容易知道，加锁<strong>lock</strong>对应<strong>acquire barrier</strong>，释放锁<strong>unlock</strong>对应<strong>release barrier</strong>。哦，那么<strong>full barrier</strong>呢？</p>
+<p>啊，所以，很容易知道，加锁，也就是<strong>lock</strong>对应<strong>acquire barrier</strong>，释放锁，也就是<strong>unlock</strong>对应<strong>release barrier</strong>。哦，那么<strong>full barrier</strong>呢？</p>
 
 <h3>__sync_synchronize</h3>
 
 <p><code>__sync_synchronize</code>就是一种<strong>full barrier</strong>。</p>
 
-<p>下次，我们将对<strong>memory barrier</strong>做更详细的讨论和分析。</p>
+<p>下次，我们将对<strong>Memory Barrier</strong>做更详细的讨论和分析。</p>
 ]]></content>
   </entry>
   
