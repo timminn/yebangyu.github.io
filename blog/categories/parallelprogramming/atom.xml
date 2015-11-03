@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parallelprogramming | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/parallelprogramming/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-03T23:32:15+08:00</updated>
+  <updated>2015-11-03T23:37:51+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -115,10 +115,10 @@ b = 10;
 
 <p>生成的汇编代码可能是：</p>
 
-<pre><code class="c++">movl    b(%rip), %eax ; 将 b的值暂存入 %eax
+<pre><code>movl    b(%rip), %eax ; 将b的值暂存入%eax
 movl    $10, b(%rip) ; b = 10
-addl    $3, %eax ; %eax 加 3
-movl    %eax, a(%rip) ; 将%eax也就是 b+3 的值写入 a,即 a = b + 3
+addl    $3, %eax ; %eax加3
+movl    %eax, a(%rip) ; 将%eax也就是b+3的值写入a,即 a = b + 3
 </code></pre>
 
 <p>这并不奇怪，为了优化性能，有时候确实可以这么做。但是在多线程并行编程中，有时候乱序就会出问题。</p>
