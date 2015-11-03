@@ -205,7 +205,24 @@ int b = i;//强制从内存中读取实时的i的值
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p><strong>CPU</strong>乱序执行后，第4行语句和第5行语句的执行顺序可能变为先<code>b=10</code>然后再<code>a=b+3</code> (当然，为了保证结果正确，会有一些变化和trick)。</p>
+<p><strong>CPU</strong>乱序执行后，第4行语句和第5行语句的执行顺序可能变为先<code>b=10</code>然后再<code>a=b+3</code></p>
+
+<p>有些人可能会说，那结果不就不对了吗？b为10，a为13？可是正确结果应该是a为5啊。</p>
+
+<p>哦，这里说的是语句的执行，对应的汇编指令不是简单的mov b,10和mov b,a+3。</p>
+
+<p>生成的汇编代码可能是：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="n">movl</span>    <span class="n">b</span><span class="p">(</span><span class="o">%</span><span class="n">rip</span><span class="p">),</span> <span class="o">%</span><span class="n">eax</span> <span class="p">;</span> <span class="err">将</span> <span class="n">b</span><span class="err">的值暂存入</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class='line'><span class="n">movl</span>    <span class="err">$</span><span class="mi">10</span><span class="p">,</span> <span class="n">b</span><span class="p">(</span><span class="o">%</span><span class="n">rip</span><span class="p">)</span> <span class="p">;</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">10</span>
+</span><span class='line'><span class="n">addl</span>    <span class="err">$</span><span class="mi">3</span><span class="p">,</span> <span class="o">%</span><span class="n">eax</span> <span class="p">;</span> <span class="o">%</span><span class="n">eax</span> <span class="err">加</span> <span class="mi">3</span>
+</span><span class='line'><span class="n">movl</span>    <span class="o">%</span><span class="n">eax</span><span class="p">,</span> <span class="n">a</span><span class="p">(</span><span class="o">%</span><span class="n">rip</span><span class="p">)</span> <span class="p">;</span> <span class="err">将</span><span class="o">%</span><span class="n">eax</span><span class="err">也就是</span> <span class="n">b</span><span class="o">+</span><span class="mi">3</span> <span class="err">的值写入</span> <span class="n">a</span><span class="p">,</span><span class="err">即</span> <span class="n">a</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">3</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <p>这并不奇怪，为了优化性能，有时候确实可以这么做。但是在多线程并行编程中，有时候乱序就会出问题。</p>
 

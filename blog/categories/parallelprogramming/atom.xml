@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parallelprogramming | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/parallelprogramming/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-03T23:25:05+08:00</updated>
+  <updated>2015-11-03T23:32:15+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -107,7 +107,19 @@ a = b + 3;
 b = 10;
 </code></pre>
 
-<p><strong>CPU</strong>乱序执行后，第4行语句和第5行语句的执行顺序可能变为先<code>b=10</code>然后再<code>a=b+3</code> (当然，为了保证结果正确，会有一些变化和trick)。</p>
+<p><strong>CPU</strong>乱序执行后，第4行语句和第5行语句的执行顺序可能变为先<code>b=10</code>然后再<code>a=b+3</code></p>
+
+<p>有些人可能会说，那结果不就不对了吗？b为10，a为13？可是正确结果应该是a为5啊。</p>
+
+<p>哦，这里说的是语句的执行，对应的汇编指令不是简单的mov b,10和mov b,a+3。</p>
+
+<p>生成的汇编代码可能是：</p>
+
+<pre><code class="c++">movl    b(%rip), %eax ; 将 b的值暂存入 %eax
+movl    $10, b(%rip) ; b = 10
+addl    $3, %eax ; %eax 加 3
+movl    %eax, a(%rip) ; 将%eax也就是 b+3 的值写入 a,即 a = b + 3
+</code></pre>
 
 <p>这并不奇怪，为了优化性能，有时候确实可以这么做。但是在多线程并行编程中，有时候乱序就会出问题。</p>
 
