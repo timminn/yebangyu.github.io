@@ -198,16 +198,14 @@ int b = i;//强制从内存中读取实时的i的值
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
-<span class='line-number'>5</span>
 </pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
 </span><span class='line'><span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
-</span><span class='line'><span class="kt">int</span> <span class="n">c</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>
-</span><span class='line'><span class="n">b</span> <span class="o">=</span> <span class="n">c</span><span class="p">;</span>
-</span><span class='line'><span class="n">a</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class='line'><span class="n">a</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">3</span><span class="p">;</span>
+</span><span class='line'><span class="n">b</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p><strong>CPU</strong>乱序执行后，第4行语句和第5行语句的执行顺序可能变为先<code>a=2</code>然后再<code>b=c</code>。</p>
+<p><strong>CPU</strong>乱序执行后，第4行语句和第5行语句的执行顺序可能变为先<code>b=10</code>然后再<code>a=b+3</code> (当然，为了保证结果正确，会有一些变化和trick)。</p>
 
 <p>这并不奇怪，为了优化性能，有时候确实可以这么做。但是在多线程并行编程中，有时候乱序就会出问题。</p>
 

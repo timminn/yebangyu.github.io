@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parallelprogramming | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/parallelprogramming/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-03T23:17:23+08:00</updated>
+  <updated>2015-11-03T23:25:05+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -103,12 +103,11 @@ void* thread2(void* arg)
 
 <pre><code class="c++">int a = 1;
 int b = 2;
-int c = 3;
-b = c;
-a = 2;
+a = b + 3;
+b = 10;
 </code></pre>
 
-<p><strong>CPU</strong>乱序执行后，第4行语句和第5行语句的执行顺序可能变为先<code>a=2</code>然后再<code>b=c</code>。</p>
+<p><strong>CPU</strong>乱序执行后，第4行语句和第5行语句的执行顺序可能变为先<code>b=10</code>然后再<code>a=b+3</code> (当然，为了保证结果正确，会有一些变化和trick)。</p>
 
 <p>这并不奇怪，为了优化性能，有时候确实可以这么做。但是在多线程并行编程中，有时候乱序就会出问题。</p>
 
