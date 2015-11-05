@@ -86,7 +86,7 @@
 
 <div class="entry-content"><p>大家知道，<strong>int</strong>和<strong>double</strong>能表示的数值的范围不同。其中，<strong>64</strong>位有符号整数的范围是[<strong>-9223372036854775808</strong>,<strong>9223372036854775807</strong>]，而64位无符号整数的范围是[<strong>0</strong>,<strong>18446744073709551615</strong>]。这两个区间有一定的<strong>overlap</strong>，而<strong>double</strong>可以表示的范围更大。</p>
 
-<p>现在，需要编写两个函数:给定一个<strong>double</strong>型的<strong>value</strong>，判断这个<strong>value</strong>是否是一个合法的<strong>int64_t</strong>或者<strong>uint64_t</strong>。</p>
+<p>现在，需要编写两个函数:给定一个<strong>double</strong>型的<strong>value</strong>，判断这个<strong>value</strong>是否是一个合法的<strong>int64_t</strong>或者<strong>uint64_t</strong>。本文说的“合法”，是指数值上落在了范围内。</p>
 
 <pre><code>bool is_valid_uint64(const Double &amp;value);
 
@@ -119,10 +119,13 @@ bool is_valid_int64(const Double &amp;value);
 
 <p>通过调用<code>get_next_digit</code>，可以返回一个数字，不断调用它，可以得到完整、正确的<strong>double</strong>值。举个例子，对于值为<strong>45.67</strong>的一个<strong>Double</strong>对象，调用它的<code>get_next_digit</code>成员函数将依次得到</p>
 
-<p>4 is_decimal = false //表示整数部分
-5 is_decimal = false //表示整数部分
-6 is_decimal = true //表示小数部分
-7 is_decimal = true //表示小数部分</p>
+<p>4 is_decimal = false //表示整数部分</p>
+
+<p>5 is_decimal = false //表示整数部分</p>
+
+<p>6 is_decimal = true //表示小数部分</p>
+
+<p>7 is_decimal = true //表示小数部分</p>
 
 <p>当<code>get_next_digit</code>返回<strong>-1</strong>时，表示读取完毕。</p>
 
@@ -325,9 +328,9 @@ bool is_valid_int64(const Double &amp;value);
 
 <p>随便举几个例子：</p>
 
-<p>第25行，<code>tmp += digits[i] * base</code>;有没有考虑到可能的溢出呢？</p>
+<p>第<strong>25</strong>行，<code>tmp += digits[i] * base</code>;有没有考虑到可能的溢出呢？</p>
 
-<p>第69行，难道有小数部分就一定不是合法的int64吗？那么，123.000？嗯？</p>
+<p>第<strong>69</strong>行，难道有小数部分就一定不是合法的<strong>int64</strong>吗？那么，<strong>123.000</strong>？嗯？</p>
 
 <p>因此，毫无疑问，这是烂代码，不合格的代码，需要重写的代码</p>
 </div>
