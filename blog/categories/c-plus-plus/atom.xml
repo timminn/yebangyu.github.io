@@ -4,7 +4,7 @@
   <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-03T23:48:09+08:00</updated>
+  <updated>2015-11-06T00:28:50+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,160 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[编写高质量代码：从一个简单例子说起]]></title>
+    <link href="http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes/"/>
+    <updated>2015-11-06T00:24:56+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes</id>
+    <content type="html"><![CDATA[<p>大家知道，<strong>int</strong>和<strong>double</strong>能表示的数值的范围不同。其中，<strong>64</strong>位有符号整数的范围是[<strong>-9223372036854775808</strong>,<strong>9223372036854775807</strong>]，而64位无符号整数的范围是[<strong>0</strong>,<strong>18446744073709551615</strong>]。这两个区间有一定的<strong>overlap</strong>，而<strong>double</strong>可以表示的范围更大。</p>
+
+<p>现在，需要编写两个函数:给定一个<strong>double</strong>型的<strong>value</strong>，判断这个<strong>value</strong>是否是一个合法的<strong>int64_t</strong>或者<strong>uint64_t</strong>。</p>
+
+<pre><code>bool is_valid_uint64(const Double &amp;value);
+
+bool is_valid_int64(const Double &amp;value);
+</code></pre>
+
+<p>这里我们用<strong>Double</strong>而不是<strong>double</strong>，原因是我们的<strong>double</strong>不是基础数据类型，而是通过一定方法实现的<strong>ADT</strong>，这个<strong>ADT</strong>的成员函数有：</p>
+
+<!--more-->
+
+
+<pre><code class="c++">class Double
+{
+  public:
+    uint32_t get_next_digit(bool &amp;is_decimal);
+    bool is_zero();
+    bool is_neg();
+};
+</code></pre>
+
+<p>通过调用<code>get_next_digit</code>，可以返回一个数字，不断调用它，可以得到完整、正确的<strong>double</strong>值。举个例子，对于值为<strong>45.67</strong>的一个<strong>Double</strong>对象，调用它的<code>get_next_digit</code>成员函数将依次得到</p>
+
+<p>4 is_decimal = false //表示整数部分
+5 is_decimal = false //表示整数部分
+6 is_decimal = true //表示小数部分
+7 is_decimal = true //表示小数部分</p>
+
+<p>当<code>get_next_digit</code>返回<strong>-1</strong>时，表示读取完毕。</p>
+
+<p>如何利用<strong>Double</strong>类里的成员函数，来实现<code>is_valid_uint64</code>和<code>is_valid_int64</code>这两个函数呢？</p>
+
+<p>一些新手可能会写这样的代码：</p>
+
+<pre><code class="c++">bool is_valid_uint64(const Double &amp;value)
+{
+  bool is_valid = true;
+  int digits[2000];
+  int counts = 0;
+  if (value.is_zero()) { //0当然是合法的uint64
+    is_valid = true;
+  } else if(value.is_neg()) { //负数不是合法的uint64
+    is_valid = false;
+  } else { //正数
+    bool is_decimal = false;
+    int digit = 0;
+    while((digit=value.get_next_digit(is_decimal)) != -1) {
+      if (is_decimal) { //有小数部分，肯定不是合法的uint64
+        is_valid = false;
+        break;
+      } else {
+        digits[counts++] = digit;
+      }
+    }
+    //现在我们已经把数字都存到了digits数组了
+    uint64_t tmp = 0;
+    uint64_t base = 1;
+    for (int i = counts - 1; i &gt;= 0; i++) {
+      tmp += digits[i] * base;
+      if (tmp &gt; UINT64_MAX) {
+        is_valid = false;
+        break;
+      }
+      base *= 10;
+    }
+  }
+  return is_valid;
+}
+bool is_valid_int64(const Double &amp;value)
+{
+  bool is_valid = true;
+  int digits[2000];
+  int counts = 0;
+  if (value.is_zero()) { //0当然是合法的int64
+    is_valid = true;
+  } else if(value.is_neg()) { //负数可能是合法的int64，得检查
+    bool is_decimal = false;
+    int digit = 0;
+    while((digit=value.get_next_digit(is_decimal)) != -1) {
+      if (is_decimal) { //有小数部分，肯定不是合法的int64
+        is_valid = false;
+        break;
+      } else {
+        digits[counts++] = digit;
+      }
+    }
+    //现在我们已经把数字都存到了digits数组了
+    uint64_t tmp = 0;
+    uint64_t base = 1;
+    for (int i = counts - 1; i &gt;= 0; i++) {
+      tmp += digits[i] * base;
+      tmp *= -1;
+      if (tmp &lt; INT64_MIN) {
+        is_valid = false;
+        break;
+      }
+      base *= 10;
+    }
+  } else { //正数
+    bool is_decimal = false;
+    int digit = 0;
+    while((digit=value.get_next_digit(is_decimal)) != -1) {
+      if (is_decimal) { //有小数部分，肯定不是合法的int64
+        is_valid = false;
+        break;
+      } else {
+        digits[counts++] = digit;
+      }
+    }
+    //现在我们已经把数字都存到了digits数组了
+    uint64_t tmp = 0;
+    uint64_t base = 1;
+    for (int i = counts - 1; i &gt;= 0; i++) {
+      tmp += digits[i] * base;
+      if (tmp &gt; INT64_MAX) {
+        is_valid = false;
+        break;
+      }
+      base *= 10;
+    }
+  }
+  return is_valid;
+}
+</code></pre>
+
+<p>这样的代码，存在诸多问题。</p>
+
+<h2>设计问题</h2>
+
+<p>不难发现，两个函数存在很多相似甚至相同的代码；而同一个函数内部，也有不少代码重复。重复的东西往往不是好的，需要重构。</p>
+
+<h2>性能问题</h2>
+
+<p>先获得所有digits，然后从最低位开始向最高位构造值，效率较低。难道没有方法可以从最高位开始，边获得边计算，不需要临时数组存储所有digits的方法吗？</p>
+
+<h2>正确性问题</h2>
+
+<p>随便举几个例子：</p>
+
+<p>第25行，<code>tmp += digits[i] * base</code>;有没有考虑到可能的溢出呢？</p>
+
+<p>第69行，难道有小数部分就一定不是合法的int64吗？那么，123.000？嗯？</p>
+
+<p>因此，毫无疑问，这是烂代码，不合格的代码，需要重写的代码</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[C++中逗号表达式的一个应用]]></title>
