@@ -4,7 +4,7 @@
   <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-06T22:54:44+08:00</updated>
+  <updated>2015-11-06T23:08:59+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -50,7 +50,7 @@ int main()
 
 <p>发生了什么事？空指针也能用？</p>
 
-<p>如果我们把f稍作修改，程序其他地方不做任何变动：</p>
+<p>如果我们把<strong>f</strong>稍作修改，程序其他地方不做任何变动：</p>
 
 <pre><code>void f()
 {
@@ -102,13 +102,13 @@ Test1 obj2;
 
 <p>然而，注意到<code>Test1 *p = NULL;</code>仅仅是声明式，而非定义式。这时候，没有定义任何的对象出来，通过<strong>p</strong>如何访问<strong>a</strong>呢？哪来的<strong>a</strong>呢？<strong>a</strong>在内存里并不存在。因此，访问<strong>a</strong>必定<strong>core</strong>。</p>
 
-<p>而函数<strong>f</strong>呢？它是独立于对象存放的，未定义对象时便已存在，当然没问题。一般说来，<strong>f</strong>位于程序的代码段，而全局变量一般位于<strong>BBS</strong>段或者<strong>DATA</strong>段（这个比较复杂，和该全局变量是否初始化以及初始化为<strong>0</strong>还是非<strong>0</strong>有关）。而当我们定义对象时，才为该对象分配内存，才有数据成员<strong>a</strong>的存在：</p>
+<p>而函数<strong>f</strong>呢？它是独立于对象存放的，自然没问题。一般说来，<strong>f</strong>位于程序的代码段，而全局变量一般位于<strong>BBS</strong>段或者<strong>DATA</strong>段（这个比较复杂，和该全局变量是否初始化以及初始化为<strong>0</strong>还是非<strong>0</strong>有关）。而当我们定义对象时，才为该对象分配内存，才有数据成员<strong>a</strong>的存在：</p>
 
 <pre><code class="c++">#include&lt;iostream&gt;
 #include&lt;cstdlib&gt;
 using namespace std;
 static int global1 = 1; //DATA段
-static int global2 = 0; //BBS段
+static int global2; //BBS段
 class Test3
 {
 private:
@@ -125,7 +125,6 @@ int main()
   Test3 obj1; //stack段。定义obj1，这时候自然为a分配内存了
   Test3 *obj2 = new Test3();//heap段，也为a分配内存了。
   Test3 *p;//只是声明，没有定义。没有对象，也没有a。
-  Test3 *q = &amp;obj1;//q指向obj1。p-&gt;a也没问题。
   return 0;
 }
 </code></pre>
@@ -135,11 +134,11 @@ int main()
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[编写高质量代码：从一个简单例子说起]]></title>
+    <title type="html"><![CDATA[编写高质量代码(上)]]></title>
     <link href="http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes/"/>
     <updated>2015-11-06T00:24:56+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes</id>
-    <content type="html"><![CDATA[<p>大家知道，<strong>int</strong>和<strong>double</strong>能表示的数值的范围不同。其中，<strong>64</strong>位有符号整数的范围是[<strong>-9223372036854775808</strong>,<strong>9223372036854775807</strong>]，而64位无符号整数的范围是[<strong>0</strong>,<strong>18446744073709551615</strong>]。这两个区间有一定的<strong>overlap</strong>，而<strong>double</strong>可以表示的范围更大。</p>
+    <content type="html"><![CDATA[<p>我们知道，<strong>int</strong>和<strong>double</strong>能表示的数值的范围不同。其中，<strong>64</strong>位有符号整数的范围是[<strong>-9223372036854775808</strong>,<strong>9223372036854775807</strong>]，而64位无符号整数的范围是[<strong>0</strong>,<strong>18446744073709551615</strong>]。这两个区间有一定的<strong>overlap</strong>，而<strong>double</strong>可以表示的范围更大。</p>
 
 <p>现在，需要编写两个函数:给定一个<strong>double</strong>型的<strong>value</strong>，判断这个<strong>value</strong>是否是一个合法的<strong>int64_t</strong>或者<strong>uint64_t</strong>。本文说的“合法”，是指数值上落在了范围内。</p>
 
