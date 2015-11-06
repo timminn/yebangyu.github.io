@@ -4,7 +4,7 @@
   <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-06T00:36:23+08:00</updated>
+  <updated>2015-11-06T22:54:44+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,127 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[空指针(NULL)不能用吗？]]></title>
+    <link href="http://www.yebangyu.org/blog/2015/11/06/null-pointer-can-be-accessed/"/>
+    <updated>2015-11-06T22:38:30+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2015/11/06/null-pointer-can-be-accessed</id>
+    <content type="html"><![CDATA[<p>很多东西，我们可能都知道，道理也都懂，但是如果没有实践，往往容易犯错，或者理解不深。</p>
+
+<p>比如说，我们常常被告知，使用指针前需要判断是否为<strong>NULL</strong>；如果是<strong>NULL</strong>而你去使用它就会出问题。真相果真是这样吗？</p>
+
+<!--more-->
+
+
+<pre><code class="c++">#include&lt;iostream&gt;
+#include&lt;cstdlib&gt;
+using namespace std;
+class Test1
+{
+private:
+  int a;
+public:
+  void f()
+  {
+    cout&lt;&lt;"Test1: Core or not ? "&lt;&lt;endl;
+  }
+};
+int main()
+{
+  Test1 *p = NULL;
+  p-&gt;f();//会core吗？会出大事吗？
+  return 0;
+}
+</code></pre>
+
+<p>这里，<strong>p</strong>是一个空指针，通过这个空指针，我们访问了函数<strong>f</strong>。没<strong>core</strong>，没问题，成功输出了 <strong>Test1: Core or not ?</strong></p>
+
+<p>发生了什么事？空指针也能用？</p>
+
+<p>如果我们把f稍作修改，程序其他地方不做任何变动：</p>
+
+<pre><code>void f()
+{
+  cout&lt;&lt;"Test1: Core or not ? "&lt;&lt;a&lt;&lt;endl;//access a
+}
+</code></pre>
+
+<p>那么程序运行后分分钟<strong>core</strong>掉了。</p>
+
+<p>有没有感觉了？嗯，相信有了。我们继续往下看：</p>
+
+<pre><code class="c++">#include&lt;iostream&gt;
+#include&lt;cstdlib&gt;
+using namespace std;
+static int global = 1;
+class Test2
+{
+private:
+  int a;
+public:
+  void f()
+  {
+    cout&lt;&lt;"Test1: Core or not ? "&lt;&lt;global&lt;&lt;endl;//access global
+  }
+};
+int main()
+{
+  Test2 *p = NULL;
+  p-&gt;f();//会core吗？会出大事吗？
+  return 0;
+}
+</code></pre>
+
+<p>也没问题。</p>
+
+<p>嗯，你可能已经知道了真相。通过空指针访问东西，只要那个东西是确实存在的，就不会有问题。</p>
+
+<p>怎么理解“确实存在”？它是一个实体，看得见，摸得着。</p>
+
+<p>这得说到<strong>C＋＋</strong>程序中对象的内存布局。</p>
+
+<p>在<strong>C＋＋</strong>中，成员函数、静态变量是独立于对象存放的；而普通的数据成员是和对象相关的。</p>
+
+<pre><code>Test1 obj1;
+Test1 obj2;
+</code></pre>
+
+<p><strong>obj1</strong>和<strong>obj2</strong>是共用函数f的，函数<strong>f</strong>对<strong>obj1</strong>和<strong>obj2</strong>是相同的，内存中只有一份实体；而<strong>obj1</strong>和<strong>obj2</strong>有自己的实体<strong>a</strong>。</p>
+
+<p>然而，注意到<code>Test1 *p = NULL;</code>仅仅是声明式，而非定义式。这时候，没有定义任何的对象出来，通过<strong>p</strong>如何访问<strong>a</strong>呢？哪来的<strong>a</strong>呢？<strong>a</strong>在内存里并不存在。因此，访问<strong>a</strong>必定<strong>core</strong>。</p>
+
+<p>而函数<strong>f</strong>呢？它是独立于对象存放的，未定义对象时便已存在，当然没问题。一般说来，<strong>f</strong>位于程序的代码段，而全局变量一般位于<strong>BBS</strong>段或者<strong>DATA</strong>段（这个比较复杂，和该全局变量是否初始化以及初始化为<strong>0</strong>还是非<strong>0</strong>有关）。而当我们定义对象时，才为该对象分配内存，才有数据成员<strong>a</strong>的存在：</p>
+
+<pre><code class="c++">#include&lt;iostream&gt;
+#include&lt;cstdlib&gt;
+using namespace std;
+static int global1 = 1; //DATA段
+static int global2 = 0; //BBS段
+class Test3
+{
+private:
+  int a;
+public:
+  void f()
+  {
+    cout&lt;&lt;"Test1: Core or not ? "&lt;&lt;endl;
+  }
+};
+Test3 obj3; //DATA段 (调用默认构造函数进行初始化)
+int main()
+{
+  Test3 obj1; //stack段。定义obj1，这时候自然为a分配内存了
+  Test3 *obj2 = new Test3();//heap段，也为a分配内存了。
+  Test3 *p;//只是声明，没有定义。没有对象，也没有a。
+  Test3 *q = &amp;obj1;//q指向obj1。p-&gt;a也没问题。
+  return 0;
+}
+</code></pre>
+
+<p>因此，使用一个指针的时候，我们得时刻问自己：它指向哪里？它指向哪块内存？</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[编写高质量代码：从一个简单例子说起]]></title>
@@ -41,7 +162,7 @@ bool is_valid_int64(const Double &amp;value);
 };
 </code></pre>
 
-<p>通过调用<code>get_next_digit</code>，可以返回一个数字，不断调用它，可以得到完整、正确的<strong>double</strong>值。举个例子，对于值为<strong>45.67</strong>的一个<strong>Double</strong>对象，调用它的<code>get_next_digit</code>成员函数将依次得到</p>
+<p>通过调用<code>get_next_digit</code>，可以返回一个数字，不断调用它，可以得到所有<strong>digits</strong>。举个例子，对于值为<strong>45.67</strong>的一个<strong>Double</strong>对象，调用它的<code>get_next_digit</code>成员函数将依次得到</p>
 
 <p>4 is_decimal = false //表示整数部分</p>
 
@@ -62,22 +183,21 @@ bool is_valid_int64(const Double &amp;value);
   bool is_valid = true;
   int digits[2000];
   int counts = 0;
-  if (value.is_zero()) { //0当然是合法的uint64
+  if (value.is_zero()) { 
     is_valid = true;
-  } else if(value.is_neg()) { //负数不是合法的uint64
+  } else if(value.is_neg()) { 
     is_valid = false;
-  } else { //正数
+  } else { 
     bool is_decimal = false;
     int digit = 0;
     while((digit=value.get_next_digit(is_decimal)) != -1) {
-      if (is_decimal) { //有小数部分，肯定不是合法的uint64
+      if (is_decimal) { 
         is_valid = false;
         break;
       } else {
         digits[counts++] = digit;
       }
     }
-    //现在我们已经把数字都存到了digits数组了
     uint64_t tmp = 0;
     uint64_t base = 1;
     for (int i = counts - 1; i &gt;= 0; i++) {
@@ -96,20 +216,19 @@ bool is_valid_int64(const Double &amp;value)
   bool is_valid = true;
   int digits[2000];
   int counts = 0;
-  if (value.is_zero()) { //0当然是合法的int64
+  if (value.is_zero()) { 
     is_valid = true;
-  } else if(value.is_neg()) { //负数可能是合法的int64，得检查
+  } else if(value.is_neg()) { 
     bool is_decimal = false;
     int digit = 0;
     while((digit=value.get_next_digit(is_decimal)) != -1) {
-      if (is_decimal) { //有小数部分，肯定不是合法的int64
+      if (is_decimal) { 
         is_valid = false;
         break;
       } else {
         digits[counts++] = digit;
       }
     }
-    //现在我们已经把数字都存到了digits数组了
     uint64_t tmp = 0;
     uint64_t base = 1;
     for (int i = counts - 1; i &gt;= 0; i++) {
@@ -121,18 +240,17 @@ bool is_valid_int64(const Double &amp;value)
       }
       base *= 10;
     }
-  } else { //正数
+  } else { 
     bool is_decimal = false;
     int digit = 0;
     while((digit=value.get_next_digit(is_decimal)) != -1) {
-      if (is_decimal) { //有小数部分，肯定不是合法的int64
+      if (is_decimal) { 
         is_valid = false;
         break;
       } else {
         digits[counts++] = digit;
       }
     }
-    //现在我们已经把数字都存到了digits数组了
     uint64_t tmp = 0;
     uint64_t base = 1;
     for (int i = counts - 1; i &gt;= 0; i++) {
@@ -152,21 +270,189 @@ bool is_valid_int64(const Double &amp;value)
 
 <h2>设计问题</h2>
 
-<p>不难发现，两个函数存在很多相似甚至相同的代码；而同一个函数内部，也有不少代码重复。重复的东西往往不是好的，需要重构。</p>
+<p>不难发现，两个函数存在很多相似甚至相同的代码；而同一个函数内部，也有不少代码重复。重复的东西往往不是好的。重构？</p>
 
 <h2>性能问题</h2>
 
-<p>先获得所有digits，然后从最低位开始向最高位构造值，效率较低。难道没有方法可以从最高位开始，边获得边计算，不需要临时数组存储所有digits的方法吗？</p>
+<p>先获得所有digits，然后从最低位开始向最高位构造值，效率较低。难道没有可以从最高位开始，边获得边计算，不需要临时数组存储所有digits的方法吗？</p>
 
 <h2>正确性问题</h2>
 
 <p>随便举几个例子：</p>
 
-<p>第<strong>25</strong>行，<code>tmp += digits[i] * base</code>;有没有考虑到可能的溢出呢？</p>
+<p>第<strong>24</strong>行，<code>tmp += digits[i] * base</code>;有没有考虑到可能的溢出呢？</p>
 
-<p>第<strong>69</strong>行，难道有小数部分就一定不是合法的<strong>int64</strong>吗？那么，<strong>123.000</strong>？嗯？</p>
+<p>第<strong>68</strong>行，难道有小数部分就一定不是合法的<strong>int64</strong>吗？那么，<strong>123.000</strong>？嗯？</p>
 
-<p>因此，毫无疑问，这是烂代码，不合格的代码，需要重写的代码</p>
+<h2>规范问题</h2>
+
+<p>帅哥，这么多代码，一行注释都没有，这样真的好吗？</p>
+
+<p>因此，毫无疑问，这是烂代码，不合格的代码，需要重写的代码。</p>
+
+<hr />
+
+<p>以下是我个人认为比较好的设计和实现，仅供参考。</p>
+
+<pre><code class="c++">
+bool is_valid_uint64(const Double &amp;value)
+
+{
+
+  bool ret = false;
+
+  check_range(&amp;ret, NULL, value);
+
+  return ret;
+
+}
+
+
+
+bool is_valid_int64(const Double &amp;value)
+
+{
+
+  bool ret = false;
+
+  check_range(NULL, &amp;ret, value);
+
+  return ret;
+
+}
+
+
+
+void check_range(const Double &amp;value,
+
+                 bool *is_valid_uint64,
+
+                 bool *is_valid_int64) const
+
+{
+
+  /*
+
+   * 对于一个负数的value，它不可能是一个合法的uint64.
+
+   * 因此，只剩下三种可能：
+
+   * I 输入的value是负数，判断是否是合法的int64
+
+   * II 输入的value是正数，判断是否是合法的uint64
+
+   * III 输入的value是正数，判断是否是合法的int64
+
+   * 对于第II、III这两种情况：只要判断value的值是否超过uint64、int64的上界即可
+
+   * 对于第I种情况，我们利用-A &gt; -B 等价于 A &lt; B （其中A、B是正数）
+
+   * 因此，在第I种情况里，可以判断value的绝对值，是否超过int64的最小值的绝对值即可。
+
+   * （int64的最小值的绝对值？那不就是int64的最大值？哦，不！）
+
+   * 因此，不管哪种情况，判断绝对值是否超过某个上界即可。
+
+   * 这三种情况，上界不一样。把三个上界存到了一个二维数组THRESHOLD里
+
+  */
+
+
+
+  bool *is_valid = NULL;
+
+  static const int FLAG_INT64 = 0;
+
+  static const int FLAG_UINT64 = 1;
+
+  static const int SIGN_NEG = 0;
+
+  static const int SIGN_POS = 1;
+
+  int flag = FLAG_INT64;
+
+  if (NULL != is_valid_uint64) {
+
+    is_valid = is_valid_uint64;
+
+    flag = FLAG_UINT64;
+
+  } else {
+
+    is_valid = is_valid_int64;
+
+  }
+
+  *is_valid = true;
+
+  if (value.is_zero()) {
+
+    //do nothing。0是合法的uint64，也是合法的int64
+
+  } else {
+
+    int sign = value.is_neg() ? SIGN_NEG : SIGN_POS;
+
+    if ((SIGN_NEG == sign) &amp;&amp; (FLAG_UINT64 == flag)) {
+
+      *is_valid = false;//负数不可能是合法的uint64
+
+    } else {
+
+      uint64_t valueUint = 0;
+
+      static uint64_t ABS_INT64_MIN = 9223372036854775808ULL;
+
+                                         //int64        uint64
+
+      static uint64_t THRESHOLD[2][2] = { {ABS_INT64_MIN, 0}, //neg
+
+                                         {INT64_MAX,     UINT64_MAX} }; //pos
+
+      int digit = 0;
+
+      bool is_decimal = false;
+
+      while ((digit = value.get_next_digit(is_decimal)) != -1) {
+
+        if (!is_decimal) {
+
+          //为了防止溢出，我们不能这么写:
+
+          //"value * 10 + digit &gt; THRESHOLD[index]"
+
+          if (valueUint &gt; (THRESHOLD[sign][flag] - digit) / 10) {
+
+            *is_valid = false;
+
+            break;
+
+          } else {
+
+            valueUint = valueUint * 10 + digit;//霍纳法则（也叫秦九韶算法）
+
+          }
+
+        } else {
+
+          if (!digit) {
+
+            *is_valid = false; //小数部分必须是0；否则不可能是合法的uint64、int64
+
+            break;
+
+          }
+
+        }
+
+      }
+
+    }
+
+  }
+
+}
+</code></pre>
 ]]></content>
   </entry>
   
