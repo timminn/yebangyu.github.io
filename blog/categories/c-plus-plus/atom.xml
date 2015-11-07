@@ -4,7 +4,7 @@
   <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-07T12:08:09+08:00</updated>
+  <updated>2015-11-07T12:26:32+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -152,14 +152,25 @@ Test__f(p);
 
 <p>那么，<strong>this</strong>指针可以操纵哪些东西呢？哦，类的非静态数据成员。而类的静态数据成员，全局变量等，是不会通过<strong>this</strong>指针访问的，因此，上例中，访问<strong>a</strong>崩溃，访问<strong>global</strong>则安全。</p>
 
-<p>最后，我们看一个问题。这个问题，最早我是从杜克伟兄（微博：@小伙伴-小伙伴儿）那里听到的。</p>
+<p>最后，我们看一个问题。这个问题，最早我是从杜克伟兄（微博：@小伙伴-小伙伴儿）那里听到的。
+<code>c++
+class Test4
+{
+public:
+  void f()
+  {
+    cout&lt;&lt;&amp;(*this)&lt;&lt;endl; // 有问题吗？
+  }
+};
+int main()
+{
+  Test4 *p = NULL;
+  p-&gt;f();
+  return 0;
+}
+</code></p>
 
-<pre><code>Test *p = NULL;
-
-cout&lt;&lt;&amp;(*p)&lt;&lt;endl;// 有问题吗？
-</code></pre>
-
-<p>当然没问题。<strong>&amp;(*p)</strong>就是<strong>p</strong>，因此上面会输出<strong>0</strong>。</p>
+<p>没问题。<strong>&amp;(*this)</strong>就是<strong>this</strong>，值和<strong>p</strong>相等。因此上面会输出<strong>0</strong>。</p>
 
 <p>综上，使用空指针并不一定会发生问题，关键是怎么用。遇到问题得理性分析，不要想当然。</p>
 
