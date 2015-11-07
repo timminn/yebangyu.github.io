@@ -4,7 +4,7 @@
   <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-07T15:17:59+08:00</updated>
+  <updated>2015-11-07T17:06:09+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -102,7 +102,7 @@ Test1 obj2;
 
 <p>然而，注意到<code>Test1 *p = NULL;</code>仅仅是声明式，而非定义式。这时候，没有定义任何的对象出来，通过<strong>p</strong>如何访问<strong>a</strong>呢？哪来的<strong>a</strong>呢？<strong>a</strong>在内存里并不存在。因此，访问<strong>a</strong>必定<strong>core</strong>。</p>
 
-<p>而函数<strong>f</strong>呢？它是独立于对象存放的，自然没问题。一般说来，<strong>f</strong>位于程序的代码段，而全局变量一般位于<strong>BBS</strong>段或者<strong>DATA</strong>段（这个比较复杂，和该全局变量是否初始化以及初始化为<strong>0</strong>还是非<strong>0</strong>有关）。而当我们定义对象时，才为该对象分配内存，才有数据成员<strong>a</strong>的存在：</p>
+<p>而函数<strong>f</strong>呢？它是独立于对象存放的，自然没问题。一般说来，<strong>f</strong>位于程序的代码段，而全局变量一般位于<strong>BSS</strong>段或者<strong>DATA</strong>段（这个比较复杂，和该全局变量是否初始化以及初始化为<strong>0</strong>还是非<strong>0</strong>有关）。而当我们定义对象时，才为该对象分配内存，才有数据成员<strong>a</strong>的存在：</p>
 
 <pre><code class="c++">#include&lt;iostream&gt;
 #include&lt;cstdlib&gt;
