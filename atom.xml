@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-06T23:08:59+08:00</updated>
+  <updated>2015-11-07T12:08:09+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,9 +18,9 @@
     <link href="http://www.yebangyu.org/blog/2015/11/06/null-pointer-can-be-accessed/"/>
     <updated>2015-11-06T22:38:30+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/11/06/null-pointer-can-be-accessed</id>
-    <content type="html"><![CDATA[<p>很多东西，我们可能都知道，道理也都懂，但是如果没有实践，往往容易犯错，或者理解不深。</p>
+    <content type="html"><![CDATA[<p>我们常常被告知，使用指针前需要判断是否为<strong>NULL</strong>；如果是<strong>NULL</strong>而你去使用它就会出问题。真相果真是这样吗？</p>
 
-<p>比如说，我们常常被告知，使用指针前需要判断是否为<strong>NULL</strong>；如果是<strong>NULL</strong>而你去使用它就会出问题。真相果真是这样吗？</p>
+<p>同事颜廷帅（微博：@颜挺帅）给我看以下一个程序，问我，这段程序执行后，有问题吗？</p>
 
 <!--more-->
 
@@ -133,15 +133,15 @@
 
 <p>怎么理解“确实存在”？它是一个实体，看得见，摸得着。</p>
 
-<p>这得说到<strong>C＋＋</strong>程序中对象的内存布局。</p>
+<p>这得说到<strong>C++</strong>程序中对象的内存布局。</p>
 
-<p>在<strong>C＋＋</strong>中，成员函数、静态变量是独立于对象存放的；而普通的数据成员是和对象相关的。</p>
+<p>在<strong>C++</strong>中，成员函数、静态变量是独立于对象存放的；而普通的数据成员是和对象相关的。</p>
 
 <pre><code>Test1 obj1;
 Test1 obj2;
 </code></pre>
 
-<p><strong>obj1</strong>和<strong>obj2</strong>是共用函数f的，函数<strong>f</strong>对<strong>obj1</strong>和<strong>obj2</strong>是相同的，内存中只有一份实体；而<strong>obj1</strong>和<strong>obj2</strong>有自己的实体<strong>a</strong>。</p>
+<p><strong>obj1</strong>和<strong>obj2</strong>是共用函数<strong>f</strong>的，函数<strong>f</strong>对<strong>obj1</strong>和<strong>obj2</strong>是相同的，内存中只有一份实体；而<strong>obj1</strong>和<strong>obj2</strong>有自己的实体<strong>a</strong>。</p>
 
 <p>然而，注意到<code>Test1 *p = NULL;</code>仅仅是声明式，而非定义式。这时候，没有定义任何的对象出来，通过<strong>p</strong>如何访问<strong>a</strong>呢？哪来的<strong>a</strong>呢？<strong>a</strong>在内存里并不存在。因此，访问<strong>a</strong>必定<strong>core</strong>。</p>
 
@@ -196,7 +196,41 @@ Test1 obj2;
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>因此，使用一个指针的时候，我们得时刻问自己：它指向哪里？它指向哪块内存？</p>
+<p>受王杰兄（微博：@skyline09_）启发和提示，其实我们可以换一种形式来理解。</p>
+
+<p>我们知道，<strong>C++</strong>中，类的非静态成员函数会被编译器改写：</p>
+
+<p><code>void Test::f()</code>被改写为类似于<code>void Test__f(Test *const this)</code></p>
+
+<p>而</p>
+
+<pre><code>Test *p = NULL;
+
+p-&gt;f();
+</code></pre>
+
+<p>将被编译器改写为</p>
+
+<pre><code>Test *p = NULL;
+Test__f(p);
+</code></pre>
+
+<p>因此<code>Test::f</code>中带有一个值为<strong>NULL</strong>的<strong>this</strong>指针（<strong>p</strong>），如果通过这个空指针<strong>p</strong>读写数据，就会崩溃。否则，安然无事。</p>
+
+<p>那么，<strong>this</strong>指针可以操纵哪些东西呢？哦，类的非静态数据成员。而类的静态数据成员，全局变量等，是不会通过<strong>this</strong>指针访问的，因此，上例中，访问<strong>a</strong>崩溃，访问<strong>global</strong>则安全。</p>
+
+<p>最后，我们看一个问题。这个问题，最早我是从杜克伟兄（微博：@小伙伴-小伙伴儿）那里听到的。</p>
+
+<pre><code>Test *p = NULL;
+
+cout&lt;&lt;&amp;(*p)&lt;&lt;endl;// 有问题吗？
+</code></pre>
+
+<p>当然没问题。<strong>&amp;(*p)</strong>就是<strong>p</strong>，因此上面会输出<strong>0</strong>。</p>
+
+<p>综上，使用空指针并不一定会发生问题，关键是怎么用。遇到问题得理性分析，不要想当然。</p>
+
+<p>纸上学来终觉浅，绝知此事要躬行。</p>
 ]]></content>
   </entry>
   
