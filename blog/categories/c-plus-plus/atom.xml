@@ -4,7 +4,7 @@
   <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-11T22:56:56+08:00</updated>
+  <updated>2015-11-15T12:59:18+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,75 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[对C++中static Const再思考]]></title>
+    <link href="http://www.yebangyu.org/blog/2015/11/15/static-const-in-cpp/"/>
+    <updated>2015-11-15T12:45:16+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2015/11/15/static-const-in-cpp</id>
+    <content type="html"><![CDATA[<p>最近和同事颜廷帅（微博：@颜挺帅）讨论一个关于C++中的static const问题，分析讨论了后，感觉还是没全搞懂。</p>
+
+<p>以下代码，能编译链接通过吗？</p>
+
+<!--more-->
+
+
+<pre><code class="c++">#include&lt;iostream&gt;
+using namespace std;
+template&lt;typename T&gt;
+void foo(const T &amp;value)
+{
+  cout &lt;&lt; value &lt;&lt; endl;
+}
+class Test
+{
+private:
+  static const int a = 1;
+public:
+  void f()
+  {
+    foo(a);
+  }
+};
+int main()
+{
+  Test t;
+  t.f();
+  return 0;
+}
+</code></pre>
+
+<p>我的第一感觉是：没问题。在Visual Studio 2013 实验了下，顺利通过，程序运行后输出1.</p>
+
+<p>然后同事说，gcc下是报错的：Undefined reference to &lsquo;Test::a&rsquo;</p>
+
+<p>根据这个提示，很可能是Test::a没有进入符号表。我们知道，类的static const是可能被编译器优化为常数的，不会为a分配空间。</p>
+
+<p>但是，如果仅这么解释，好像还不够：因为下面的程序在gcc下是没问题的：</p>
+
+<pre><code class="c++">#include&lt;iostream&gt;
+using namespace std;
+template&lt;typename T&gt;
+void foo(const T &amp;value)
+{
+  cout &lt;&lt; value &lt;&lt; endl;
+}
+int main()
+{
+  foo(3);//我们知道，这没问题！
+  return 0;
+}
+</code></pre>
+
+<p>应该如何更好的理解和解释这个问题呢？谢谢~</p>
+
+<p>附录：</p>
+
+<p><a href="http://blog.csdn.net/tingshuai_yts/article/details/49848241">http://blog.csdn.net/tingshuai_yts/article/details/49848241</a></p>
+
+<p><a href="http://stackoverflow.com/questions/5391973/undefined-reference-to-static-const-int">http://stackoverflow.com/questions/5391973/undefined-reference-to-static-const-int</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[空指针(NULL)不能用吗？]]></title>
