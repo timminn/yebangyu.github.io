@@ -4,7 +4,7 @@
   <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-15T13:29:35+08:00</updated>
+  <updated>2015-11-15T14:26:25+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -27,8 +27,7 @@
 
 <pre><code class="c++">#include&lt;iostream&gt;
 using namespace std;
-template&lt;typename T&gt;
-void foo(const T &amp;value)
+void foo(const int &amp;value)
 {
   cout &lt;&lt; value &lt;&lt; endl;
 }
@@ -60,12 +59,11 @@ int main()
 
 <pre><code class="c++">#include&lt;iostream&gt;
 using namespace std;
-template&lt;typename T&gt;
-void foo(const T value) //这里没有&amp;了
+void foo(const int value) //这里没有&amp;了
 {
   cout &lt;&lt; value &lt;&lt; endl;
 }
-void goo(const T &amp;value)
+void goo(const int &amp;value)
 {
   cout &lt;&lt; value &lt;&lt; endl;
 }
@@ -73,16 +71,22 @@ class Test
 {
 private:
   static const int a = 1;
+  enum HELLOWORLD { b = 2};
 public:
   void f()
   {
     foo(a);
+  }
+  void g()
+  {
+    goo(b);
   }
 };
 int main()
 {
   Test t;
   t.f();//没问题
+  t.g();//没问题
   goo(3);//当然，也没问题
   return 0;
 }
