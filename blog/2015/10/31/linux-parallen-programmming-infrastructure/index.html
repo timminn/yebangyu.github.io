@@ -125,6 +125,45 @@ int b = i;//强制从内存中读取实时的i的值
 
 <p>这个技巧，我是从《<strong>Is parallel programming hard？</strong>》上学到的。</p>
 
+<p>听起来都很好？然而事情没这么美好：<strong>volatile</strong>常被误用，很多人往往不知道或者忽略它的两个特点：<strong>volatile</strong>不保证原子性；使用<strong>volatile</strong>不应该对它有任何<strong>Memory Barrier</strong>的期待。</p>
+
+<p>第一点比较好理解，对于第二点，我们来看一个很经典的例子：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">volatile</span> <span class="kt">int</span> <span class="n">is_ready</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="kt">char</span> <span class="n">message</span><span class="p">[</span><span class="mi">123</span><span class="p">];</span>
+</span><span class='line'><span class="kt">void</span> <span class="n">thread_A</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">while</span><span class="p">(</span><span class="n">is_ready</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">{</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="c1">//use message;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="kt">void</span> <span class="n">thread_B</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="n">strcpy</span><span class="p">(</span><span class="n">message</span><span class="p">,</span><span class="s">&quot;everything seems ok&quot;</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">condition</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>线程<strong>B</strong>中，虽然<strong>condition</strong>有<strong>volatile</strong>修饰，但是这里的<strong>volatile</strong>不提供任何<strong>Memory Barrier</strong>，因此<strong>12</strong>行和<strong>13</strong>行可能被乱序执行，<code>condition = 1</code>被执行，而<strong>message</strong>还未被正确设置，导致线程<strong>A</strong>读到错误的值。</p>
+
+<p>这意味着，在多线程中使用<strong>volatile</strong>来同步几乎肯定是一个错误的选择；如果一定要使用，需要非常谨慎、小心。</p>
+
 <h2>__thread</h2>
 
 <p><strong>__thread</strong>是<strong>gcc</strong>内置的用于多线程编程的基础设施。用<strong>__thread</strong>修饰的变量，每个线程都拥有一份实体，相互独立，互不干扰。举个例子：</p>
@@ -241,8 +280,6 @@ int b = i;//强制从内存中读取实时的i的值
 <h2>__sync_synchronize</h2>
 
 <p><code>__sync_synchronize</code>就是一种<strong>full barrier</strong>。</p>
-
-<p>下次，我们将对<strong>Memory Barrier</strong>做更详细的讨论和分析。</p>
 </div>
 
 
