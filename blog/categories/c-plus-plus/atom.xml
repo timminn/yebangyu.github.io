@@ -4,7 +4,7 @@
   <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-15T14:26:25+08:00</updated>
+  <updated>2015-11-15T14:41:27+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -33,18 +33,12 @@ void foo(const int &amp;value)
 }
 class Test
 {
-private:
-  static const int a = 1;
 public:
-  void f()
-  {
-    foo(a);
-  }
+  static const int a = 1;
 };
 int main()
 {
-  Test t;
-  t.f();
+  foo(Test::a);
   return 0;
 }
 </code></pre>
@@ -59,35 +53,28 @@ int main()
 
 <pre><code class="c++">#include&lt;iostream&gt;
 using namespace std;
-void foo(const int value) //这里没有&amp;了
+void foo(const int &amp;value) 
 {
   cout &lt;&lt; value &lt;&lt; endl;
 }
-void goo(const int &amp;value)
+void goo(const int value) //这里没有&amp;
 {
   cout &lt;&lt; value &lt;&lt; endl;
 }
 class Test
 {
-private:
-  static const int a = 1;
-  enum HELLOWORLD { b = 2};
 public:
-  void f()
-  {
-    foo(a);
-  }
-  void g()
-  {
-    goo(b);
-  }
+  static const int a = 1;
+  enum HELLOWORLD { b = 2 };
 };
 int main()
 {
-  Test t;
-  t.f();//没问题
-  t.g();//没问题
-  goo(3);//当然，也没问题
+  foo(Test::b);//没问题
+  goo(Test::a);//没问题
+  goo(Test::b);//没问题
+  foo(3);//没问题
+  goo(3);//没问题
+  //唯一有问题的就是foo(Test::a);
   return 0;
 }
 </code></pre>
