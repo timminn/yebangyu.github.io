@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-15T22:44:22+08:00</updated>
+  <updated>2015-11-17T00:18:43+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,7 +18,9 @@
     <link href="http://www.yebangyu.org/blog/2015/11/15/static-const-in-cpp/"/>
     <updated>2015-11-15T12:45:16+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/11/15/static-const-in-cpp</id>
-    <content type="html"><![CDATA[<p>最近和同事颜廷帅（微博：@颜挺帅）讨论一个关于C++中的static const问题，分析讨论了后，感觉还是没全搞懂。</p>
+    <content type="html"><![CDATA[<p>最近和同事颜廷帅（微博：@颜挺帅）讨论一个关于C++中的static const问题。</p>
+
+<h2>问题描述</h2>
 
 <p>以下代码，能编译链接通过吗？</p>
 
@@ -64,9 +66,9 @@
 
 <p>我的第一感觉是：没问题。在Visual Studio 2013 实验了下，顺利通过，程序运行后输出1.</p>
 
-<p>然后同事说，gcc下是报错的：Undefined reference to &lsquo;Test::a&rsquo;</p>
+<p>然而同事说，gcc下是报错的：Undefined reference to &lsquo;Test::a&rsquo;</p>
 
-<p>根据这个提示，很可能是Test::a没有进入符号表。我们知道，类的static const是可能被编译器优化为常数的，不会为a分配空间。</p>
+<p>根据这个提示，很可能是Test::a没有进入符号表。我们知道，类的static const是可能被编译器优化为常数的，不会为a分配空间。姑且这么猜测。</p>
 
 <p>但是，如果仅这么解释，好像还不够：因为下面的程序在gcc下是没问题的：</p>
 
@@ -125,13 +127,99 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>应该如何更好的理解和解释这个问题呢？谢谢~</p>
+<p>应该如何全面、完整的解释这些现象呢？我们一步一步来，慢慢说。</p>
 
-<p>附录：</p>
+<h2>亲爱的，那不是定义式</h2>
 
-<p><a href="http://blog.csdn.net/tingshuai_yts/article/details/49848241">http://blog.csdn.net/tingshuai_yts/article/details/49848241</a></p>
+<p>在上面的程序中，<code>static const int a = 1</code>;并不是<code>a</code>的定义式。</p>
 
-<p><a href="http://stackoverflow.com/questions/5391973/undefined-reference-to-static-const-int">http://stackoverflow.com/questions/5391973/undefined-reference-to-static-const-int</a></p>
+<p>为了更好的分析这点，我们首先看以下程序：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">class</span> <span class="nc">Test</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="k">public</span><span class="o">:</span>
+</span><span class='line'>  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>我们把以上代码保存为文件<strong>test1.cpp</strong>，然后用<strong>gcc</strong>编译它：</p>
+
+<pre><code>g++ -o test1.o test1.cpp
+</code></pre>
+
+<p>然后，我们通过<strong>dumpobj</strong>来查看符号表：</p>
+
+<pre><code>objdump -x test1.o
+</code></pre>
+
+<p>我们可以得到如下的输出：</p>
+
+<pre><code>SYMBOL TABLE:
+00000000 l    df *ABS*  00000000 test.cpp
+00000000 l    d  .text  00000000 .text
+00000000 l    d  .data  00000000 .data
+00000000 l    d  .bss   00000000 .bss
+00000000 l    d  .note.GNU-stack    00000000 .note.GNU-stack
+00000000 l    d  .eh_frame  00000000 .eh_frame
+00000000 l    d  .comment   00000000 .comment
+00000000 g     F .text  0000000a main
+</code></pre>
+
+<p>不管你怎么找，都是找不到那个a的。</p>
+
+<p>好，我们把程序修改下，变为：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">class</span> <span class="nc">Test</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="k">public</span><span class="o">:</span>
+</span><span class='line'>  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'><span class="k">const</span> <span class="kt">int</span> <span class="n">Test</span><span class="o">::</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>同样的步骤后，我们得到如下输出(节选)：</p>
+
+<pre><code>SYMBOL TABLE:
+0804a014  w      .data  00000000              data_start
+0804a01c g       .data  00000000              _edata
+08048474 g     F .fini  00000000              _fini
+0804a014 g       .data  00000000              __data_start
+00000000  w      *UND*  00000000              __gmon_start__
+0804a018 g     O .data  00000000              .hidden __dso_handle
+0804848c g     O .rodata    00000004              _IO_stdin_used
+08048490 g     O .rodata    00000004              _ZN4Test1aE
+</code></pre>
+
+<p>最后一行，看到没？那就是Test的a。进入符号表了。</p>
 ]]></content>
   </entry>
   
