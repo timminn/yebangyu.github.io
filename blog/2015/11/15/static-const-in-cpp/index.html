@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>对C++中 Static Const 再思考 - Yebangyu's Blog</title>
+  <title>再谈C++中的static Const - Yebangyu's Blog</title>
   <meta name="author" content="Yebangyu">
 
   
@@ -68,7 +68,7 @@
   
   <header>
     
-      <h1 class="entry-title">对C++中 Static Const 再思考</h1>
+      <h1 class="entry-title">再谈C++中的static Const</h1>
     
     
       <p class="meta">
@@ -84,7 +84,7 @@
   </header>
 
 
-<div class="entry-content"><p>最近研究了会儿C++中的static const，这里和大家一起分享下。</p>
+<div class="entry-content"><p>废话不多说了，开始这次的讨论吧。</p>
 
 <h2>提出问题</h2>
 
@@ -126,7 +126,7 @@
 
 <p>我的第一感觉是：应该没问题，吧。在<strong>Visual Studio 2013</strong> 实验了下，顺利通过，程序运行后输出<strong>1</strong>.</p>
 
-<p>然而同事说，gcc下是报错的：Undefined reference to &lsquo;Test::a&rsquo;</p>
+<p>然而同事说，<strong>gcc</strong>下是报错的：Undefined reference to &lsquo;Test::a&rsquo;</p>
 
 <p>这是为什么？</p>
 
@@ -161,13 +161,13 @@
 
 <p>上面的最后一行，<strong>_ZN4Test1aE</strong>就是对应我们程序中声明的<strong>Test::a</strong>。之所以长得这么复杂、奇怪，是因为编译器做了<strong>mangling</strong>处理。</p>
 
-<p>注意到<em>UND</em>没？根据<a href="https://sourceware.org/binutils/docs/binutils/objdump.html">文档</a>的解释：</p>
+<p>注意到*UND*没？根据<a href="https://sourceware.org/binutils/docs/binutils/objdump.html">文档</a>的解释：</p>
 
-<p><em>UND</em> : if the section is referenced in the file being dumped, but not defined there</p>
+<p>*UND* : if the section is referenced in the file being dumped, but not defined there</p>
 
 <p>也就是<strong>_ZN4Test1aE</strong>在本<strong>.o</strong>文件中引用，然而它却木有定义。因此，报Undefined reference to &lsquo;Test::a'的错，也就情理之中了。</p>
 
-<p>那么，我们的程序是否真的引用了_ZN4Test1aE呢？恩，我们接着往下看。</p>
+<p>那么，我们的程序是否真的引用了<strong>_ZN4Test1aE</strong>呢？恩，我们接着往下看。</p>
 
 <p>输入如下命令，获得<strong>test.cpp</strong>对应的汇编代码：</p>
 
@@ -189,34 +189,49 @@
 
 <p>虽然我们已经分析出为什么会报错，然而，我们还有一个疑问，就是，为什么下面的代码，是OK的？</p>
 
-<pre><code>void f(const int value) //这里没有 &amp;
-{
-}
-class Test
-{
-public:
-  static const int a = 1;
-};
-int main()
-{
-  f(Test::a);
-  return 0;
-}
-</code></pre>
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">value</span><span class="p">)</span> <span class="c1">//这里没有 &amp;</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">Test</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="k">public</span><span class="o">:</span>
+</span><span class='line'>  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="n">f</span><span class="p">(</span><span class="n">Test</span><span class="o">::</span><span class="n">a</span><span class="p">);</span>
+</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
 
 <p>恩，有了前面的基础，相信读者诸君已经知道怎么分析。我们可以用同样的方法，看看它的反汇编代码：</p>
 
-<p>main:
+<pre><code>main:
     pushl   %ebp
     movl    %esp, %ebp
     subl    $4, %esp
-    movl    $1, (%esp) ;看到没？1，不是<em>ZN4Test1aE，也不是Test::a
-    call    </em>Z1fi
+    movl    $1, (%esp)     ;看到没？1，不是_ZN4Test1aE，也不是Test::a
+    call    _Z1fi
     movl    $0, %eax
     leave
-    ret</p>
+    ret
+</code></pre>
 
-<p>也就是说，在这里，编译器把Test::a当做一个占位符，实际使用之处用1代替了。</p>
+<p>也就是说，在这里，编译器把<strong>Test::a</strong>当做一个占位符，实际使用之处用1代替了。</p>
 
 <h2>解决问题</h2>
 
@@ -255,7 +270,9 @@ int main()
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>2，如果仅仅声明a，那么我们可以按值的方式使用它，也就是只使用它的值；而不去获得它的地址，当然，也包括引用。引用本质上也是地址，也是指针（实现）。</p>
+<p>有兴趣的读者可以看看这个程序对应的符号表，就会发现<strong>Test::a</strong>被放在了程序的<strong>rodata section</strong>，而不是*UND*了。</p>
+
+<p>2，如果仅仅声明<strong>a</strong>，那么我们可以按值的方式使用它，这没问题。也就是只使用它的值；而不去获得它的地址（当然，也包括引用）。引用本质上也是地址，也是指针（实现）。</p>
 
 <p>3，使用枚举类型。是的，枚举！像这样：</p>
 
@@ -336,7 +353,7 @@ int main()
   <section>
     <h1>Comments</h1>
     <div id="comments" aria-live="polite"><!-- 多说评论框 start -->
-<div class="ds-thread" data-thread-key="/blog/2015/11/15/static-const-in-cpp" data-title="对C++中 static const 再思考" data-url="http://www.yebangyu.org/blog/2015/11/15/static-const-in-cpp/"></div>
+<div class="ds-thread" data-thread-key="/blog/2015/11/15/static-const-in-cpp" data-title="再谈C++中的static const" data-url="http://www.yebangyu.org/blog/2015/11/15/static-const-in-cpp/"></div>
 <!-- 多说评论框 end -->
 <!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 <script type="text/javascript">
@@ -363,7 +380,7 @@ int main()
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/11/15/static-const-in-cpp/">对C++中 Static Const 再思考</a>
+        <a href="/blog/2015/11/15/static-const-in-cpp/">再谈C++中的static Const</a>
       </li>
     
       <li class="post">
