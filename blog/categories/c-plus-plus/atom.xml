@@ -4,7 +4,7 @@
   <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-17T23:44:39+08:00</updated>
+  <updated>2015-11-17T23:51:13+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -42,7 +42,7 @@ int main()
 }
 </code></pre>
 
-<p>我的第一感觉是：应该没问题，吧。在<strong>Visual Studio 2013</strong> 实验了下，顺利通过，程序运行后输出<strong>1</strong>.</p>
+<p>我的第一感觉是：应该没问题，吧。在<strong>Visual Studio 2013</strong> 实验了下，顺利通过，一切正常.</p>
 
 <p>然而同事说，<strong>gcc</strong>下是报错的：Undefined reference to &lsquo;Test::a&rsquo;</p>
 
@@ -87,7 +87,7 @@ int main()
 
 <p>那么，我们的程序是否真的引用了<strong>_ZN4Test1aE</strong>呢？恩，我们接着往下看。</p>
 
-<p>输入如下命令，获得<strong>test.cpp</strong>对应的汇编代码：</p>
+<p>输入如下命令：</p>
 
 <pre><code>g++ -S test.cpp
 </code></pre>
@@ -135,7 +135,7 @@ int main()
     ret
 </code></pre>
 
-<p>也就是说，在这里，编译器把<strong>Test::a</strong>当做一个占位符，实际使用之处用1代替了。</p>
+<p>也就是说，在这里，编译器把<strong>Test::a</strong>当做一个占位符，实际使用之处用<strong>1</strong>代替了。</p>
 
 <h2>解决问题</h2>
 
@@ -171,7 +171,7 @@ int main()
 class Test
 {
 public:
-  enum HELLOWORLD {a = 1};
+  enum HELLOWORLD {a = 1}; //枚举，而不是 static const
 };
 int main()
 {
@@ -180,7 +180,7 @@ int main()
 }
 </code></pre>
 
-<p>那么，这个编译器是如何实现的？就留给读者做个练习吧。</p>
+<p>那么，这种情况下，编译器是如何处理的呢？就留给读者诸君作为练习吧。</p>
 ]]></content>
   </entry>
   
