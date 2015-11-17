@@ -231,13 +231,13 @@
     ret
 </code></pre>
 
-<p>也就是说，在这里，编译器把<strong>Test::a</strong>当做一个占位符，实际使用之处用<strong>1</strong>代替了。</p>
+<p>也就是说，在这里，编译器只是把<strong>Test::a</strong>认作一个占位符，实际使用之处用<strong>1</strong>代替了。</p>
 
 <h2>解决问题</h2>
 
 <p>知道原因了，那么怎么解决呢？恩，至少三种方法：</p>
 
-<p>1，我们可以<strong>定义</strong>（而不是声明）<strong>Test::a</strong>。是的，上面的<code>static const int a = 1;</code>只是声明，不是定义。如果是定义，那么我们应该这么做：</p>
+<p>1，我们可以<strong>定义</strong>（而不是声明）<strong>Test::a</strong>。是的，上面的<code>static const int a = 1;</code>只是声明，不是定义。如果要定义，那么我们应该这么做：</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -272,7 +272,7 @@
 
 <p>有兴趣的读者可以看看这个程序对应的符号表，就会发现<strong>Test::a</strong>被放在了程序的<strong>rodata section</strong>，而不是*UND*了。</p>
 
-<p>2，如果仅仅声明<strong>a</strong>，那么我们可以按值的方式使用它，这没问题。也就是只使用它的值；而不去获得它的地址（当然，也包括引用）。引用本质上也是地址，也是指针（实现）。</p>
+<p>2，如果仅仅声明<strong>a</strong>，那么我们可以按值的方式使用它，这没问题。也就是只使用它的值；而不去获得它的地址(当然，也包括引用。引用本质上也是地址)。</p>
 
 <p>3，使用枚举类型。是的，枚举！像这样：</p>
 
