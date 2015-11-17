@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Parallelprogramming | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/parallelprogramming/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-17T00:22:08+08:00</updated>
+  <updated>2015-11-17T23:29:58+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -119,7 +119,7 @@ void* thread2(void* arg)
 
 <p>1，<strong>__thread</strong>可以修饰全局变量、函数的静态变量，但是无法修饰函数的局部变量。</p>
 
-<p>2，被<strong>__thread</strong>修饰的变量必须初始化，且必须在编译期初始化，无法在运行期初始化。</p>
+<p>2，被<strong>__thread</strong>修饰的变量只能在编译期初始化，且只能通过常量表达式来初始化。</p>
 
 <h2>Memory Barrier</h2>
 

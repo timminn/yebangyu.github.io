@@ -227,7 +227,7 @@ int b = i;//强制从内存中读取实时的i的值
 
 <p>1，<strong>__thread</strong>可以修饰全局变量、函数的静态变量，但是无法修饰函数的局部变量。</p>
 
-<p>2，被<strong>__thread</strong>修饰的变量必须初始化，且必须在编译期初始化，无法在运行期初始化。</p>
+<p>2，被<strong>__thread</strong>修饰的变量只能在编译期初始化，且只能通过常量表达式来初始化。</p>
 
 <h2>Memory Barrier</h2>
 
