@@ -61,12 +61,18 @@
     <loc>http://www.yebangyu.org/blog/categories/web/</loc>
   </url>
   <url>
-    <loc>http://www.yebangyu.org/blog/categories/life/</loc>
+    <loc>http://www.yebangyu.org/blog/categories/qi-ta/</loc>
   </url>
   <url>
     <loc>http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/</loc>
   </url>
   <url>
     <loc>http://www.yebangyu.org/blog/categories/c-plus-plus/</loc>
+  </url>
+  <url>
+    <loc>http://www.yebangyu.org/blog/categories/life/</loc>
+  </url>
+  <url>
+    <loc>http://www.yebangyu.org/blog/categories/li-shi/</loc>
   </url>
 </urlset>
