@@ -134,6 +134,8 @@
 
 <p>写作本文时所用的环境是<strong>gcc version 4.8.2 (Ubuntu 14)</strong>。</p>
 
+<p>注意，本文的分析只针对类的<strong>static const</strong>成员，也就是所谓的<strong>class scope</strong>。<strong>namespace scope</strong>的情况不属于我们的讨论范围内。</p>
+
 <p>把以上代码保存为<strong>test.cpp</strong>，然后用<strong>gcc</strong>编译它：</p>
 
 <pre><code>g++ -c -o test.o test.cpp
@@ -396,7 +398,7 @@
 <section>
  <h1>Categories</h1>
  <ul id="categories">
-  <li class='category'><a href='/blog/categories/c-/'>c++ (4)</a></li>
+  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (4)</a></li>
 <li class='category'><a href='/blog/categories/life/'>life (4)</a></li>
 <li class='category'><a href='/blog/categories/parallelprogramming/'>parallelprogramming (3)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
