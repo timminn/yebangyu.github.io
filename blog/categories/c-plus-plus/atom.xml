@@ -4,7 +4,7 @@
   <title><![CDATA[Category: C++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-18T23:34:56+08:00</updated>
+  <updated>2015-11-18T23:54:49+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -50,9 +50,9 @@ int main()
 
 <h2>分析问题</h2>
 
-<p>写作本文时所用的环境是<strong>gcc version 4.8.2 (Ubuntu 14)</strong>。</p>
+<p>写作本文时所用的环境是<strong>gcc 4.8.2 (Ubuntu 14.04 , X86平台)</strong>。</p>
 
-<p>注意，本文的分析只针对类的<strong>static const</strong>成员，也就是所谓的<strong>class scope</strong>。<strong>namespace scope</strong>的情况不属于我们的讨论范围内。</p>
+<p>注意，本文的讨论只针对类的<strong>static const</strong>成员，也就是所谓的<strong>class scope</strong>。<strong>namespace scope</strong>的情况不属于我们的讨论范围内。</p>
 
 <p>把以上代码保存为<strong>test.cpp</strong>，然后用<strong>gcc</strong>编译它：</p>
 
@@ -119,7 +119,7 @@ public:
 };
 int main()
 {
-  f(Test::a);
+  f(Test::a);//没问题
   return 0;
 }
 </code></pre>
@@ -143,7 +143,7 @@ int main()
 
 <p>知道原因了，那么怎么解决呢？恩，至少三种方法：</p>
 
-<p>1，我们可以<strong>定义</strong>（而不是声明）<strong>Test::a</strong>。是的，上面的<code>static const int a = 1;</code>只是声明，不是定义。如果要定义，那么我们应该这么做：</p>
+<p>1，我们可以<strong>定义</strong>（而不是声明）<strong>Test::a</strong>。是的，上面的<code>static const int a = 1;</code>并不是它的定义式。如果要定义，那么我们应该这么做：</p>
 
 <pre><code class="c++">void f(const int &amp;value)//还是传引用
 {
