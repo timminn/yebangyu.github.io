@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-18T23:54:49+08:00</updated>
+  <updated>2015-11-21T23:04:21+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -75,11 +75,11 @@ void thread_A
 void thread_B
 {
   strcpy(message,"everything seems ok");
-  condition = 1;
+  is_ready = 1;
 }
 </code></pre>
 
-<p>线程<strong>B</strong>中，虽然<strong>condition</strong>有<strong>volatile</strong>修饰，但是这里的<strong>volatile</strong>不提供任何<strong>Memory Barrier</strong>，因此<strong>12</strong>行和<strong>13</strong>行可能被乱序执行，<code>condition = 1</code>被执行，而<strong>message</strong>还未被正确设置，导致线程<strong>A</strong>读到错误的值。</p>
+<p>线程<strong>B</strong>中，虽然<strong>is_ready</strong>有<strong>volatile</strong>修饰，但是这里的<strong>volatile</strong>不提供任何<strong>Memory Barrier</strong>，因此<strong>12</strong>行和<strong>13</strong>行可能被乱序执行，<code>is_ready = 1</code>被执行，而<strong>message</strong>还未被正确设置，导致线程<strong>A</strong>读到错误的值。</p>
 
 <p>这意味着，在多线程中使用<strong>volatile</strong>来同步几乎肯定是一个错误的选择；如果一定要使用，需要非常谨慎、小心。</p>
 
@@ -91,7 +91,7 @@ void thread_B
 #include&lt;pthread.h&gt;  
 #include&lt;unistd.h&gt;  
 using namespace std;  
-__thread int i = 1;//必须静态初始化
+__thread int i = 1;
 void* thread1(void* arg);  
 void* thread2(void* arg);  
 int main()
@@ -107,11 +107,13 @@ int main()
 void* thread1(void* arg)
 {  
   cout&lt;&lt;++i&lt;&lt;endl;//输出 2  
+  return NULL;
 }  
 void* thread2(void* arg)
 {  
   sleep(1); //等待thread1完成更新
   cout&lt;&lt;++i&lt;&lt;endl;//输出 2，而不是3
+  return NULL;
 } 
 </code></pre>
 
@@ -157,7 +159,7 @@ movl    %eax, a(%rip) ; 将%eax也就是b+3的值写入a,即 a = b + 3
 
 <p>3，<strong>full barrier</strong>。以上两种的合集。</p>
 
-<p>啊，所以，很容易知道，加锁，也就是<strong>lock</strong>对应<strong>acquire barrier</strong>；释放锁，也就是<strong>unlock</strong>对应<strong>release barrier</strong>。哦，那么<strong>full barrier</strong>呢？</p>
+<p>所以，很容易知道，加锁，也就是<strong>lock</strong>对应<strong>acquire barrier</strong>；释放锁，也就是<strong>unlock</strong>对应<strong>release barrier</strong>。哦，那么<strong>full barrier</strong>呢？</p>
 
 <h2>__sync_synchronize</h2>
 
