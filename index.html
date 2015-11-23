@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="废话不多说了，开始这次的讨论吧。 提出问题 同事颜廷帅（微博：@颜挺帅）拿了一段代码让我分析。以下代码，能编译链接通过吗？ ">
+  <meta name="description" content="如果你的C++项目非常庞大，含有1000个.h文件，2000个.cpp文件，那么我敢打赌，每次编译所花的时间，都足够你喝3000杯咖啡了。如何加快编译速度呢？ Distcc是开源的用于搭建分布式编译环境的利器，是解决棘手问题的好帮手。然而，由于它的调度算法过于简单，不大合理， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -71,7 +71,45 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/11/15/static-const-in-cpp/">再谈C++中的static Const</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/11/23/build-distributed-compilation-ev/">利用Distcc和Dmucs构建大规模分布式C++编译环境</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-11-23T22:48:32+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2015</span></span> <span class='time'>10:48 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>如果你的C++项目非常庞大，含有1000个.h文件，2000个.cpp文件，那么我敢打赌，每次编译所花的时间，都足够你喝3000杯咖啡了。如何加快编译速度呢？</p>
+
+<p>Distcc是开源的用于搭建分布式编译环境的利器，是解决棘手问题的好帮手。然而，由于它的调度算法过于简单，不大合理，因此我们利用DMUCS提供的调度功能，来搭建一个相对完美的编译平台。</p>
+
+<p>话不多说，我们的编译平台包括：</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/11/23/build-distributed-compilation-ev/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/11/15/static-const-in-cpp/">再谈C++中的static const</a></h1>
     
     
       <p class="meta">
@@ -308,7 +346,7 @@ bool is_valid_int64(const Double &amp;value);
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2015/10/25/tools-of-the-trade/">Tools of the Trade</a></h1>
+      <h1 class="entry-title"><a href="/blog/2015/10/25/tools-of-the-trade/">Tools of the trade</a></h1>
     
     
       <p class="meta">
@@ -440,52 +478,6 @@ bool is_valid_int64(const Double &amp;value);
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/10/18/hardwareanditshabit/">Hardware and Its Habit</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-10-18T12:29:44+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:29 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近在阅读《<strong>Is parallel programming hard</strong>》这本书，本篇就是整理其中第三章《<strong>Hardware and its habit</strong>》，不是单纯的翻译，只是一个总结，略有补充。</p>
-
-<p>这章介绍了影响<strong>CPU</strong>执行效率的几个因素。具体包括：</p>
-
-<blockquote><ul>
-<li>流水线被打断</li>
-<li>内存访问</li>
-<li>原子操作</li>
-<li>Memory Barrier</li>
-<li>Cache Misses</li>
-<li>IO 操作</li>
-</ul>
-</blockquote>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/10/18/hardwareanditshabit/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -501,7 +493,11 @@ bool is_valid_int64(const Double &amp;value);
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2015/11/15/static-const-in-cpp/">再谈C++中的static Const</a>
+        <a href="/blog/2015/11/23/build-distributed-compilation-ev/">利用Distcc和Dmucs构建大规模分布式C++编译环境</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/11/15/static-const-in-cpp/">再谈C++中的static const</a>
       </li>
     
       <li class="post">
@@ -514,10 +510,6 @@ bool is_valid_int64(const Double &amp;value);
     
       <li class="post">
         <a href="/blog/2015/11/06/null-pointer-can-be-accessed/">空指针(NULL)不能用吗？</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/11/06/how-to-write-elegant-cpp-codes/">编写高质量代码(上)</a>
       </li>
     
   </ul>
@@ -538,7 +530,7 @@ bool is_valid_int64(const Double &amp;value);
 <section>
  <h1>Categories</h1>
  <ul id="categories">
-  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (4)</a></li>
+  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (5)</a></li>
 <li class='category'><a href='/blog/categories/life/'>life (1)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (2)</a></li>
