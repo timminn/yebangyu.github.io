@@ -115,21 +115,39 @@
 
 <p>3，配置<strong>Distcc</strong></p>
 
-<p>打开<code>/etc/default/distcc</code>，我们发现如下配置项：</p>
+<p>打开<code>/etc/default/distcc</code>，设置如下配置项：</p>
 
-<pre><code>STARTDISTCC="true"
+<pre><code>STARTDISTCC="true"  
 ALLOWEDNETS="127.0.0.1 192.168.1.0/24"
 LISTENER="0.0.0.0"
 </code></pre>
+
+<p>第一行设置开机就启动Distccd</p>
+
+<p>第二行设置允许利用本机进行编译的开发机</p>
+
+<p>第三行设置监听的网络</p>
 
 <p>4，启动<strong>Distccd</strong></p>
 
 <pre><code>sudo service distcc start
 </code></pre>
 
+<p>如果成功，系统会返回一个信息：</p>
+
+<pre><code>* Starting Distributed Compiler Daemon: distccd 
+</code></pre>
+
 <p>经过以上配置，每次机器开机，都会自动运行<strong>Distccd</strong>。运行如下命令确认下：</p>
 
 <pre><code>ps -aux | grep distccd
+</code></pre>
+
+<p>如果看到类似的输出，说明一切OK了。</p>
+
+<pre><code>distccd   3457  0.0  0.0   3260   144 ?        SNs  23:33   0:00 /usr/bin/distccd --pid-file=/var/run/distccd.pid --log-file=/var/log/distccd.log --daemon --allow 127.0.0.1 --listen 0.0.0.0 --nice 10
+distccd   3458  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distccd --pid-file=/var/run/distccd.pid --log-file=/var/log/distccd.log --daemon --allow 127.0.0.1 --listen 0.0.0.0 --nice 10
+distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distccd --pid-file=/var/run/distccd.pid --log-file=/var/log/distccd.log --daemon --allow 127.0.0.1 --listen 0.0.0.0 --nice 10
 </code></pre>
 
 <h2>开发机</h2>
@@ -145,22 +163,15 @@ LISTENER="0.0.0.0"
 <pre><code>export DISTCC_HOSTS="192.168.1.11 192.168.1.22 192.168.1.33"
 </code></pre>
 
-<p>/usr/local/etc/distcc/hosts</p>
-
 <p>每台机器的<strong>IP</strong>之间用空格隔开。</p>
+
+<p>如果机器很多，那么这样填写可能不大方便，可以在<code>/etc/distcc/hosts</code>里添加。</p>
 
 <p>3，应用<strong>Distcc</strong></p>
 
 <p>应用<strong>Distcc</strong>来编译代码有几种方法：</p>
 
-<p>方法一：在编译的时候，直接指定使用<strong>Distcc</strong></p>
-
-<pre><code>make -j4 CXX=distcc
-</code></pre>
-
-<p>这种方法，将覆盖<strong>makefile</strong>文件中<code>CXX</code>变量的值（一般是<strong>g++</strong>或者<strong>clang++</strong>），代之以<strong>distcc</strong></p>
-
-<p>方法二：修改<strong>makefile</strong>中的<code>CXX</code>的值</p>
+<p>方法一：修改<strong>makefile</strong>中的<code>CXX</code>的值</p>
 
 <p>将<strong>makefile</strong>文件中的这一行</p>
 
@@ -169,14 +180,16 @@ LISTENER="0.0.0.0"
 
 <p>改为</p>
 
-<pre><code>CXX = distcc
+<pre><code>CXX = distcc g++
 </code></pre>
 
-<p>方法三：修改<strong>configure</strong>文件</p>
+<p>然后运行<code>make -j6</code>即可。这里的6，就是cpu cores的数量加上2.我的机器是4核，因此这里设置为6.</p>
+
+<p>方法二：修改<strong>configure</strong>文件</p>
 
 <p>如果您的<strong>makefile</strong>文件由<strong>automake</strong>产生，那么在运行<code>./configure</code>时得加上参数，变为：</p>
 
-<pre><code>./configure --CXX=distcc
+<pre><code>./configure --CXX=distcc g++
 </code></pre>
 
 <p>那么生成的<strong>makefile</strong>文件将自动使用<strong>distcc</strong>了。</p>
