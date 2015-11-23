@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-23T22:53:13+08:00</updated>
+  <updated>2015-11-23T22:59:37+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[利用Distcc和Dmucs构建大规模分布式C++编译环境]]></title>
+    <title type="html"><![CDATA[利用Distcc和Dmucs构建大规模、分布式C++编译环境(上)]]></title>
     <link href="http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev/"/>
     <updated>2015-11-23T22:48:32+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev</id>
@@ -114,6 +114,8 @@ LISTENER="0.0.0.0"
 </code></pre>
 
 <p>那么生成的makefile文件将自动使用distcc了。</p>
+
+<p>如果不出意外，编译速度已经大大提升了。然而，还有提高的空间，欲知详情，请听下回分解。</p>
 ]]></content>
   </entry>
   

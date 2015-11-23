@@ -4,7 +4,7 @@
   <title><![CDATA[Category: web | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/web/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-23T22:53:13+08:00</updated>
+  <updated>2015-11-23T22:59:37+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -127,6 +127,8 @@ bundle install
 <p><a href="http://khaos.Github.io/blog/2012/12/06/using-chinese-category-tags-in-octopress/">http://khaos.Github.io/blog/2012/12/06/using-chinese-category-tags-in-octopress/</a></p>
 
 <p><a href="https://Github.com/imathis/octopress/issues/1683">https://Github.com/imathis/octopress/issues/1683</a></p>
+
+<p><a href="http://stackoverflow.com/questions/14932141/octopress-capitalization-in-new-posts">http://stackoverflow.com/questions/14932141/octopress-capitalization-in-new-posts</a></p>
 ]]></content>
   </entry>
   
