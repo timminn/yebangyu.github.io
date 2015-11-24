@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-23T23:53:52+08:00</updated>
+  <updated>2015-11-24T22:24:53+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,9 +18,9 @@
     <link href="http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev/"/>
     <updated>2015-11-23T22:48:32+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev</id>
-    <content type="html"><![CDATA[<p>如果你的<strong>C++</strong>项目非常庞大，含有<strong>1000</strong>个<strong>.h</strong>文件，<strong>2000</strong>个<strong>.cpp</strong>文件，那么我敢打赌，每次编译所花的时间，都足够你喝<strong>3000</strong>杯咖啡了。如何加快编译速度呢？</p>
+    <content type="html"><![CDATA[<p>如果你的<strong>C++</strong>项目非常庞大，含有<strong>1000</strong>个<strong>.h</strong>文件，<strong>2000</strong>个<strong>.cpp</strong>文件，那么我敢打赌，每次编译所花的时间，都足够你喝<strong>3000</strong>杯咖啡了。如何加快编译速度？</p>
 
-<p><strong>Distcc</strong>是开源的用于搭建分布式编译环境的利器，是解决棘手问题的好帮手。然而，由于它的调度算法过于简单，不大合理，因此我们利用<strong>DMUCS</strong>提供的调度功能，来搭建一个相对完美的编译平台。</p>
+<p><strong>Distcc</strong>是开源的用于搭建分布式编译环境的利器，它通过利用多台机器的资源，并行编译，来解决这个棘手的问题。然而，它的调度算法过于简单，不大合理，因此我们利用<strong>DMUCS</strong>提供的调度功能，来搭建一个相对完美的分布式编译平台。本文，我们首先介绍如何（单独）使用<strong>Distcc</strong>来加速编译，下一篇介绍如何组合使用<strong>Distcc</strong>+<strong>DMUCS</strong>来做进一步的完善和优化。</p>
 
 <p>话不多说，我们的编译平台包括：</p>
 
@@ -31,21 +31,23 @@
 
 <p>服务器（<strong>Server</strong>）：负责编译的机器，一共有<strong>3</strong>台。<strong>IP</strong>分别为<strong>192.168.1.11</strong>,<strong>192.168.1.22</strong>,<strong>192.168.1.33</strong>.</p>
 
-<p>调度器（<strong>Scheduler</strong>）：调度程序所在的机器，负责把编译任务合理的派发到编译机器（服务器）的编译程序上。<strong>IP</strong>为<strong>192.168.1.88</strong></p>
+<p>调度器（<strong>Scheduler</strong>）：调度程序所在的机器，负责把编译任务合理的派发到编译机器（服务器）的编译程序上。<strong>IP</strong>为<strong>192.168.1.88</strong>。这台机器的部署和配置，我们留到下一篇博文介绍。</p>
+
+<p>以上所有机器都是安装的<strong>Ubuntu 14.04</strong>操作系统。</p>
 
 <h2>服务器</h2>
 
-<p>1，安装<strong>Distcc</strong></p>
+<p>1，安装<strong>gcc</strong></p>
+
+<pre><code>sudo apt-get install gcc
+</code></pre>
+
+<p>2，安装<strong>Distcc</strong></p>
 
 <pre><code>sudo apt-get install distcc
 </code></pre>
 
 <p>安装后可以得到两个二进制文件，<strong>distccd</strong>和<strong>distcc</strong>。前者主要负责网络数据处理，后者可以认为是<strong>g++</strong>的前端，调用<strong>g++</strong>进行编译。</p>
-
-<p>2，安装<strong>gcc</strong></p>
-
-<pre><code>sudo apt-get install gcc
-</code></pre>
 
 <p>3，配置<strong>Distcc</strong></p>
 
@@ -56,23 +58,20 @@ ALLOWEDNETS="127.0.0.1 192.168.1.0/24"
 LISTENER="0.0.0.0"
 </code></pre>
 
-<p>第一行设置开机就启动Distccd</p>
+<p>第一行设置开机就启动distccd</p>
 
 <p>第二行设置允许利用本机进行编译的开发机</p>
 
 <p>第三行设置监听的网络</p>
 
-<p>4，启动<strong>Distccd</strong></p>
+<p>4，启动<strong>distccd</strong></p>
 
 <pre><code>sudo service distcc start
 </code></pre>
 
-<p>如果成功，系统会返回一个信息：</p>
+<p>经过以上配置，每次机器开机，都会自动运行<strong>distccd</strong>。</p>
 
-<pre><code>* Starting Distributed Compiler Daemon: distccd 
-</code></pre>
-
-<p>经过以上配置，每次机器开机，都会自动运行<strong>Distccd</strong>。运行如下命令确认下：</p>
+<p>运行如下命令确认下：</p>
 
 <pre><code>ps -aux | grep distccd
 </code></pre>
@@ -101,6 +100,8 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>如果机器很多，那么这样填写可能不大方便，可以在<code>/etc/distcc/hosts</code>里添加。</p>
 
+<p>这两种方法可以任选一种，如果你两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
+
 <p>3，应用<strong>Distcc</strong></p>
 
 <p>应用<strong>Distcc</strong>来编译代码有几种方法：</p>
@@ -117,7 +118,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 <pre><code>CXX = distcc g++
 </code></pre>
 
-<p>然后运行<code>make -j6</code>即可。这里的6，就是cpu cores的数量加上2.我的机器是4核，因此这里设置为6.</p>
+<p>然后运行<code>make -j6</code>即可。这里的<strong>6</strong>，就是<strong>CPU Cores</strong>的数量加上<strong>2</strong>。我的机器是<strong>4</strong>核，因此这里设置为<strong>6</strong>。</p>
 
 <p>方法二：修改<strong>configure</strong>文件</p>
 
@@ -126,7 +127,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 <pre><code>./configure --CXX=distcc g++
 </code></pre>
 
-<p>那么生成的<strong>makefile</strong>文件将自动使用<strong>distcc</strong>了。</p>
+<p>那么生成的<strong>makefile</strong>文件将自动使用<strong>Distcc</strong>了。</p>
 
 <p>如果不出意外，编译速度已经大大提升了。然而，还有提高的空间，欲知详情，请听下回分解。</p>
 ]]></content>
