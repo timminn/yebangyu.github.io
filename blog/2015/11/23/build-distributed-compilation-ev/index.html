@@ -184,7 +184,9 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 <pre><code>CXX = distcc g++
 </code></pre>
 
-<p>然后运行<code>make -j6</code>即可。这里的<strong>6</strong>，就是<strong>CPU Cores</strong>的数量加上<strong>2</strong>。我的机器是<strong>4</strong>核，因此这里设置为<strong>6</strong>。</p>
+<p>然后运行<code>make -j18</code>即可。这里的<strong>18</strong>，为所有服务器的<strong>CPU Cores</strong>的数量乘以<strong>1.5</strong>。上面有3台服务器，每台有<strong>4</strong>核，因此这里设置为<strong>18</strong>。</p>
+
+<p>为了获得最优值，很可能需要反复实验、测试。</p>
 
 <p>方法二：修改<strong>configure</strong>文件</p>
 
@@ -216,7 +218,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/c-plus-plus/'>c++</a>
+    <a class='category' href='/blog/categories/bian-yi-lian-jie/'>编译链接</a>
   
 </span>
 
@@ -286,12 +288,13 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 <section>
  <h1>Categories</h1>
  <ul id="categories">
-  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (5)</a></li>
+  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (4)</a></li>
 <li class='category'><a href='/blog/categories/life/'>life (1)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (2)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (1)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (3)</a></li>
+<li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (1)</a></li>
 
  </ul>
 </section>
