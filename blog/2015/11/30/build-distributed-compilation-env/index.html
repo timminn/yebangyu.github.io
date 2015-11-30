@@ -84,7 +84,7 @@
   </header>
 
 
-<div class="entry-content"><p>上篇文章，我们介绍了如何利用<strong>Distcc</strong>来搭建分布式编译环境，但是<strong>Distcc</strong>的默认调度策略过于简单，并且并不合理。假如我们的配置是</p>
+<div class="entry-content"><p><a href="http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev/">上篇</a>文章，我们介绍了如何利用<strong>Distcc</strong>来搭建分布式编译环境，但是<strong>Distcc</strong>的默认调度策略过于简单，并且并不合理。假如我们的配置是</p>
 
 <pre><code>export DISTCC_HOSTS="192.168.1.11 192.168.1.22 192.168.1.33"
 </code></pre>
@@ -165,7 +165,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>如果您嫌这样麻烦，那么也可以在<strong>make</strong>的时候不指定选项，而是在安装后，打开<code>/etc/default/dmucs</code>文件，设置如下字段：</p>
 
-<pre><code>USE_SERVER = &lt;192.168.1.88&gt;
+<pre><code>USE_SERVER = 192.168.1.88
 </code></pre>
 
 <p>6，启动<strong>loadavg</strong></p>
