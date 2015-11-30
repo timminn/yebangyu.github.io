@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 编译链接 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bian-yi-lian-jie/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-30T22:27:25+08:00</updated>
+  <updated>2015-11-30T22:39:30+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,18 +18,23 @@
     <link href="http://www.yebangyu.org/blog/2015/11/30/build-distributed-compilation-env/"/>
     <updated>2015-11-30T22:23:46+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/11/30/build-distributed-compilation-env</id>
-    <content type="html"><![CDATA[<p>上篇文章，我们介绍了如何利用<strong>Distcc</strong>来搭建分布式编译环境，但是<strong>Distcc</strong>的默认调度策略过于简单，并且并不合理。假如我们的配置是<code>export DISTCC_HOSTS="192.168.1.11 192.168.1.22 192.168.1.33"</code>，那么<strong>Distcc</strong>会根据<strong>DISTCC_HOSTS</strong>中出现的先后顺序，来安排编译任务，越靠前的机器(比如这里的<strong>192.168.1.11</strong>)获得越多的任务，这显然是不科学的。</p>
+    <content type="html"><![CDATA[<p>上篇文章，我们介绍了如何利用<strong>Distcc</strong>来搭建分布式编译环境，但是<strong>Distcc</strong>的默认调度策略过于简单，并且并不合理。假如我们的配置是</p>
+
+<pre><code>export DISTCC_HOSTS="192.168.1.11 192.168.1.22 192.168.1.33"
+</code></pre>
+
+<p>那么<strong>Distcc</strong>会根据<strong>DISTCC_HOSTS</strong>中机器出现的先后顺序，来安排编译任务，越靠前的机器(比如这里的<strong>192.168.1.11</strong>)获得越多的任务，这显然是不科学的。</p>
 
 <p>因此，我们可以利用<strong>Dmucs</strong>提供的调度策略，来优化我们的方案。它可以根据编译机的负载情况和硬件实力，来合理的调度资源。能者多劳嘛。</p>
 
-<p>为了保证本文的完整性，我们还是不厌其烦的把我们的环境再交待下：</p>
+<p>为了保证本文的完整性，我们还是不厌其烦地把我们的环境再交待下：</p>
 
 <!--more-->
 
 
-<p>开发机（<strong>Client</strong>）：这一台机器上有我们的项目、工程文件、代码，平时我们在这台机器上写代码，要编译的对象也在这台机器上。机器<strong>IP</strong>为<strong>192.168.1.99</strong></p>
+<p>开发机（<strong>Client</strong>）：这一台机器上有我们的项目、工程文件、代码，平时我们在这台机器上写代码，要编译的对象也在这台机器上。机器<strong>IP</strong>为<strong>192.168.1.99</strong>。</p>
 
-<p>服务器（<strong>Server</strong>）：负责编译的机器，一共有<strong>3</strong>台。<strong>IP</strong>分别为<strong>192.168.1.11</strong>,<strong>192.168.1.22</strong>,<strong>192.168.1.33</strong>.</p>
+<p>服务器（<strong>Server</strong>）：负责编译的机器，一共有<strong>3</strong>台。<strong>IP</strong>分别为<strong>192.168.1.11</strong>,<strong>192.168.1.22</strong>,<strong>192.168.1.33</strong>。</p>
 
 <p>调度器（<strong>Scheduler</strong>）：调度程序<strong>Dmucs</strong>所在的机器，负责把编译任务合理的派发到编译机器（服务器）的编译程序上。<strong>IP</strong>为<strong>192.168.1.88</strong>。</p>
 
@@ -81,13 +86,13 @@ distccd   3458  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distccd --pid-file=/var/run/distccd.pid --log-file=/var/log/distccd.log --daemon --allow 127.0.0.1 --listen 0.0.0.0 --nice 10
 </code></pre>
 
-<p>5，安装Dmucs</p>
+<p>5，安装<strong>Dmucs</strong></p>
 
 <p>首先，从<a href="http://sourceforge.net/projects/dmucs/files/dmucs/dmucs%200.6.1/">这里</a>下载最新版本的<strong>Dmucs</strong>。</p>
 
 <p>安装也就是普通的<code>configure</code>、<code>make</code>和<code>make install</code>，需要注意的是，执行<strong>make</strong>时，需要加上参数，例如：</p>
 
-<pre><code>make CPPFLAGS=-DSERVER_MACH_NAME=\\\”192.168.1.88\\\”
+<pre><code>make CPPFLAGS=-DSERVER_MACH_NAME=\\\"192.168.1.88\\\"
 </code></pre>
 
 <p>其中<strong>192.168.1.88</strong>是我们的调度器的机器<strong>IP</strong>，根据实际情况自行修改。服务器上的编译程序，需要把编译负载情况，发送给调度器上的调度程序，作为它调度时的参考信息。</p>
@@ -112,10 +117,10 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>在调度器的<code>/usr/local/share/dmucs/</code>目录下，新建<strong>hosts-info</strong>文件，格式和内容如下：</p>
 
-<pre><code>\#Format: machine number-of-cpus power-index
-192.168.1.11       4         10
-192.168.1.22       4         5
-192.168.1.33       4         5
+<pre><code>#Format: machine number-of-cpus power-index
+192.168.1.11       4            10
+192.168.1.22       4            5
+192.168.1.33       4            5
 </code></pre>
 
 <p>其中，<strong>power-index</strong>（必须大于等于<strong>1</strong>）表示了这台机器的战斗力，值越高代表性能越强，分到的编译任务也越多。能者多劳嘛。</p>
@@ -146,9 +151,9 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>这两种方法可以任选一种，如果你两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
 
-<p>3，应用<strong>Distcc</strong></p>
+<p>3，应用<strong>Distcc</strong>和<strong>Dmucs</strong></p>
 
-<p>应用<strong>Distcc</strong>来编译代码有几种方法：</p>
+<p>应用<strong>Distcc</strong>和<strong>Dmucs</strong>来编译代码有几种方法：</p>
 
 <p>方法一：修改<strong>makefile</strong>中的<strong>CXX</strong>的值</p>
 
@@ -173,7 +178,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 <pre><code>./configure --CXX=gethost distcc g++
 </code></pre>
 
-<p>那么生成的makefile文件将自动使用Distcc &amp; Dmucs了。</p>
+<p>那么生成的<strong>makefile</strong>文件将自动使用<strong>Distcc</strong>和<strong>Dmucs</strong>了。</p>
 
 <h2>附录：调度策略</h2>
 
