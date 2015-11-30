@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://www.yebangyu.org/blog/2015/11/30/build-distributed-compilation-env/</loc>
+    <lastmod>2015-11-30T22:23:46+08:00</lastmod>
+  </url>
+  <url>
     <loc>http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev/</loc>
     <lastmod>2015-11-23T22:48:32+08:00</lastmod>
   </url>
