@@ -84,7 +84,7 @@
   </header>
 
 
-<div class="entry-content"><p>如果你的<strong>C++</strong>项目非常庞大，含有<strong>1000</strong>个<strong>.h</strong>文件，<strong>2000</strong>个<strong>.cpp</strong>文件，那么我敢打赌，每次编译所花的时间，都足够你喝<strong>3000</strong>杯咖啡了。如何加快编译速度？</p>
+<div class="entry-content"><p>如果您的<strong>C++</strong>项目非常庞大，含有<strong>1000</strong>个<strong>.h</strong>文件，<strong>2000</strong>个<strong>.cpp</strong>文件，那么我敢打赌，每次编译所花的时间，都足够您喝<strong>3000</strong>杯咖啡了。如何加快编译速度？</p>
 
 <p><strong>Distcc</strong>是开源的用于搭建分布式编译环境的利器，它通过利用多台机器的资源，并行编译，来解决这个棘手的问题。然而，它的调度算法过于简单，不大合理，因此我们利用<strong>DMUCS</strong>提供的调度功能，来搭建一个相对完美的分布式编译平台。本文，我们首先介绍如何（单独）使用<strong>Distcc</strong>来加速编译，下一篇介绍如何组合使用<strong>Distcc</strong>+<strong>DMUCS</strong>来做进一步的完善和优化。</p>
 
@@ -166,7 +166,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>如果机器很多，那么这样填写可能不大方便，可以在<code>/etc/distcc/hosts</code>里添加。</p>
 
-<p>这两种方法可以任选一种，如果你两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
+<p>这两种方法可以任选一种，如果您两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
 
 <p>3，应用<strong>Distcc</strong></p>
 

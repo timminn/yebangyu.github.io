@@ -219,7 +219,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>如果机器很多，那么这样填写可能不大方便，可以在<code>/etc/distcc/hosts</code>里添加。</p>
 
-<p>这两种方法可以任选一种，如果你两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
+<p>这两种方法可以任选一种，如果您两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
 
 <p>3，应用<strong>Distcc</strong>和<strong>Dmucs</strong></p>
 
@@ -254,7 +254,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>根据<a href="http://dmucs.sourceforge.net/">文档</a>，<strong>Dmucs</strong>的调度策略是：</p>
 
-<p>1，<strong>Dmucs</strong>会维护几个列表（原文为<strong>tier</strong>，表示等级、阶梯），每个列表对一个<strong>power-index</strong>，具有相同<strong>power-index</strong>值的机器会在同一个列表中。因此，上面三台服务器，<strong>192.168.1.22</strong>和<strong>192.168.1.33</strong>会在同一个列表里，<strong>192.168.1.11</strong>在一个列表里。</p>
+<p>1，<strong>Dmucs</strong>会维护几个列表（原文为<strong>tier</strong>，表示等级、阶梯），每个列表对应一个<strong>power-index</strong>，具有相同<strong>power-index</strong>值的机器会在同一个列表中。因此，上面三台服务器，<strong>192.168.1.22</strong>和<strong>192.168.1.33</strong>会在同一个列表里，<strong>192.168.1.11</strong>在一个列表里。</p>
 
 <p>2，每次获得编译任务请求时，<strong>Dmucs</strong>会优先从高<strong>power-index</strong>对应的列表里随机选一台机器。</p>
 

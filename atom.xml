@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-01T08:47:20+08:00</updated>
+  <updated>2015-12-01T22:23:39+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -153,7 +153,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>如果机器很多，那么这样填写可能不大方便，可以在<code>/etc/distcc/hosts</code>里添加。</p>
 
-<p>这两种方法可以任选一种，如果你两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
+<p>这两种方法可以任选一种，如果您两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
 
 <p>3，应用<strong>Distcc</strong>和<strong>Dmucs</strong></p>
 
@@ -188,7 +188,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>根据<a href="http://dmucs.sourceforge.net/">文档</a>，<strong>Dmucs</strong>的调度策略是：</p>
 
-<p>1，<strong>Dmucs</strong>会维护几个列表（原文为<strong>tier</strong>，表示等级、阶梯），每个列表对一个<strong>power-index</strong>，具有相同<strong>power-index</strong>值的机器会在同一个列表中。因此，上面三台服务器，<strong>192.168.1.22</strong>和<strong>192.168.1.33</strong>会在同一个列表里，<strong>192.168.1.11</strong>在一个列表里。</p>
+<p>1，<strong>Dmucs</strong>会维护几个列表（原文为<strong>tier</strong>，表示等级、阶梯），每个列表对应一个<strong>power-index</strong>，具有相同<strong>power-index</strong>值的机器会在同一个列表中。因此，上面三台服务器，<strong>192.168.1.22</strong>和<strong>192.168.1.33</strong>会在同一个列表里，<strong>192.168.1.11</strong>在一个列表里。</p>
 
 <p>2，每次获得编译任务请求时，<strong>Dmucs</strong>会优先从高<strong>power-index</strong>对应的列表里随机选一台机器。</p>
 
@@ -203,7 +203,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
     <link href="http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev/"/>
     <updated>2015-11-23T22:48:32+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev</id>
-    <content type="html"><![CDATA[<p>如果你的<strong>C++</strong>项目非常庞大，含有<strong>1000</strong>个<strong>.h</strong>文件，<strong>2000</strong>个<strong>.cpp</strong>文件，那么我敢打赌，每次编译所花的时间，都足够你喝<strong>3000</strong>杯咖啡了。如何加快编译速度？</p>
+    <content type="html"><![CDATA[<p>如果您的<strong>C++</strong>项目非常庞大，含有<strong>1000</strong>个<strong>.h</strong>文件，<strong>2000</strong>个<strong>.cpp</strong>文件，那么我敢打赌，每次编译所花的时间，都足够您喝<strong>3000</strong>杯咖啡了。如何加快编译速度？</p>
 
 <p><strong>Distcc</strong>是开源的用于搭建分布式编译环境的利器，它通过利用多台机器的资源，并行编译，来解决这个棘手的问题。然而，它的调度算法过于简单，不大合理，因此我们利用<strong>DMUCS</strong>提供的调度功能，来搭建一个相对完美的分布式编译平台。本文，我们首先介绍如何（单独）使用<strong>Distcc</strong>来加速编译，下一篇介绍如何组合使用<strong>Distcc</strong>+<strong>DMUCS</strong>来做进一步的完善和优化。</p>
 
@@ -285,7 +285,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>如果机器很多，那么这样填写可能不大方便，可以在<code>/etc/distcc/hosts</code>里添加。</p>
 
-<p>这两种方法可以任选一种，如果你两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
+<p>这两种方法可以任选一种，如果您两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
 
 <p>3，应用<strong>Distcc</strong></p>
 
