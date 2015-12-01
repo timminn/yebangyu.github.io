@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-11-30T22:53:13+08:00</updated>
+  <updated>2015-12-01T08:47:20+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -113,7 +113,11 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <h2>调度器</h2>
 
-<p>1，配置服务器属性</p>
+<p>1，安装Dmucs</p>
+
+<p>请参考上面的第5步。</p>
+
+<p>2，配置服务器属性</p>
 
 <p>在调度器的<code>/usr/local/share/dmucs/</code>目录下，新建<strong>hosts-info</strong>文件，格式和内容如下：</p>
 
@@ -125,7 +129,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>其中，<strong>power-index</strong>（必须大于等于<strong>1</strong>）表示了这台机器的战斗力，值越高代表性能越强，分到的编译任务也越多。能者多劳嘛。</p>
 
-<p>2，启动调度程序</p>
+<p>3，启动调度程序</p>
 
 <p>命令为：</p>
 
