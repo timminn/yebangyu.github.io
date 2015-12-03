@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-01T22:23:39+08:00</updated>
+  <updated>2015-12-03T22:29:11+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -113,9 +113,9 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <h2>调度器</h2>
 
-<p>1，安装Dmucs</p>
+<p>1，安装<strong>Dmucs</strong></p>
 
-<p>请参考上面的第5步。</p>
+<p>请参考上面的第<strong>5</strong>步。</p>
 
 <p>2，配置服务器属性</p>
 
