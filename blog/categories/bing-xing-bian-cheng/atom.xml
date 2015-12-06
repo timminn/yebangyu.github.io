@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-03T22:29:11+08:00</updated>
+  <updated>2015-12-06T23:09:10+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -59,7 +59,7 @@ int b = i;//强制从内存中读取实时的i的值
 
 <p>这个技巧，我是从《<strong>Is parallel programming hard？</strong>》上学到的。</p>
 
-<p>听起来都很好？然而事情没这么美好：<strong>volatile</strong>常被误用，很多人往往不知道或者忽略它的两个特点：<strong>volatile</strong>不保证原子性；使用<strong>volatile</strong>不应该对它有任何<strong>Memory Barrier</strong>的期待。</p>
+<p>听起来都很好？然而险象环生：<strong>volatile</strong>常被误用，很多人往往不知道或者忽略它的两个特点：在<strong>C/C++</strong>语言里，<strong>volatile</strong>不保证原子性；使用<strong>volatile</strong>不应该对它有任何<strong>Memory Barrier</strong>的期待。</p>
 
 <p>第一点比较好理解，对于第二点，我们来看一个很经典的例子：</p>
 
@@ -81,7 +81,7 @@ void thread_B
 
 <p>线程<strong>B</strong>中，虽然<strong>is_ready</strong>有<strong>volatile</strong>修饰，但是这里的<strong>volatile</strong>不提供任何<strong>Memory Barrier</strong>，因此<strong>12</strong>行和<strong>13</strong>行可能被乱序执行，<code>is_ready = 1</code>被执行，而<strong>message</strong>还未被正确设置，导致线程<strong>A</strong>读到错误的值。</p>
 
-<p>这意味着，在多线程中使用<strong>volatile</strong>来同步几乎肯定是一个错误的选择；如果一定要使用，需要非常谨慎、小心。</p>
+<p>这意味着，在多线程中使用<strong>volatile</strong>需要非常谨慎、小心。</p>
 
 <h2>__thread</h2>
 
@@ -263,7 +263,7 @@ wait
 
 <p><code>__sync_bool_compare_and_swap()</code>和<code>__sync_val_compare_and_swap()</code>，前者返回是否操作成功（待修改变量被替换为新值），而后者返回的是老值。</p>
 
-<p>由于原子操作是让多个步骤看起来是一次的行为，因此往往包含<strong>memory barrier</strong>以保证语句的执行顺序。</p>
+<p>由于原子操作是让多个步骤看起来是一次的行为，因此往往包含<strong>Memory Barrier</strong>以保证语句的执行顺序。</p>
 ]]></content>
   </entry>
   
