@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-06T23:30:51+08:00</updated>
+  <updated>2015-12-10T23:31:49+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,236 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Lock Free程序中Hazard Pointer的应用]]></title>
+    <link href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/"/>
+    <updated>2015-12-10T23:00:20+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer</id>
+    <content type="html"><![CDATA[<p>废话不多说了，直接开始讨论。</p>
+
+<p>首先看以下的程序，有问题吗？</p>
+
+<!--more-->
+
+
+
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include&lt;iostream&gt;</span>
+</span><span class='line'><span class="cp">#include&lt;thread&gt; </span><span class="c1">//C++11中的多线程基础设施</span>
+</span><span class='line'><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class='line'><span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+</span><span class='line'><span class="kt">void</span> <span class="nf">reader</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="k">nullptr</span> <span class="o">!=</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span> <span class="c1">//nullptr是C++11中引入的</span>
+</span><span class='line'>    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">p</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="kt">void</span> <span class="nf">writer</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="k">delete</span> <span class="n">p</span><span class="p">;</span>
+</span><span class='line'>  <span class="n">p</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kr">thread</span> <span class="n">t1</span><span class="p">(</span><span class="n">reader</span><span class="p">);</span>
+</span><span class='line'>  <span class="kr">thread</span> <span class="n">t2</span><span class="p">(</span><span class="n">writer</span><span class="p">);</span>
+</span><span class='line'>  <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+</span><span class='line'>  <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>答案当然是有问题。这个程序存在可怕的<strong>race condition</strong>：如果当线程<strong>reader</strong>判断完<strong>p</strong>发现它不是<strong>nullptr</strong>后，还未执行第<strong>8</strong>行就被调度出去，轮到线程<strong>writer</strong>执行，它执行完<strong>13</strong>、<strong>14</strong>行后，又继续调度线程<strong>reader</strong>，此时执行第<strong>8</strong>行导致程序崩溃。</p>
+
+<p>这里的本质是对象的生命周期问题，表述为：多线程程序中，某线程通过一个指针访问一段内存时，如何保证指针所指向的内存是有效的？</p>
+
+<p>这当然有多种方法，加一把互斥锁就万事大吉了。不过本文讨论的是<strong>Lock Free</strong>情况下的内存管理，因此我们要讨论的是<strong>2004</strong>年（其实在<strong>2002</strong>年就有人独立提出类似方法）提出的<strong>Hazard Pointer</strong>大法。接着看以下代码：</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include&lt;thread&gt;</span>
+</span><span class='line'><span class="cp">#include&lt;iostream&gt;</span>
+</span><span class='line'><span class="cp">#define Strong_Memory_Barrier __sync_synchronize</span>
+</span><span class='line'><span class="cp">#define ACCESS_ONCE(x) (* (volatile typeof(x) *) &amp;(x))</span>
+</span><span class='line'><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class='line'><span class="k">struct</span> <span class="n">HazardPointer</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="n">HazardPointer</span><span class="p">()</span> <span class="o">:</span><span class="n">p_</span><span class="p">(</span><span class="k">nullptr</span><span class="p">){}</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="o">*</span><span class="n">p_</span><span class="p">;</span> <span class="c1">//Hazard Pointer封装了原始指针</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'>
+</span><span class='line'><span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span> <span class="c1">//原始指针</span>
+</span><span class='line'>
+</span><span class='line'><span class="n">HazardPointer</span> <span class="o">*</span><span class="n">hp</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HazardPointer</span><span class="p">();</span> <span class="c1">//只有一个线程可以写</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">Writer</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="k">public</span><span class="o">:</span>
+</span><span class='line'>  <span class="kt">void</span> <span class="n">retire</span><span class="p">(</span><span class="kt">int</span> <span class="o">**</span><span class="n">tmp</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="o">*</span><span class="n">retire_list</span> <span class="o">=</span> <span class="o">*</span><span class="n">tmp</span><span class="p">;</span><span class="c1">//设置要释放的指针</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="kt">void</span> <span class="n">gc</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">retire_list</span> <span class="o">==</span> <span class="n">hp</span><span class="o">-&gt;</span><span class="n">p_</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>      <span class="c1">//说明有读者正在使用它，不能释放</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class='line'>      <span class="c1">//可以安全地释放</span>
+</span><span class='line'>      <span class="k">delete</span> <span class="o">*</span><span class="n">retire_list</span><span class="p">;</span>
+</span><span class='line'>      <span class="o">*</span><span class="n">retire_list</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="kt">void</span> <span class="n">write</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="c1">//....</span>
+</span><span class='line'>    <span class="n">retire</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">gc</span><span class="p">();</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="k">private</span><span class="o">:</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="o">**</span><span class="n">retire_list</span><span class="p">;</span><span class="c1">//记录待释放的指针</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'><span class="k">class</span> <span class="nc">Reader</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'><span class="k">public</span><span class="o">:</span>
+</span><span class='line'>  <span class="kt">void</span> <span class="n">acquire</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">tmp</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">hp</span><span class="o">-&gt;</span><span class="n">p_</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="kt">void</span> <span class="n">release</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">hp</span><span class="o">-&gt;</span><span class="n">p_</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>  <span class="kt">void</span> <span class="n">read</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class='line'>    <span class="k">do</span>
+</span><span class='line'>    <span class="p">{</span>
+</span><span class='line'>      <span class="n">tmp</span> <span class="o">=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">Strong_Memory_Barrier</span><span class="p">();</span>
+</span><span class='line'>      <span class="n">acquire</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span> <span class="c1">//封装。这是告诉Writer：我要读，别释放！</span>
+</span><span class='line'>    <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">!=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">p</span><span class="p">));</span><span class="c1">//仔细想想，为什么这里还要判断？</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="k">nullptr</span> <span class="o">!=</span> <span class="n">tmp</span><span class="p">)</span> <span class="p">{</span> <span class="c1">//再想想，这里为嘛也要判断？</span>
+</span><span class='line'>      <span class="c1">//it is safe to access *tmp from now on</span>
+</span><span class='line'>      <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span><span class="c1">//没问题~</span>
+</span><span class='line'>    <span class="p">}</span>
+</span><span class='line'>    <span class="c1">//when you finish reading it, just release it .</span>
+</span><span class='line'>    <span class="n">release</span><span class="p">();</span><span class="c1">//其实就是告诉Writer：用完啦，要释放要保留，悉听尊便。</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'><span class="p">};</span>
+</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kr">thread</span> <span class="n">t1</span><span class="p">(</span><span class="o">&amp;</span><span class="n">Reader</span><span class="o">::</span><span class="n">read</span><span class="p">,</span> <span class="n">Reader</span><span class="p">());</span>
+</span><span class='line'>  <span class="kr">thread</span> <span class="n">t2</span><span class="p">(</span><span class="o">&amp;</span><span class="n">Writer</span><span class="o">::</span><span class="n">write</span><span class="p">,</span> <span class="n">Writer</span><span class="p">());</span>
+</span><span class='line'>  <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+</span><span class='line'>  <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>总结下：</p>
+
+<p>1，对于读线程，每次访问指针前，都通过<strong>acquire</strong>动作，用<strong>Hazard Pointer</strong>封装一下待读取指针，此举保护了原始指针，向其他线程宣告，我正在读取它指向的内存，请别释放它。用完就<strong>release</strong>一下。</p>
+
+<p>2，对于写线程，真正释放前，需要检查是否有读线程正在操作它。如何知道？看看自己待释放的指针，有没有存在在读线程的<strong>Hazard Pointer</strong>里即可。</p>
+
+<p>至于<strong>52</strong>行，考虑如下情形：读线程刚刚设置了<strong>tmp</strong>指针，还没对它进行保护，就被调度出去；写线程执行<strong>gc</strong>时，发现没有读线程的<strong>Hazard Pointer</strong>封装了<strong>tmp</strong>指针，于是将它释放；等读线程重新被调度执行时通过<strong>tmp</strong>进行内存访问，就会导致问题。</p>
+
+<p>至于<strong>53</strong>行，请读者自行分析。</p>
+
+<p>最后一个问题：<strong>Hazard Pointer</strong>的内存空间，谁来负责管理？</p>
+
+<p>在实际程序里，一般所需<strong>Hazard Pointer</strong>的数量不会太多且较为固定，因此基本上只申请，不释放了。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[利用Distcc和Dmucs构建大规模、分布式C++编译环境(下)]]></title>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-06T23:30:51+08:00</updated>
+  <updated>2015-12-10T23:31:49+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,138 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Lock Free程序中Hazard Pointer的应用]]></title>
+    <link href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/"/>
+    <updated>2015-12-10T23:00:20+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer</id>
+    <content type="html"><![CDATA[<p>废话不多说了，直接开始讨论。</p>
+
+<p>首先看以下的程序，有问题吗？</p>
+
+<!--more-->
+
+
+<pre><code class="c++">#include&lt;iostream&gt;
+#include&lt;thread&gt; //C++11中的多线程基础设施
+using namespace std;
+int *p = new int(2);
+void reader()
+{
+  if (nullptr != p) { //nullptr是C++11中引入的
+    cout &lt;&lt; *p &lt;&lt; endl;
+  }
+}
+void writer()
+{
+  delete p;
+  p = nullptr;
+}
+int main()
+{
+  thread t1(reader);
+  thread t2(writer);
+  t1.join();
+  t2.join();
+  return 0;
+}
+</code></pre>
+
+<p>答案当然是有问题。这个程序存在可怕的<strong>race condition</strong>：如果当线程<strong>reader</strong>判断完<strong>p</strong>发现它不是<strong>nullptr</strong>后，还未执行第<strong>8</strong>行就被调度出去，轮到线程<strong>writer</strong>执行，它执行完<strong>13</strong>、<strong>14</strong>行后，又继续调度线程<strong>reader</strong>，此时执行第<strong>8</strong>行导致程序崩溃。</p>
+
+<p>这里的本质是对象的生命周期问题，表述为：多线程程序中，某线程通过一个指针访问一段内存时，如何保证指针所指向的内存是有效的？</p>
+
+<p>这当然有多种方法，加一把互斥锁就万事大吉了。不过本文讨论的是<strong>Lock Free</strong>情况下的内存管理，因此我们要讨论的是<strong>2004</strong>年（其实在<strong>2002</strong>年就有人独立提出类似方法）提出的<strong>Hazard Pointer</strong>大法。接着看以下代码：</p>
+
+<pre><code class="c++">#include&lt;thread&gt;
+#include&lt;iostream&gt;
+#define Strong_Memory_Barrier __sync_synchronize
+#define ACCESS_ONCE(x) (* (volatile typeof(x) *) &amp;(x))
+using namespace std;
+struct HazardPointer
+{
+  HazardPointer() :p_(nullptr){}
+  int *p_; //Hazard Pointer封装了原始指针
+};
+
+int *p = new int(2); //原始指针
+
+HazardPointer *hp = new HazardPointer(); //只有一个线程可以写
+
+class Writer
+{
+public:
+  void retire(int **tmp) {
+    *retire_list = *tmp;//设置要释放的指针
+  }
+  void gc() {
+    if (*retire_list == hp-&gt;p_) {
+      //说明有读者正在使用它，不能释放
+    } else {
+      //可以安全地释放
+      delete *retire_list;
+      *retire_list = nullptr;
+    }
+  }
+  void write() {
+    //....
+    retire(&amp;p);
+    gc();
+  }
+private:
+  int **retire_list;//记录待释放的指针
+};
+class Reader
+{
+public:
+  void acquire(int *tmp) {
+    hp-&gt;p_ = tmp;
+  }
+  void release() {
+    hp-&gt;p_ = nullptr;
+  }
+  void read() {
+    int *tmp = nullptr;
+    do
+    {
+      tmp = ACCESS_ONCE(p);
+      Strong_Memory_Barrier();
+      acquire(tmp); //封装。这是告诉Writer：我要读，别释放！
+    } while (tmp != ACCESS_ONCE(p));//仔细想想，为什么这里还要判断？
+    if (nullptr != tmp) { //再想想，这里为嘛也要判断？
+      //it is safe to access *tmp from now on
+      cout &lt;&lt; *tmp &lt;&lt; endl;//没问题~
+    }
+    //when you finish reading it, just release it .
+    release();//其实就是告诉Writer：用完啦，要释放要保留，悉听尊便。
+  }
+};
+int main()
+{
+  thread t1(&amp;Reader::read, Reader());
+  thread t2(&amp;Writer::write, Writer());
+  t1.join();
+  t2.join();
+  return 0;
+}
+</code></pre>
+
+<p>总结下：</p>
+
+<p>1，对于读线程，每次访问指针前，都通过<strong>acquire</strong>动作，用<strong>Hazard Pointer</strong>封装一下待读取指针，此举保护了原始指针，向其他线程宣告，我正在读取它指向的内存，请别释放它。用完就<strong>release</strong>一下。</p>
+
+<p>2，对于写线程，真正释放前，需要检查是否有读线程正在操作它。如何知道？看看自己待释放的指针，有没有存在在读线程的<strong>Hazard Pointer</strong>里即可。</p>
+
+<p>至于<strong>52</strong>行，考虑如下情形：读线程刚刚设置了<strong>tmp</strong>指针，还没对它进行保护，就被调度出去；写线程执行<strong>gc</strong>时，发现没有读线程的<strong>Hazard Pointer</strong>封装了<strong>tmp</strong>指针，于是将它释放；等读线程重新被调度执行时通过<strong>tmp</strong>进行内存访问，就会导致问题。</p>
+
+<p>至于<strong>53</strong>行，请读者自行分析。</p>
+
+<p>最后一个问题：<strong>Hazard Pointer</strong>的内存空间，谁来负责管理？</p>
+
+<p>在实际程序里，一般所需<strong>Hazard Pointer</strong>的数量不会太多且较为固定，因此基本上只申请，不释放了。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Linux环境多线程编程基础设施]]></title>
