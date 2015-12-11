@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-11T22:05:35+08:00</updated>
+  <updated>2015-12-11T22:11:28+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -78,13 +78,13 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>答案当然是有问题。这个程序race condition：如果当线程reader判断完p发现它不是nullptr后，还未执行第8行就被调度出去，轮到线程writer执行，它执行完13、14行后，又继续调度线程reader，此时执行第8行导致程序崩溃。</p>
+<p>答案当然是有问题。这个程序存在如下的race condition：如果当线程reader判断完p发现它不是nullptr后，还未执行第8行就被调度出去，轮到线程writer执行，它执行完13、14行后，又继续调度线程reader，此时执行第8行导致程序崩溃。</p>
 
 <p>这里的问题，可以不精确地表述为：多线程程序中，某线程通过一个指针访问一段内存时，如何保证指针所指向的那块内存是有效的？</p>
 
 <h2>Hazard Pointer</h2>
 
-<p>这当然有多种方法，加一把互斥锁就万事大吉了(当然，得注意锁本身的生命周期)。不过本文讨论的是Lock Free情况下的内存管理，因此我们要介绍的是2004年左右提出的Hazard Pointer大法。</p>
+<p>这当然有多种方法，加一把互斥锁就万事大吉了(当然，得注意锁本身的生命周期)。不过本文讨论的是Lock Free情况下的内存管理，这里要介绍的是2004年左右提出的Hazard Pointer方法。</p>
 
 <p>接着看以下代码：</p>
 
@@ -159,7 +159,6 @@
 <span class='line-number'>69</span>
 <span class='line-number'>70</span>
 <span class='line-number'>71</span>
-<span class='line-number'>72</span>
 </pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include&lt;thread&gt;</span>
 </span><span class='line'><span class="cp">#include&lt;iostream&gt;</span>
 </span><span class='line'><span class="cp">#define Strong_Memory_Barrier __sync_synchronize</span>
@@ -190,11 +189,10 @@
 </span><span class='line'>    <span class="p">}</span>
 </span><span class='line'>  <span class="p">}</span>
 </span><span class='line'>  <span class="kt">void</span> <span class="n">write</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>    <span class="c1">//....</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">p</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">retire</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">gc</span><span class="p">();</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">p</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">retire</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
+</span><span class='line'>    <span class="n">gc</span><span class="p">();</span>
 </span><span class='line'>  <span class="p">}</span>
 </span><span class='line'><span class="k">private</span><span class="o">:</span>
 </span><span class='line'>  <span class="kt">int</span> <span class="o">*</span><span class="n">retire_list</span><span class="p">;</span><span class="c1">//记录待释放的指针</span>
@@ -235,7 +233,7 @@
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>总结下：</p>
+<p>总结：</p>
 
 <p>1，对于读线程，每次访问指针前，都通过acquire动作，用Hazard Pointer封装一下待读取指针，此举保护了原始指针，向其他线程宣告，我正在读取它指向的内存，请别释放它。用完就release一下。</p>
 
