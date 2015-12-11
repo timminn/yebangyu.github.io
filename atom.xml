@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-10T23:31:49+08:00</updated>
+  <updated>2015-12-11T09:01:16+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -19,6 +19,8 @@
     <updated>2015-12-10T23:00:20+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer</id>
     <content type="html"><![CDATA[<p>废话不多说了，直接开始讨论。</p>
+
+<h2>险象环生</h2>
 
 <p>首先看以下的程序，有问题吗？</p>
 
@@ -78,9 +80,11 @@
 
 <p>答案当然是有问题。这个程序存在可怕的<strong>race condition</strong>：如果当线程<strong>reader</strong>判断完<strong>p</strong>发现它不是<strong>nullptr</strong>后，还未执行第<strong>8</strong>行就被调度出去，轮到线程<strong>writer</strong>执行，它执行完<strong>13</strong>、<strong>14</strong>行后，又继续调度线程<strong>reader</strong>，此时执行第<strong>8</strong>行导致程序崩溃。</p>
 
-<p>这里的本质是对象的生命周期问题，表述为：多线程程序中，某线程通过一个指针访问一段内存时，如何保证指针所指向的内存是有效的？</p>
+<p>这里的本质是对象的生命周期问题，表述为：多线程程序中，某线程通过一个指针访问一段内存时，如何保证指针所指向的那块内存是有效的？</p>
 
-<p>这当然有多种方法，加一把互斥锁就万事大吉了。不过本文讨论的是<strong>Lock Free</strong>情况下的内存管理，因此我们要讨论的是<strong>2004</strong>年（其实在<strong>2002</strong>年就有人独立提出类似方法）提出的<strong>Hazard Pointer</strong>大法。接着看以下代码：</p>
+<h2>Hazard Pointer</h2>
+
+<p>这当然有多种方法，加一把互斥锁就万事大吉了。不过本文讨论的是<strong>Lock Free</strong>情况下的内存管理，因此我们要介绍的是<strong>2004</strong>年（其实在<strong>2002</strong>年就有人独立提出类似方法）提出的<strong>Hazard Pointer</strong>大法。接着看以下代码：</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -205,7 +209,7 @@
 </span><span class='line'>    <span class="k">do</span>
 </span><span class='line'>    <span class="p">{</span>
 </span><span class='line'>      <span class="n">tmp</span> <span class="o">=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
-</span><span class='line'>    <span class="n">Strong_Memory_Barrier</span><span class="p">();</span>
+</span><span class='line'>      <span class="n">Strong_Memory_Barrier</span><span class="p">();</span>
 </span><span class='line'>      <span class="n">acquire</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span> <span class="c1">//封装。这是告诉Writer：我要读，别释放！</span>
 </span><span class='line'>    <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">!=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">p</span><span class="p">));</span><span class="c1">//仔细想想，为什么这里还要判断？</span>
 </span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="k">nullptr</span> <span class="o">!=</span> <span class="n">tmp</span><span class="p">)</span> <span class="p">{</span> <span class="c1">//再想想，这里为嘛也要判断？</span>
@@ -237,9 +241,19 @@
 
 <p>至于<strong>53</strong>行，请读者自行分析。</p>
 
+<h2>最后思考</h2>
+
 <p>最后一个问题：<strong>Hazard Pointer</strong>的内存空间，谁来负责管理？</p>
 
 <p>在实际程序里，一般所需<strong>Hazard Pointer</strong>的数量不会太多且较为固定，因此基本上只申请，不释放了。</p>
+
+<h2>参考文献</h2>
+
+<p><a href="https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf">https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf</a></p>
+
+<h2>特别感谢</h2>
+
+<p>感谢<a href="http://weibo.com/hanfooo">韩富晟</a> 先生对我的指点，让我加深了对Hazard Pointer的认识。</p>
 ]]></content>
   </entry>
   
