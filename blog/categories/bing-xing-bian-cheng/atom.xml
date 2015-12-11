@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-11T09:01:16+08:00</updated>
+  <updated>2015-12-11T14:15:02+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Lock Free程序中Hazard Pointer的应用]]></title>
+    <title type="html"><![CDATA[Lock Free程序中Hazard Pointer(上)]]></title>
     <link href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/"/>
     <updated>2015-12-10T23:00:20+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer</id>
@@ -78,25 +78,26 @@ HazardPointer *hp = new HazardPointer(); //只有一个线程可以写
 class Writer
 {
 public:
-  void retire(int **tmp) {
-    *retire_list = *tmp;//设置要释放的指针
+  void retire(int *tmp) {
+    retire_list = tmp;//设置要释放的指针
   }
   void gc() {
-    if (*retire_list == hp-&gt;p_) {
+    if (retire_list == hp-&gt;p_) {
       //说明有读者正在使用它，不能释放
     } else {
       //可以安全地释放
-      delete *retire_list;
-      *retire_list = nullptr;
+      delete retire_list;
     }
   }
   void write() {
     //....
-    retire(&amp;p);
+    int *tmp = p;
+    p = nullptr;
+    retire(tmp);
     gc();
   }
 private:
-  int **retire_list;//记录待释放的指针
+  int *retire_list;//记录待释放的指针
 };
 class Reader
 {

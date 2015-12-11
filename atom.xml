@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-11T09:01:16+08:00</updated>
+  <updated>2015-12-11T14:15:02+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Lock Free程序中Hazard Pointer的应用]]></title>
+    <title type="html"><![CDATA[Lock Free程序中Hazard Pointer(上)]]></title>
     <link href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/"/>
     <updated>2015-12-10T23:00:20+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer</id>
@@ -157,6 +157,7 @@
 <span class='line-number'>69</span>
 <span class='line-number'>70</span>
 <span class='line-number'>71</span>
+<span class='line-number'>72</span>
 </pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include&lt;thread&gt;</span>
 </span><span class='line'><span class="cp">#include&lt;iostream&gt;</span>
 </span><span class='line'><span class="cp">#define Strong_Memory_Barrier __sync_synchronize</span>
@@ -175,25 +176,26 @@
 </span><span class='line'><span class="k">class</span> <span class="nc">Writer</span>
 </span><span class='line'><span class="p">{</span>
 </span><span class='line'><span class="k">public</span><span class="o">:</span>
-</span><span class='line'>  <span class="kt">void</span> <span class="n">retire</span><span class="p">(</span><span class="kt">int</span> <span class="o">**</span><span class="n">tmp</span><span class="p">)</span> <span class="p">{</span>
-</span><span class='line'>    <span class="o">*</span><span class="n">retire_list</span> <span class="o">=</span> <span class="o">*</span><span class="n">tmp</span><span class="p">;</span><span class="c1">//设置要释放的指针</span>
+</span><span class='line'>  <span class="kt">void</span> <span class="n">retire</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">tmp</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="n">retire_list</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">;</span><span class="c1">//设置要释放的指针</span>
 </span><span class='line'>  <span class="p">}</span>
 </span><span class='line'>  <span class="kt">void</span> <span class="n">gc</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">retire_list</span> <span class="o">==</span> <span class="n">hp</span><span class="o">-&gt;</span><span class="n">p_</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="p">(</span><span class="n">retire_list</span> <span class="o">==</span> <span class="n">hp</span><span class="o">-&gt;</span><span class="n">p_</span><span class="p">)</span> <span class="p">{</span>
 </span><span class='line'>      <span class="c1">//说明有读者正在使用它，不能释放</span>
 </span><span class='line'>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
 </span><span class='line'>      <span class="c1">//可以安全地释放</span>
-</span><span class='line'>      <span class="k">delete</span> <span class="o">*</span><span class="n">retire_list</span><span class="p">;</span>
-</span><span class='line'>      <span class="o">*</span><span class="n">retire_list</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class='line'>      <span class="k">delete</span> <span class="n">retire_list</span><span class="p">;</span>
 </span><span class='line'>    <span class="p">}</span>
 </span><span class='line'>  <span class="p">}</span>
 </span><span class='line'>  <span class="kt">void</span> <span class="n">write</span><span class="p">()</span> <span class="p">{</span>
 </span><span class='line'>    <span class="c1">//....</span>
-</span><span class='line'>    <span class="n">retire</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">);</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span>
+</span><span class='line'>  <span class="n">p</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">retire</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
 </span><span class='line'>    <span class="n">gc</span><span class="p">();</span>
 </span><span class='line'>  <span class="p">}</span>
 </span><span class='line'><span class="k">private</span><span class="o">:</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="o">**</span><span class="n">retire_list</span><span class="p">;</span><span class="c1">//记录待释放的指针</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="o">*</span><span class="n">retire_list</span><span class="p">;</span><span class="c1">//记录待释放的指针</span>
 </span><span class='line'><span class="p">};</span>
 </span><span class='line'><span class="k">class</span> <span class="nc">Reader</span>
 </span><span class='line'><span class="p">{</span>
