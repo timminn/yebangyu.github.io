@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 编译链接 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bian-yi-lian-jie/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-11T22:11:28+08:00</updated>
+  <updated>2015-12-12T14:12:06+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -243,7 +243,7 @@ ALLOWEDNETS="127.0.0.1 192.168.1.0/24"
 LISTENER="0.0.0.0"
 </code></pre>
 
-<p>第一行设置开机就启动distccd</p>
+<p>第一行设置开机就启动<strong>distccd</strong></p>
 
 <p>第二行设置允许利用本机进行编译的开发机</p>
 

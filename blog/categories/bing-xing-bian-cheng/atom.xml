@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-11T22:11:28+08:00</updated>
+  <updated>2015-12-12T14:12:06+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -52,13 +52,13 @@ int main()
 }
 </code></pre>
 
-<p>答案当然是有问题。这个程序存在如下的race condition：如果当线程reader判断完p发现它不是nullptr后，还未执行第8行就被调度出去，轮到线程writer执行，它执行完13、14行后，又继续调度线程reader，此时执行第8行导致程序崩溃。</p>
+<p>答案当然是有问题。这个程序存在如下的<strong>race</strong> <strong>condition</strong>：如果当线程<strong>reader</strong>判断完<strong>p</strong>发现它不是<strong>nullptr</strong>后，还未执行第<strong>8</strong>行就被调度出去，轮到线程<strong>writer</strong>执行，它执行完<strong>13</strong>、<strong>14</strong>行后，又继续调度线程<strong>reader</strong>，此时执行第<strong>8</strong>行导致程序崩溃。</p>
 
 <p>这里的问题，可以不精确地表述为：多线程程序中，某线程通过一个指针访问一段内存时，如何保证指针所指向的那块内存是有效的？</p>
 
 <h2>Hazard Pointer</h2>
 
-<p>这当然有多种方法，加一把互斥锁就万事大吉了(当然，得注意锁本身的生命周期)。不过本文讨论的是Lock Free情况下的内存管理，这里要介绍的是2004年左右提出的Hazard Pointer方法。</p>
+<p>这当然有多种方法，加一把互斥锁就万事大吉了(当然，得注意锁本身的生命周期)。不过本文讨论的是<strong>lock</strong> <strong>free</strong>情况下的内存管理，这里要介绍的是<strong>2004</strong>年左右提出的<strong>Hazard</strong> <strong>Pointer</strong>方法。</p>
 
 <p>接着看以下代码：</p>
 
@@ -137,19 +137,19 @@ int main()
 
 <p>总结：</p>
 
-<p>1，对于读线程，每次访问指针前，都通过acquire动作，用Hazard Pointer封装一下待读取指针，此举保护了原始指针，向其他线程宣告，我正在读取它指向的内存，请别释放它。用完就release一下。</p>
+<p>1，对于读线程，每次访问指针前，都通过<strong>acquire</strong>动作，用<strong>Hazard</strong> <strong>Pointer</strong>封装一下待读取指针，此举保护了原始指针，向其他线程宣告，我正在读取它指向的内存，请别释放它。用完就<strong>release</strong>一下。</p>
 
-<p>2，对于写线程，真正释放前，需要检查是否有读线程正在操作它。如何知道？看看自己待释放的指针，有没有存在在读线程的Hazard Pointer里即可。</p>
+<p>2，对于写线程，真正释放前，需要检查是否有读线程正在操作它。如何知道？看看自己待释放的指针，有没有存在在读线程的<strong>Hazard</strong> <strong>Pointer</strong>里即可。</p>
 
-<p>至于52行，考虑如下情形：读线程刚刚设置了tmp指针，还没对它进行保护，就被调度出去；写线程执行gc时，发现没有读线程的Hazard Pointer封装了tmp指针，于是将它释放；等读线程重新被调度执行时通过tmp进行内存访问，就会导致问题。</p>
+<p>至于<strong>52</strong>行，考虑如下情形：读线程刚刚设置了<strong>tmp</strong>指针，还没对它进行保护，就被调度出去；写线程执行<strong>gc</strong>时，发现没有读线程的<strong>Hazard</strong> <strong>Pointer</strong>封装了<strong>tmp</strong>指针，于是将它释放；等读线程重新被调度执行时通过<strong>tmp</strong>进行内存访问，就会导致问题。</p>
 
-<p>至于53行，请读者自行分析。</p>
+<p>至于<strong>53</strong>行，请读者自行分析。</p>
 
 <h2>最后思考</h2>
 
-<p>那么，Hazard Pointer的内存空间，谁来负责管理？</p>
+<p>那么，<strong>Hazard</strong> <strong>Pointer</strong>的内存空间，谁来负责管理？</p>
 
-<p>在实际程序里，一般所需Hazard Pointer的数量不会太多且较为固定，因此基本上只申请，不释放了。</p>
+<p>在实际程序里，一般所需<strong>Hazard</strong> <strong>Pointer</strong>的数量不会太多且较为固定，因此基本上只申请，不释放了。</p>
 
 <h2>参考文献</h2>
 
@@ -157,7 +157,7 @@ int main()
 
 <h2>特别感谢</h2>
 
-<p>感谢<a href="http://weibo.com/hanfooo">韩富晟</a>先生对我的指点，让我加深了对Hazard Pointer的认识。</p>
+<p>感谢<a href="http://weibo.com/hanfooo">韩富晟</a>先生对我的指点，让我加深了对<strong>Hazard</strong> <strong>Pointer</strong>的认识。</p>
 ]]></content>
   </entry>
   
