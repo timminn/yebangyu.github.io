@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-12T14:12:06+08:00</updated>
+  <updated>2015-12-14T22:37:08+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,68 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Lock Free中的Hazard Pointer(中)]]></title>
+    <link href="http://www.yebangyu.org/blog/2015/12/14/introduction-to-hazard-pointer/"/>
+    <updated>2015-12-14T22:33:01+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2015/12/14/introduction-to-hazard-pointer</id>
+    <content type="html"><![CDATA[<p>看过<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">上篇</a>的朋友，可能会认为：这不就是<strong>Smart Pointer</strong>么？于是可能写出这样的代码：</p>
+
+<!--more-->
+
+
+<pre><code class="c++">#include&lt;iostream&gt;
+#include&lt;thread&gt;
+using namespace std;
+class SmartPointer
+{
+public:
+  SmartPointer(int *p)
+  {
+    pointee_ = p;
+    ref_counts_ = 0;
+  }
+  int *pointee_;
+  int ref_counts_;
+};
+SmartPointer sp(new int(1));
+void Reader()
+{
+  ++sp.ref_counts_;
+  cout&lt;&lt;*(sp.pointee_)&lt;&lt;endl;
+  --sp.ref_counts_;
+}
+void Writer()
+{
+  if (sp.ref_counts_ == 0)
+    delete sp.pointee_;
+}
+int main()
+{
+  std::thread t1(Reader);
+  std::thread t2(Reader);
+  std::thread t3(Reader);
+  std::thread t4(Writer);
+  t1.join();
+  t2.join();
+  t3.join();
+  t4.join();
+  return 0;
+}
+</code></pre>
+
+<p>然而事实上，这样做是错的。其中的<strong>race condition</strong>请读者自行分析。</p>
+
+<p>那么，<strong>Hazard Pointer</strong>(<strong>HP</strong>)和<strong>Smart Pointer</strong>(<strong>SP</strong>)有什么区别呢？它们的共同点就是管理对应对象的生命周期，然而这两者有本质的区别，<strong>HP</strong>是线程安全的，而<strong>SP</strong>不是。</p>
+
+<p>在<strong>HP</strong>中，每个读线程维护着自己的<strong>HP</strong> <strong>list</strong>，这个<strong>list</strong>，只由该线程写。因此，它是线程安全的。该<strong>list</strong>会（可以）被其他线程读。</p>
+
+<p>每个写线程维护自己的<strong>retire list</strong>，该<strong>retire list</strong>只由该写线程进行读写。由于写线程可以读其他所有读线程的<strong>HP list</strong>，这样，差集（在自己的<strong>retire list</strong>，但是不在所有读线程的<strong>HP list</strong>里的指针），就是可以安全释放的指针。</p>
+
+<p>而<strong>SP</strong>，则被多个线程读写，<strong>18、19</strong>两行也无法做成原子操作，因此，<strong>SP</strong>和<strong>HP</strong>有本质的区别。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Lock Free中的Hazard Pointer(上)]]></title>
