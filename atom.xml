@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-16T22:58:31+08:00</updated>
+  <updated>2015-12-16T23:21:14+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,44 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[2015-12-16 近期好书推荐]]></title>
+    <link href="http://www.yebangyu.org/blog/2015/12/16/readinglist/"/>
+    <updated>2015-12-16T23:05:35+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2015/12/16/readinglist</id>
+    <content type="html"><![CDATA[<p>推荐几本近期阅读的好书。</p>
+
+<h2>Recommender Systems Handbook</h2>
+
+<!--more-->
+
+
+<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/recommendersystemhandbook2nd.jpg" alt="rsh" /></p>
+
+<p>这本书最近出第二版了，和第一版相比新增了不少内容，我最感兴趣的是其中的第11章，<strong>Recommender Systems in Industry: A Netflix Case Study</strong>，<strong>Xavier Amatriain</strong>大牛所写。</p>
+
+<h2>Distributed Systems An Algorithmic Approach</h2>
+
+<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/distributedsystem.jpg" alt="dsaaa" /></p>
+
+<p>这本书去年出第二版了，第一版没看过，貌似增加了<strong>paxos</strong>等内容。这本书我强烈推荐，和其他分布式系统书籍相比，它不扯淡，也不是百科全书一样各种列词条全而不深，这本书确实</p>
+
+<p>实实在在的讲了一些内容，非常适合作为分布式系统的入门书。</p>
+
+<h2>Shared-Memory Synchronization</h2>
+
+<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/sharedmemorysync.jpg" alt="sms" /></p>
+
+<p>并发编程（多处理编程）方面的好书，介绍了原子操作、<strong>spin lock</strong>、<strong>lock free</strong>等内容，配合其他书籍看，效果更佳。</p>
+
+<h2>The Go Programming Language</h2>
+
+<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/thegoprogramminglanguage.jpg" alt="tgpl" /></p>
+
+<p>Go语言编程入门书，作者之一Brian W. Kernighan，不用多介绍了吧。我估计不久就要被列为Go语言的圣经了。为嘛学Go？我对其中的并发特性非常感兴趣。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Lock Free中的Hazard Pointer(中)]]></title>
