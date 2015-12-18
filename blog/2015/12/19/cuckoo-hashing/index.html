@@ -88,8 +88,8 @@
 
 <p>为什么引入Cuckoo Hashing？</p>
 
-<p>我们常见的hashing处理冲突一般包括两种：开散列（Separate Chaining ）和闭散列（Linear / Quadratic Probing
-）。开散列是将冲突的元素组织成一个链表（其实组织成一个二叉树也是没问题的啊），闭散列是将冲突的元素还是放在哈希表中，使用线性探测等方法进行处理。</p>
+<p>常见的hashing处理冲突方法一般包括两种：开散列（Separate Chaining ）和闭散列（Linear / Quadratic Probing
+）。开散列是将冲突的元素组织成一个链表（其实组织成一个二叉树也是没问题的啊），闭散列将冲突的元素还是放在哈希表slot中，使用线性探测等方法进行处理。</p>
 
 <p>那么，这两种方法，都有啥优缺点呢？</p>
 
@@ -100,13 +100,13 @@
 
 <p>闭散列，实现相对复杂一点点，对cache很友好，但是对load factor要求较高：load factor稍高性能就急剧下降。</p>
 
-<p>而Cuckoo Hashing能在load factor为50%左右的情况下表现较佳。如果哈希函数有4个，那么甚至可以在97%的load factor下良好工作。</p>
+<p>而Cuckoo Hashing在load factor为50%左右的情况下表现较佳。如果哈希函数有4个，那么甚至可以在97%的load factor下良好工作。</p>
 
 <h2>Cuckoo Hashing</h2>
 
-<p>一般的Hashing只包括一个Hash Tables，但是Cuckoo Hashing由两张甚至多张表构成。每张表对应一个哈希函数。本文讨论两张哈希表（记为table1和table2）、两个哈希函数（记为hash function1和hash function2）这种常见情形</p>
+<p>一般的Hashing只包括一个Hash Tables，但是Cuckoo Hashing由两张甚至多张表构成。每张表对应一个哈希函数。本文讨论两张哈希表（记为table1和table2）、两个哈希函数（记为hf1和hf2）这种常见情形。</p>
 
-<p>Insert：首先通过hash function1计算出一个slot index，然后查看table1中该slot是否vacant，如果是，则插入；否则通过hash function2计算出一个slot index，通过查看table2中该slot是否vacant，如果是，则插入，否则执行replace操作。</p>
+<p>Insert：首先通过hf1计算出一个slot index，然后查看table1中该slot是否vacant，如果是，则插入；否则通过hf2计算出一个slot index，通过查看table2中该slot是否vacant，如果是，则插入，否则执行replace操作。</p>
 
 <p>replace操作的过程：随机选出一张表，将slot index对应的那个元素踢出(evict)，把我们待插入的元素插到那个位置。那被踢出来的元素呢？尝试插入到另外一张表对应的slot处，这时候可能又踢出一个元素，接下去就是递归的执行这个过程，直到所有元素都安置妥当。</p>
 
@@ -117,22 +117,22 @@
 <table>
 <thead>
 <tr>
-<th> 0  </th>
-<th style="text-align:right;"> 1</th>
-<th style="text-align:center;">  2 </th>
-<th> 3</th>
-<th> 4 </th>
-<th>  5  </th>
+<th> 0    </th>
+<th style="text-align:right;"> 1       </th>
+<th style="text-align:center;">  2      </th>
+<th style="text-align:center;">       3</th>
+<th style="text-align:right;">       4 </th>
+<th style="text-align:center;">  5      </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td> 11 </td>
-<td style="text-align:right;"> 78 </td>
-<td style="text-align:center;">  95 </td>
-<td> 32 </td>
-<td> 64 </td>
-<td> 空 </td>
+<td> 11   </td>
+<td style="text-align:right;"> 78      </td>
+<td style="text-align:center;">  95     </td>
+<td style="text-align:center;"> 32     </td>
+<td style="text-align:right;"> 64      </td>
+<td style="text-align:center;">      空 </td>
 </tr>
 </tbody>
 </table>
@@ -143,22 +143,22 @@
 <table>
 <thead>
 <tr>
-<th> 0  </th>
-<th style="text-align:right;"> 1</th>
-<th style="text-align:center;">  2 </th>
-<th> 3</th>
-<th> 4 </th>
-<th>  5  </th>
+<th> 0    </th>
+<th style="text-align:right;"> 1       </th>
+<th style="text-align:center;">  2      </th>
+<th style="text-align:center;"> 3     </th>
+<th style="text-align:center;"> 4       </th>
+<th style="text-align:center;">  5      </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td> 66 </td>
-<td style="text-align:right;"> 54 </td>
-<td style="text-align:center;">  空 </td>
-<td> 33 </td>
-<td> 13 </td>
-<td> 49 </td>
+<td> 66   </td>
+<td style="text-align:right;"> 54      </td>
+<td style="text-align:center;">  空     </td>
+<td style="text-align:center;"> 33    </td>
+<td style="text-align:center;"> 13      </td>
+<td style="text-align:center;"> 49      </td>
 </tr>
 </tbody>
 </table>
@@ -166,37 +166,37 @@
 
 <p>假设我们待插入的元素为77。</p>
 
-<p>slot index1 = hash function1(77) = 1</p>
+<p>slot index1 = hf1(77) = 1</p>
 
 <p>Table1中的index为1的slot已经被78占了。那么看Table2：</p>
 
-<p>slot index2 = hash function2(77) = 3</p>
+<p>slot index2 = hf2(77) = 3</p>
 
 <p>Table2中的index为3的slot已经被33占了。因此执行replace。</p>
 
-<p>执行replace动作，选择Table2，将slot index = 3的元素33踢出，插入77。然后被踢出的元素33，计算它在Table1中的index为slot index1 = hash function2(33) = 2，因此将95踢出，插入33。被踢出的元素95在Table2中的slot index为2，该slot为vacant，没人使用，因此将95插入。完毕。现在的Tables中元素为：</p>
+<p>执行replace动作，选择Table2，将slot index = 3的元素33踢出，插入77。然后被踢出的元素33，计算它在Table1中的index为slot index1 = hf2(33) = 2，因此将95踢出，插入33。被踢出的元素95在Table2中的slot index为2，该slot为vacant，没人使用，因此将95插入。完毕。现在的Tables中元素为：</p>
 
 <p>Table1:</p>
 
 <table>
 <thead>
 <tr>
-<th> 0  </th>
-<th style="text-align:right;"> 1</th>
-<th style="text-align:center;">  2 </th>
-<th> 3</th>
-<th> 4 </th>
-<th>  5  </th>
+<th> 0    </th>
+<th style="text-align:right;"> 1       </th>
+<th style="text-align:center;">  2      </th>
+<th style="text-align:center;">       3</th>
+<th style="text-align:right;">       4 </th>
+<th style="text-align:center;">  5      </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td> 11 </td>
-<td style="text-align:right;"> 78 </td>
-<td style="text-align:center;">  33 </td>
-<td> 32 </td>
-<td> 64 </td>
-<td> vacant </td>
+<td> 11   </td>
+<td style="text-align:right;"> 78      </td>
+<td style="text-align:center;">  33     </td>
+<td style="text-align:center;"> 32     </td>
+<td style="text-align:right;"> 64      </td>
+<td style="text-align:center;">      空 </td>
 </tr>
 </tbody>
 </table>
@@ -207,22 +207,22 @@
 <table>
 <thead>
 <tr>
-<th> 0  </th>
-<th style="text-align:right;"> 1</th>
-<th style="text-align:center;">  2 </th>
-<th> 3</th>
-<th> 4 </th>
-<th>  5  </th>
+<th> 0    </th>
+<th style="text-align:right;"> 1       </th>
+<th style="text-align:center;">  2      </th>
+<th style="text-align:center;"> 3     </th>
+<th style="text-align:center;"> 4       </th>
+<th style="text-align:center;">  5      </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td> 66 </td>
-<td style="text-align:right;"> 54 </td>
-<td style="text-align:center;">  95 </td>
-<td> 77 </td>
-<td> 13 </td>
-<td> 49 </td>
+<td> 66   </td>
+<td style="text-align:right;"> 54      </td>
+<td style="text-align:center;">  95     </td>
+<td style="text-align:center;"> 77    </td>
+<td style="text-align:center;"> 13      </td>
+<td style="text-align:center;"> 49      </td>
 </tr>
 </tbody>
 </table>
@@ -232,7 +232,7 @@
 
 <p>在某些假设下，插入操作的期望复杂度为O(1)。</p>
 
-<p>Find：要检查的slot一共两个，index分别为hash function1(key)和hash function2(key)，因此只要查看一下Table1中的hash function1(key)以及Table2中的hash function2(key)这两个slot即可。时间复杂度为O(1)。</p>
+<p>Find：要检查的slot一共两个，index分别为hf1(key)和hf2(key)，因此只要查看一下Table1中的hf1(key)以及Table2中的hf2(key)这两个slot即可。时间复杂度为O(1)。</p>
 
 <p>Del：同Find，要检查的slot也就两个，复杂度为O(1)。</p>
 
@@ -248,7 +248,7 @@
 
 <p><a href="https://www.eecs.harvard.edu/~michaelm/postscripts/esa2009.pdf">https://www.eecs.harvard.edu/~michaelm/postscripts/esa2009.pdf</a></p>
 
-<p>这篇文章介绍了一些关于cuckoo Hashing的Open Questions</p>
+<p>这篇文章介绍了一些关于Cuckoo Hashing的Open Questions</p>
 
 <p><a href="http://web.stanford.edu/class/cs166/lectures/13/Slides13.pdf">http://web.stanford.edu/class/cs166/lectures/13/Slides13.pdf</a></p>
 
