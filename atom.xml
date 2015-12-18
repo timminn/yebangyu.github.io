@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-18T23:17:27+08:00</updated>
+  <updated>2015-12-18T23:29:42+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -2691,6 +2691,10 @@ bundle install
 <p>这样一篇文章就发布出去了。以后写新文章或者更改文章后，只需要<code>rake generate</code> 然后 <code>rake deploy</code> 就可以啦</p>
 
 <h3>参考资料：</h3>
+
+<p>Octopress在MAC下的安装、配置</p>
+
+<p><a href="http://www.chongh.wiki/blog/2015/12/16/octopress-tutorial/">http://www.chongh.wiki/blog/2015/12/16/octopress-tutorial/</a></p>
 
 <p>Ocotpress在Windows下的安装、配置：</p>
 
