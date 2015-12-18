@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-19T00:56:12+08:00</updated>
+  <updated>2015-12-19T01:02:50+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -46,57 +46,7 @@
 
 <p>举个例子吧，假如某个时刻，两个哈希表的内容如下：</p>
 
-<p>Table1:</p>
-
-<table>
-<thead>
-<tr>
-<th> 0    </th>
-<th style="text-align:right;"> 1       </th>
-<th style="text-align:center;">  2      </th>
-<th style="text-align:center;">       3</th>
-<th style="text-align:right;">       4 </th>
-<th style="text-align:center;">  5      </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> 11   </td>
-<td style="text-align:right;"> 78      </td>
-<td style="text-align:center;">  95     </td>
-<td style="text-align:center;"> 32     </td>
-<td style="text-align:right;"> 64      </td>
-<td style="text-align:center;">      空 </td>
-</tr>
-</tbody>
-</table>
-
-
-<p>Table2:</p>
-
-<table>
-<thead>
-<tr>
-<th> 0    </th>
-<th style="text-align:right;"> 1       </th>
-<th style="text-align:center;">  2      </th>
-<th style="text-align:center;"> 3     </th>
-<th style="text-align:center;"> 4       </th>
-<th style="text-align:center;">  5      </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> 66   </td>
-<td style="text-align:right;"> 54      </td>
-<td style="text-align:center;">  空     </td>
-<td style="text-align:center;"> 33    </td>
-<td style="text-align:center;"> 13      </td>
-<td style="text-align:center;"> 49      </td>
-</tr>
-</tbody>
-</table>
-
+<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table1.jpg" alt="table1" /></p>
 
 <p>假设我们待插入的元素为77。</p>
 
@@ -110,57 +60,7 @@
 
 <p>执行replace动作，选择Table2，将slot index = 3的元素33踢出，插入77。然后被踢出的元素33，计算它在Table1中的index为slot index1 = hf2(33) = 2，因此将95踢出，插入33。被踢出的元素95在Table2中的slot index为2，该slot为vacant，没人使用，因此将95插入。完毕。现在的Tables中元素为：</p>
 
-<p>Table1:</p>
-
-<table>
-<thead>
-<tr>
-<th> 0    </th>
-<th style="text-align:right;"> 1       </th>
-<th style="text-align:center;">  2      </th>
-<th style="text-align:center;">       3</th>
-<th style="text-align:right;">       4 </th>
-<th style="text-align:center;">  5      </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> 11   </td>
-<td style="text-align:right;"> 78      </td>
-<td style="text-align:center;">  33     </td>
-<td style="text-align:center;"> 32     </td>
-<td style="text-align:right;"> 64      </td>
-<td style="text-align:center;">      空 </td>
-</tr>
-</tbody>
-</table>
-
-
-<p>Table2:</p>
-
-<table>
-<thead>
-<tr>
-<th> 0    </th>
-<th style="text-align:right;"> 1       </th>
-<th style="text-align:center;">  2      </th>
-<th style="text-align:center;"> 3     </th>
-<th style="text-align:center;"> 4       </th>
-<th style="text-align:center;">  5      </th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td> 66   </td>
-<td style="text-align:right;"> 54      </td>
-<td style="text-align:center;">  95     </td>
-<td style="text-align:center;"> 77    </td>
-<td style="text-align:center;"> 13      </td>
-<td style="text-align:center;"> 49      </td>
-</tr>
-</tbody>
-</table>
-
+<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table2.jpg" alt="table2" /></p>
 
 <p>值得注意的是，replace可能失败（发生“死循环”，无法找到一个vacant slot），此时需要进行rehash。因此代码里需要有一定的判断。</p>
 
