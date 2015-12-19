@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-19T01:02:50+08:00</updated>
+  <updated>2015-12-19T09:25:15+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -20,77 +20,97 @@
     <id>http://www.yebangyu.org/blog/2015/12/19/cuckoo-hashing</id>
     <content type="html"><![CDATA[<h2>Motivation &amp; Intuition</h2>
 
-<p>为什么引入Cuckoo Hashing？</p>
+<p>为什么引入<strong>Cuckoo Hashing</strong>？</p>
 
-<p>常见的hashing处理冲突方法一般包括两种：开散列（Separate Chaining ）和闭散列（Linear / Quadratic Probing
-）。开散列是将冲突的元素组织成一个链表（其实组织成一个二叉树也是没问题的啊），闭散列将冲突的元素还是放在哈希表slot中，使用线性探测等方法进行处理。</p>
+<p>常见的<strong>hashing</strong>处理冲突方法一般包括两种：开散列（<strong>Separate Chaining</strong>）和闭散列<strong>（Linear / Quadratic Probing</strong>
+）。开散列是将冲突的元素组织成一个链表（其实组织成一个二叉树也是没问题的啊），闭散列将冲突的元素还是放在哈希表<strong>slot</strong>中，使用线性探测等方法进行处理。</p>
 
 <p>那么，这两种方法，都有啥优缺点呢？</p>
 
 <!--more-->
 
 
-<p>开散列，实现简单，但是对cache不友好，cache miss rate较高。</p>
+<p>开散列，实现简单，但是对<strong>cache</strong>不友好，<strong>cache miss rate</strong>较高。</p>
 
-<p>闭散列，实现相对复杂一点点，对cache很友好，但是对load factor要求较高：load factor稍高性能就急剧下降。</p>
+<p>闭散列，实现相对复杂一点点，对<strong>cache</strong>很友好，但是对<strong>load factor</strong>要求苛刻：<strong>load factor</strong>稍高性能就急剧下降。</p>
 
-<p>而Cuckoo Hashing在load factor为50%左右的情况下表现较佳。如果哈希函数有4个，那么甚至可以在97%的load factor下良好工作。</p>
+<p>这两种方式下，查找某个元素的最坏时间都是<strong>O(n)</strong>。</p>
+
+<p><strong>OK，OK</strong>，我知道，这些都是常识。那么，是否可以做到查找最坏是<strong>O(1)</strong>呢？</p>
+
+<p>一种思路是元素只可能被安置到有限的常数(记为<strong>K</strong>)个位置，插入时，如果发生冲突，由于每个元素可以存放的元素有<strong>K</strong>个，因此可以对表部分元素进行重排，产生一个空缺的位置。</p>
+
+<p><strong>Cuckoo Hashing</strong>就是这样的方式。当<strong>K=2</strong>时，<strong>Cuckoo Hashing</strong>在<strong>load factor</strong>为<strong>50%</strong>左右的情况下表现较佳。如果<strong>K=4</strong>，那么甚至可以在<strong>97%</strong>的<strong>load factor</strong>下良好工作。</p>
 
 <h2>Cuckoo Hashing</h2>
 
-<p>一般的Hashing只包括一个Hash Tables，但是Cuckoo Hashing由两张甚至多张表构成。每张表对应一个哈希函数。本文讨论两张哈希表（记为table1和table2）、两个哈希函数（记为hf1和hf2）这种常见情形。</p>
+<p>一般的<strong>Hashing</strong>只包括一个<strong>Hash Tables</strong>，但是<strong>Cuckoo Hashing</strong>由两张甚至多张表构成。每张表对应一个哈希函数。本文讨论两张哈希表（记为<strong>table1</strong>和<strong>table2</strong>）、两个哈希函数（记为<strong>hf1</strong>和<strong>hf2</strong>）这种常见情形。</p>
 
-<p>Insert：首先通过hf1计算出一个slot index，然后查看table1中该slot是否vacant，如果是，则插入；否则通过hf2计算出一个slot index，通过查看table2中该slot是否vacant，如果是，则插入，否则执行replace操作。</p>
+<h3>Insert</h3>
 
-<p>replace操作的过程：随机选出一张表，将slot index对应的那个元素踢出(evict)，把我们待插入的元素插到那个位置。那被踢出来的元素呢？尝试插入到另外一张表对应的slot处，这时候可能又踢出一个元素，接下去就是递归的执行这个过程，直到所有元素都安置妥当。</p>
+<p>首先通过<strong>hf1</strong>计算出一个<strong>slot index</strong>，然后查看<strong>table1</strong>中该<strong>slot</strong>是否<strong>vacant</strong>，如果是，则插入；否则通过<strong>hf2</strong>计算出一个<strong>slot index</strong>，通过查看<strong>table2</strong>中该<strong>slot</strong>是否<strong>vacant</strong>，如果是，则插入，否则执行<strong>rearrange</strong>操作。</p>
+
+<p><strong>rearrange</strong>操作的过程：随机选出一张表，将<strong>slot index</strong>对应的那个元素踢出(<strong>evict</strong>)，把我们待插入的元素插到那个位置。那被踢出来的元素呢？尝试插入到另外一张表对应的<strong>slot</strong>处，这时候可能又踢出一个元素，接下去就是递归的执行这个过程，直到所有元素都安置妥当。</p>
 
 <p>举个例子吧，假如某个时刻，两个哈希表的内容如下：</p>
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table1.jpg" alt="table1" /></p>
 
-<p>假设我们待插入的元素为77。</p>
+<p>假设我们待插入的元素为<strong>77</strong>。</p>
 
-<p>slot index1 = hf1(77) = 1</p>
+<p><strong>slot index1 = hf1(77) = 1</strong></p>
 
-<p>Table1中的index为1的slot已经被78占了。那么看Table2：</p>
+<p><strong>Table1</strong>中的<strong>index</strong>为<strong>1</strong>的<strong>slot</strong>已经被<strong>78</strong>占了。那么看<strong>Table2</strong>：</p>
 
-<p>slot index2 = hf2(77) = 3</p>
+<p><strong>slot index2 = hf2(77) = 3</strong></p>
 
-<p>Table2中的index为3的slot已经被33占了。因此执行replace。</p>
+<p><strong>Table2</strong>中的<strong>index</strong>为<strong>3</strong>的<strong>slot</strong>已经被<strong>33</strong>占了。因此执行<strong>rearrange</strong>。</p>
 
-<p>执行replace动作，选择Table2，将slot index = 3的元素33踢出，插入77。然后被踢出的元素33，计算它在Table1中的index为slot index1 = hf2(33) = 2，因此将95踢出，插入33。被踢出的元素95在Table2中的slot index为2，该slot为vacant，没人使用，因此将95插入。完毕。现在的Tables中元素为：</p>
+<p>执行<strong>rearrange</strong>动作，选择<strong>Table2</strong>，将<strong>slot index = 3</strong>的元素<strong>33</strong>踢出，插入<strong>77</strong>。然后被踢出的元素<strong>33</strong>，计算它在<strong>Table1</strong>中的<strong>index</strong>为<strong>slot index1 = hf2(33) = 2</strong>，因此将<strong>95</strong>踢出，插入<strong>33</strong>。被踢出的元素<strong>95</strong>在<strong>Table2</strong>中的<strong>slot index</strong>为<strong>2</strong>，该<strong>slot</strong>为<strong>vacant</strong>，没人使用，因此将<strong>95</strong>插入。完毕。现在的<strong>Tables</strong>中元素为：</p>
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table2.jpg" alt="table2" /></p>
 
-<p>值得注意的是，replace可能失败（发生“死循环”，无法找到一个vacant slot），此时需要进行rehash。因此代码里需要有一定的判断。</p>
+<p>值得注意的是，<strong>rearrange</strong>可能失败（发生“死循环”，无法找到一个<strong>vacant slot</strong>），此时需要进行<strong>rehash</strong>。因此代码里需要有一定的判断。在合理设计的<strong>Cuckoo Hashing</strong>中，需要<strong>rehash</strong>的概率很小。</p>
 
-<p>在某些假设下，插入操作的期望复杂度为O(1)。</p>
+<p>在某些假设下，插入操作的摊还期望复杂度为常数时间。</p>
 
-<p>Find：要检查的slot一共两个，index分别为hf1(key)和hf2(key)，因此只要查看一下Table1中的hf1(key)以及Table2中的hf2(key)这两个slot即可。时间复杂度为O(1)。</p>
+<h3>Find</h3>
 
-<p>Del：同Find，要检查的slot也就两个，复杂度为O(1)。</p>
+<p>要检查的<strong>slot</strong>一共两个，<strong>index</strong>分别为<strong>hf1(key)</strong>和<strong>hf2(key)</strong>，因此只要查看一下<strong>Table1</strong>中的<strong>hf1(key)</strong>以及<strong>Table2</strong>中的<strong>hf2(key)</strong>这两个<strong>slot</strong>即可。时间复杂度为<strong>O(1)</strong>。</p>
+
+<h3>Del</h3>
+
+<p>同<strong>Find</strong>，要检查的<strong>slot</strong>也就两个，复杂度为<strong>O(1)</strong>。</p>
 
 <h2>实现</h2>
 
 <p>简单实现了一个，有需要的可以参考<a href="https://github.com/yebangyu/Yedis/blob/master/src/ds/CuckooHashMap.h">这里</a></p>
 
+<h2>其他</h2>
+
+<p>1，我们注意到，<strong>Cuckoo Hashing</strong>的精髓是使用两个不同的哈希函数，而不是两张表。两张表的存在，仅仅是为了分析上的方便。</p>
+
+<p>当需要<strong>rehash</strong>而<strong>load factor</strong>又没达到<strong>100%</strong>时，我们其实不需要扩容哈希表，只需要更换哈希函数。</p>
+
+<p>2，为嘛叫做<strong>Cuckoo Hashing</strong>？<strong>Cuckoo</strong>，即杜鹃鸟（布谷鸟），这种鸟有一种特性：孵卵寄生。把蛋产到别的鸟窝里，让别人帮它孵化。这还不算，还要把人家寄主的一些卵给移走（不然容易引起怀疑嘛，毕竟鸟窝里突然多出几枚蛋，至于移走多少，就得看杜鹃鸟数学合不合格了。）！等卵孵化完成，幼雏会将鸟窝里寄主的卵和其他幼雏推出鸟窝。真是牛逼闪闪了。</p>
+
 <h2>参考文献</h2>
 
 <p><a href="http://resources.mpi-inf.mpg.de/departments/d1/teaching/ws14/AlgoDat/materials/cuckoo.pdf">http://resources.mpi-inf.mpg.de/departments/d1/teaching/ws14/AlgoDat/materials/cuckoo.pdf</a></p>
 
-<p>Cuckoo Hashing原始论文</p>
+<p><strong>Cuckoo Hashing</strong>原始论文</p>
 
 <p><a href="https://www.eecs.harvard.edu/~michaelm/postscripts/esa2009.pdf">https://www.eecs.harvard.edu/~michaelm/postscripts/esa2009.pdf</a></p>
 
-<p>这篇文章介绍了一些关于Cuckoo Hashing的Open Questions</p>
+<p>这篇文章介绍了一些关于<strong>Cuckoo Hashing</strong>的<strong>Open Questions</strong></p>
 
 <p><a href="http://web.stanford.edu/class/cs166/lectures/13/Slides13.pdf">http://web.stanford.edu/class/cs166/lectures/13/Slides13.pdf</a></p>
 
-<p>这个slides偏重对Cuckoo Hashing理论上的分析</p>
+<p>这个<strong>slides</strong>偏重对<strong>Cuckoo Hashing</strong>理论上的分析，注意其中对于插入操作的处理和本文介绍的不同。</p>
 
 <p><a href="http://ieeexplore.ieee.org/xpl/login.jsp?tp=&amp;arnumber=6888938&amp;url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D6888938">http://ieeexplore.ieee.org/xpl/login.jsp?tp=&amp;arnumber=6888938&amp;url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D6888938</a></p>
 
-<p>碉堡了，lock free Cuckoo Hashing</p>
+<p>碉堡了，Lock Free Cuckoo Hashing。</p>
 ]]></content>
   </entry>
   

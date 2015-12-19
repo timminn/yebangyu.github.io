@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="Motivation &amp; Intuition 为什么引入Cuckoo Hashing？ 常见的hashing处理冲突方法一般包括两种：开散列（Separate Chaining ）和闭散列（Linear / Quadratic Probing
+  <meta name="description" content="Motivation &amp; Intuition 为什么引入Cuckoo Hashing？ 常见的hashing处理冲突方法一般包括两种：开散列（Separate Chaining）和闭散列（Linear / Quadratic Probing
 ）。开散列是将冲突的元素组织成一个链表（ &hellip;">
   
 
@@ -90,10 +90,10 @@
 
   <div class="entry-content"><h2>Motivation &amp; Intuition</h2>
 
-<p>为什么引入Cuckoo Hashing？</p>
+<p>为什么引入<strong>Cuckoo Hashing</strong>？</p>
 
-<p>常见的hashing处理冲突方法一般包括两种：开散列（Separate Chaining ）和闭散列（Linear / Quadratic Probing
-）。开散列是将冲突的元素组织成一个链表（其实组织成一个二叉树也是没问题的啊），闭散列将冲突的元素还是放在哈希表slot中，使用线性探测等方法进行处理。</p>
+<p>常见的<strong>hashing</strong>处理冲突方法一般包括两种：开散列（<strong>Separate Chaining</strong>）和闭散列<strong>（Linear / Quadratic Probing</strong>
+）。开散列是将冲突的元素组织成一个链表（其实组织成一个二叉树也是没问题的啊），闭散列将冲突的元素还是放在哈希表<strong>slot</strong>中，使用线性探测等方法进行处理。</p>
 
 <p>那么，这两种方法，都有啥优缺点呢？</p>
 
