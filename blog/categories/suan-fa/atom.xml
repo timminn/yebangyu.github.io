@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-19T09:25:15+08:00</updated>
+  <updated>2015-12-19T09:30:03+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -92,7 +92,7 @@
 
 <p>当需要<strong>rehash</strong>而<strong>load factor</strong>又没达到<strong>100%</strong>时，我们其实不需要扩容哈希表，只需要更换哈希函数。</p>
 
-<p>2，为嘛叫做<strong>Cuckoo Hashing</strong>？<strong>Cuckoo</strong>，即杜鹃鸟（布谷鸟），这种鸟有一种特性：孵卵寄生。把蛋产到别的鸟窝里，让别人帮它孵化。这还不算，还要把人家寄主的一些卵给移走（不然容易引起怀疑嘛，毕竟鸟窝里突然多出几枚蛋，至于移走多少，就得看杜鹃鸟数学合不合格了。）！等卵孵化完成，幼雏会将鸟窝里寄主的卵和其他幼雏推出鸟窝。真是牛逼闪闪了。</p>
+<p>2，为嘛叫做<strong>Cuckoo Hashing</strong>？<strong>Cuckoo</strong>，即杜鹃鸟（布谷鸟），这种鸟有一种特性：孵卵寄生。把蛋产到别的鸟窝里，让别人帮它孵化。这还不算，还要把人家寄主的一些卵给移走（不然容易引起怀疑嘛，毕竟鸟窝里突然多出几枚蛋，至于移走多少，就得看杜鹃鸟数学合不合格了）！等卵孵化完成，幼雏会将鸟窝里寄主的卵和其他幼雏推出鸟窝。真是牛逼闪闪了。</p>
 
 <h2>参考文献</h2>
 
@@ -110,7 +110,7 @@
 
 <p><a href="http://ieeexplore.ieee.org/xpl/login.jsp?tp=&amp;arnumber=6888938&amp;url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D6888938">http://ieeexplore.ieee.org/xpl/login.jsp?tp=&amp;arnumber=6888938&amp;url=http%3A%2F%2Fieeexplore.ieee.org%2Fxpls%2Fabs_all.jsp%3Farnumber%3D6888938</a></p>
 
-<p>碉堡了，Lock Free Cuckoo Hashing。</p>
+<p>碉堡了，<strong>Lock Free Cuckoo Hashing</strong>。</p>
 ]]></content>
   </entry>
   
