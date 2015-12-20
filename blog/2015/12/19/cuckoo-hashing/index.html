@@ -136,7 +136,7 @@
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table2.jpg" alt="table2" /></p>
 
-<p>值得注意的是，<strong>rearrange</strong>可能失败（发生“死循环”，无法找到一个<strong>vacant slot</strong>），此时需要进行<strong>rehash</strong>，因此代码里需要有一定的判断。当<strong>K=2</strong>时，只要<strong>load factor</strong>低于<strong>50%</strong>，需要<strong>rehash</strong>的概率很小很小。</p>
+<p>值得注意的是，<strong>rearrange</strong>可能失败（表满了;或者发生“死循环”，无法找到一个<strong>vacant slot</strong>），此时需要进行<strong>rehash</strong>，因此代码里需要有一定的判断。当<strong>K=2</strong>时，只要<strong>load factor</strong>低于<strong>50%</strong>，需要<strong>rehash</strong>的概率很小很小。</p>
 
 <p>在某些假设下，插入操作的摊还期望复杂度为常数时间。</p>
 
