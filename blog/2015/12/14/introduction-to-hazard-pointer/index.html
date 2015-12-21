@@ -157,10 +157,10 @@
 </span><span class='line'><span class="p">}</span>
 </span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
 </span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t1</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t2</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t3</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t4</span><span class="p">(</span><span class="n">Writer</span><span class="p">);</span>
+</span><span class='line'>  <span class="kr">thread</span> <span class="n">t1</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
+</span><span class='line'>  <span class="kr">thread</span> <span class="n">t2</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
+</span><span class='line'>  <span class="kr">thread</span> <span class="n">t3</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
+</span><span class='line'>  <span class="kr">thread</span> <span class="n">t4</span><span class="p">(</span><span class="n">Writer</span><span class="p">);</span>
 </span><span class='line'>  <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
 </span><span class='line'>  <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
 </span><span class='line'>  <span class="n">t3</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
