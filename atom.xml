@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-26T14:19:36+08:00</updated>
+  <updated>2015-12-26T14:51:31+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -84,11 +84,11 @@
 
 <p>那么，6.9999….为什么等于7呢？恩，还是无穷递缩等比级数的视角来考虑，就老少皆宜了。</p>
 
-<p>6.9999…= 6 + 0.9 + 0.99 + 0.999 + 0.9999 + …</p>
+<p>6.9999…= 6 + 0.9 + 0.09 + 0.009 + 0.0009 + …</p>
 
 <p>后面的那个，</p>
 
-<p>0.9 + 0.99 + 0.999 + 0.9999 + …</p>
+<p>0.9 + 0.09 + 0.009 + 0.0009 + …</p>
 
 <p>首项为0.9，公比为0.1，收敛于1。</p>
 
@@ -115,6 +115,8 @@
 <h2 id="section-12">感谢</h2>
 
 <p>感谢朋友刘梓溪、贾顾森、黎鸣告诉我如何解读其中的3点钟。</p>
+
+<p>本文发出后，阿里花隆同学指出了文中的一个笔误。非常感谢。</p>
 ]]></content>
   </entry>
   
