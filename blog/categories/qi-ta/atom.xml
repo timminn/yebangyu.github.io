@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 其他 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/qi-ta/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-26T11:16:39+08:00</updated>
+  <updated>2015-12-26T11:24:28+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -55,7 +55,9 @@
 
 <p>5点：$\phi$表示黄金分割比，$\phi = \frac{\sqrt{5} - 1}{2} $</p>
 
-<p>黄金分割比在斐波那契数列的通项公式中出现。</p>
+<p>黄金分割比在斐波那契数列的通项公式中出现。$2\phi+1$</p>
+
+<p>不过这个地方，我没搞懂，不知道是不是这幅图作者的笔误？应该是${2\phi+1}^2$而不是${2\phi-1}^2$ ?</p>
 
 <p>6点：不用说了，阶乘。</p>
 
