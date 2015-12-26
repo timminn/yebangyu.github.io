@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-26T11:03:23+08:00</updated>
+  <updated>2015-12-26T11:13:19+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -41,7 +41,7 @@
 
 <p>S = $\frac{a_1}{1-q}$ = 2</p>
 
-<p>3点：在刘梓溪、贾顾森、黎鸣等大神的提示下，终于知道了。&amp;#后面接十进制数，&amp;#x后面接十六进制数，其中33i是3的Unicode字符表示。</p>
+<p>3点：在刘梓溪、贾顾森、黎鸣等大神的提示下，终于知道了。&amp;#后面接十进制数，&amp;#x后面接十六进制数，其中十六进制33，等于十进制51，即'3'。不过这里的i，是什么鬼？</p>
 
 <p>4点：同余问题（Modular Multiplicative Inverse）</p>
 
@@ -81,7 +81,7 @@
 
 <p>10点：组合数，5! /(2! * 3!) = 10</p>
 
-<p>11点：十六进制，A是10，B是11，C是12。</p>
+<p>11点：十六进制，A是10，B是11，C是12。注意，注意，这里是0x0B，不是0x08。哈哈。</p>
 
 <p>点评：知识点有点重复，比如进制就有好几个。给个好评吧，但不是五星的。</p>
 
