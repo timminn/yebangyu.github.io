@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -84,7 +100,7 @@
   </header>
 
 
-<div class="entry-content"><h2>Motivation &amp; Intuition</h2>
+<div class="entry-content"><h2 id="motivation--intuition">Motivation &amp; Intuition</h2>
 
 <p>为什么引入<strong>Cuckoo Hashing</strong>？</p>
 
@@ -94,7 +110,6 @@
 <p>那么，这两种方法，都有啥优缺点呢？</p>
 
 <!--more-->
-
 
 <p>开散列，实现简单，但是对<strong>cache</strong>不友好，<strong>cache miss rate</strong>较高。</p>
 
@@ -108,11 +123,11 @@
 
 <p><strong>Cuckoo Hashing</strong>就是这样的方式。当<strong>K=2</strong>时，<strong>Cuckoo Hashing</strong>在<strong>load factor</strong>为<strong>50%</strong>左右的情况下表现较佳。如果<strong>K=4</strong>，那么甚至可以在<strong>97%</strong>的<strong>load factor</strong>下良好工作。</p>
 
-<h2>Cuckoo Hashing</h2>
+<h2 id="cuckoo-hashing">Cuckoo Hashing</h2>
 
 <p>一般的<strong>Hashing</strong>只包括一个<strong>Hash Tables</strong>，但是<strong>Cuckoo Hashing</strong>由两张甚至多张表构成。每张表对应一个哈希函数。本文讨论两张哈希表（记为<strong>table1</strong>和<strong>table2</strong>）、两个哈希函数（记为<strong>hf1</strong>和<strong>hf2</strong>）这种常见情形。</p>
 
-<h3>Insert</h3>
+<h3 id="insert">Insert</h3>
 
 <p>首先通过<strong>hf1</strong>计算出一个<strong>slot index</strong>，然后查看<strong>table1</strong>中该<strong>slot</strong>是否<strong>vacant</strong>，如果是，则插入；否则通过<strong>hf2</strong>计算出一个<strong>slot index</strong>，通过查看<strong>table2</strong>中该<strong>slot</strong>是否<strong>vacant</strong>，如果是，则插入，否则执行<strong>rearrange</strong>操作。</p>
 
@@ -140,19 +155,19 @@
 
 <p>在某些假设下，插入操作的摊还期望复杂度为常数时间。</p>
 
-<h3>Find</h3>
+<h3 id="find">Find</h3>
 
 <p>要检查的<strong>slot</strong>一共两个，<strong>index</strong>分别为<strong>hf1(key)</strong>和<strong>hf2(key)</strong>，因此只要查看一下<strong>Table1</strong>中的<strong>hf1(key)</strong>以及<strong>Table2</strong>中的<strong>hf2(key)</strong>这两个<strong>slot</strong>即可。时间复杂度为<strong>O(1)</strong>。</p>
 
-<h3>Del</h3>
+<h3 id="del">Del</h3>
 
 <p>同<strong>Find</strong>，要检查的<strong>slot</strong>也就两个，复杂度为<strong>O(1)</strong>。</p>
 
-<h2>实现</h2>
+<h2 id="section">实现</h2>
 
 <p>简单实现了一个，有需要的可以参考<a href="https://github.com/yebangyu/Yedis/blob/master/src/ds/CuckooHashMap.h">这里</a></p>
 
-<h2>其他</h2>
+<h2 id="section-1">其他</h2>
 
 <p>1，我们注意到，<strong>Cuckoo Hashing</strong>的精髓是使用两个不同的哈希函数，而不是两张表。两张表的存在，仅仅是为了分析上的方便。</p>
 
@@ -160,21 +175,21 @@
 
 <p>2，为嘛叫做<strong>Cuckoo Hashing</strong>？<strong>Cuckoo</strong>，即杜鹃鸟（布谷鸟），这种鸟有一种尿性：孵卵寄生。把蛋产到别的鸟窝里，让别人帮它孵化。这还不算，还要把人家寄主的一些卵给移走（不然容易引起怀疑嘛，毕竟鸟窝里突然多出几枚蛋。至于移走多少，就得看杜鹃鸟数学合不合格了）！等卵孵化完成，幼雏会将鸟窝里寄主的卵和其他幼雏推出鸟窝。真是牛逼闪闪了。</p>
 
-<h2>参考文献</h2>
+<h2 id="section-2">参考文献</h2>
 
-<p><a href="http://resources.mpi-inf.mpg.de/departments/d1/teaching/ws14/AlgoDat/materials/cuckoo.pdf">http://resources.mpi-inf.mpg.de/departments/d1/teaching/ws14/AlgoDat/materials/cuckoo.pdf</a></p>
+<p>http://resources.mpi-inf.mpg.de/departments/d1/teaching/ws14/AlgoDat/materials/cuckoo.pdf</p>
 
 <p><strong>Cuckoo Hashing</strong>原始论文</p>
 
-<p><a href="https://www.eecs.harvard.edu/~michaelm/postscripts/esa2009.pdf">https://www.eecs.harvard.edu/~michaelm/postscripts/esa2009.pdf</a></p>
+<p>https://www.eecs.harvard.edu/~michaelm/postscripts/esa2009.pdf</p>
 
 <p>这篇文章介绍了一些关于<strong>Cuckoo Hashing</strong>的<strong>Open Questions</strong></p>
 
-<p><a href="http://web.stanford.edu/class/cs166/lectures/13/Slides13.pdf">http://web.stanford.edu/class/cs166/lectures/13/Slides13.pdf</a></p>
+<p>http://web.stanford.edu/class/cs166/lectures/13/Slides13.pdf</p>
 
 <p>这个<strong>slides</strong>偏重对<strong>Cuckoo Hashing</strong>理论上的分析，注意其中对于插入操作的处理和本文介绍的不同。</p>
 
-<p><a href="http://excess-project.eu/publications/published/CuckooHashing_ICDCS.pdf">http://excess-project.eu/publications/published/CuckooHashing_ICDCS.pdf</a></p>
+<p>http://excess-project.eu/publications/published/CuckooHashing_ICDCS.pdf</p>
 
 <p>碉堡了，<strong>Lock Free Cuckoo Hashing</strong>。</p>
 </div>

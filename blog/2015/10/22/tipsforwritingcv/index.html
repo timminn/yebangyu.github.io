@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -86,20 +102,21 @@
 
 <div class="entry-content"><p>最近帮很多朋友<strong>review</strong>他们的简历，总结起来存在以下问题：</p>
 
-<blockquote><ul>
-<li>简历太多页</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>简历太多页</li>
+  </ul>
 </blockquote>
 
 <p>请尽量不超过两页。一般地，每个<strong>hr</strong>阅读简历的时间大概在<strong>20</strong>s甚至更少，写那么多页不仅毫无必要，而且有害。 而且我怀疑一般的应届毕业生不大可能说写三页的履历。有些人说，你写不了三页是你水平不行，经历不丰富。按我说，写三四页不是履历丰富，而是根本不会写作。</p>
 
-<blockquote><ul>
-<li>大量无用信息</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>大量无用信息</li>
+  </ul>
 </blockquote>
 
 <!--more-->
-
 
 <p>这些无用信息具体包括：</p>
 
@@ -113,16 +130,18 @@
 
 <p>照片。招程序员不是招礼仪公关小姐啊大哥。颜值不是特别高就算了吧。</p>
 
-<blockquote><ul>
-<li>过于口语化</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>过于口语化</li>
+  </ul>
 </blockquote>
 
-<p>“做了”、"搞了"、“弄了”可以用“完成”、“设计”、“实现”、“部署”之类的词代替。</p>
+<p>“做了”、”搞了”、“弄了”可以用“完成”、“设计”、“实现”、“部署”之类的词代替。</p>
 
-<blockquote><ul>
-<li>内容组织混乱</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>内容组织混乱</li>
+  </ul>
 </blockquote>
 
 <p>一段一段，一坨一坨，没有一定的分类和板式。建议分成个人信息、项目经验、实习经历、获奖证书等分门别类。</p>
@@ -145,44 +164,50 @@
 
 <p><strong>2016.1</strong>-<strong>2018.3</strong>   完成了<strong>xxxx</strong>系统</p>
 
-<blockquote><ul>
-<li>漏写期望职位</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>漏写期望职位</li>
+  </ul>
 </blockquote>
 
 <p>是想应聘<strong>Java</strong>研发工程师还是<strong>C++</strong>研发工程师还是<strong>Python</strong>研发工程师还是算法工程师还是产品经理？</p>
 
-<blockquote><ul>
-<li>使用词汇不讲究</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>使用词汇不讲究</li>
+  </ul>
 </blockquote>
 
 <p>慎用”精通“的同时，也不要全部都是“了解”吧？</p>
 
-<blockquote><ul>
-<li>漏写性别</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>漏写性别</li>
+  </ul>
 </blockquote>
 
 <p>程序员和程序媛差别还是很大的。不过这可能会涉及敏感的政治/性别歧视问题。有争议。不过如果是程序媛，据我说知，不是歧视，而反而是优先录取。哈哈。赞。</p>
 
-<blockquote><ul>
-<li>用<strong>QQ</strong>邮箱</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>用<strong>QQ</strong>邮箱</li>
+  </ul>
 </blockquote>
 
 <p>包括联系邮箱里写<strong>QQ</strong>邮箱和用<strong>QQ</strong>邮箱发简历。很多公司已经把<strong>QQ</strong>邮箱拉入黑名单。平常用<strong>QQ</strong>聊天就算了，发邮件你还用<strong>QQ</strong>邮箱？</p>
 
-<blockquote><ul>
-<li>文件格式用<strong>doc</strong></li>
-</ul>
+<blockquote>
+  <ul>
+    <li>文件格式用<strong>doc</strong></li>
+  </ul>
 </blockquote>
 
 <p>建议只发<strong>pdf</strong>格式，<strong>doc</strong>格式容易出现各种显示问题。</p>
 
-<blockquote><ul>
-<li>文件名太随意</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>文件名太随意</li>
+  </ul>
 </blockquote>
 
 <p>文件名建议“李三-<strong>C++</strong>研发工程师-硕士-<strong>XX</strong>大学<strong>.pdf</strong>”这样。</p>

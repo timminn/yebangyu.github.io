@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -86,30 +102,29 @@
 
 <div class="entry-content"><p>你想进什么公司，和你读什么计算机方向，关系不是很大。只要是理工科的学生，面对技术岗位，其实机会是差不多的。</p>
 
-<p>至于你想什么职位，那显然和你的专业/方向关系较大，比如说很多大数据职位，就明确表示要求你<strong>DM</strong>/<strong>ML</strong>/<strong>NLP</strong>/<strong>IR</strong>背景，但是这也只是说这些
+<p>至于你想什么职位，那显然和你的专业/方向关系较大，比如说很多大数据职位，就明确表示要求你<strong>DM</strong>/<strong>ML</strong>/<strong>NLP</strong>/<strong>IR</strong>背景，但是这也只是说这些 
 学生可能更有优势些，事实上，数学和统计学出身的，很多搞这个非常牛逼的。</p>
 
-<p>所以，不要问选什么导师，选什么方向；也不要问我的实验室很水老板很菜我还能找到好工作吗？你要问的是：我想毕业去互联
+<p>所以，不要问选什么导师，选什么方向；也不要问我的实验室很水老板很菜我还能找到好工作吗？你要问的是：我想毕业去互联 
 网公司，我读研的这几年是应该打酱油呢，还是打地沟油？</p>
 
 <p>想找一个好的互联网技术类、研发类工作，无非就是以下<strong>4</strong>点，你任选一点，做好了，都是有利的，哪<strong>4</strong>点？</p>
 
-<blockquote><ul>
-<li>语言层面</li>
-<li>算法层面</li>
-<li>项目层面</li>
-<li>专业层面</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>语言层面</li>
+    <li>算法层面</li>
+    <li>项目层面</li>
+    <li>专业层面</li>
+  </ul>
 </blockquote>
 
 <!--more-->
 
-
 <p>具体分析如下：</p>
 
 <hr />
-
-<h3>语言层面</h3>
+<p>### 语言层面</p>
 
 <p>你是想搞<strong>C++</strong>还是<strong>Java</strong>？选定一门语言后，多看一些这方面的书。</p>
 
@@ -126,8 +141,7 @@
 <p>顺便说一下，有空可以学学<strong>Python</strong>。</p>
 
 <hr />
-
-<h3>算法层面</h3>
+<p>### 算法层面</p>
 
 <p>学好算法。这个有两条路，最好是并行，那就是看书和做题。</p>
 
@@ -139,34 +153,37 @@
 
 <p>特别复杂的数据结构，比如红黑树、<strong>B</strong>树，没空就别搞了。互联网面试一般都不要求的。</p>
 
-<p>主要是排序、查找、简单<strong>DP</strong>、贪心、图算法和搜索。 根据身边同学的面试经验，二分搜索和快速排序，是面试常备了。看书的时候，如果有
+<p>主要是排序、查找、简单<strong>DP</strong>、贪心、图算法和搜索。 根据身边同学的面试经验，二分搜索和快速排序，是面试常备了。看书的时候，如果有 
 时间，可以思考几个问题：</p>
 
 <ul>
-<li><p>这个算法的时间空间复杂度，各是多少？如何分析？</p></li>
-<li><p>工程实现里，都有哪些<strong>trick</strong>？如何加速？</p></li>
-<li><p>这个算法可能用在哪些方面？有哪些应用？你比如说吧，求交集的算法，就广泛用在倒排索引、新浪微博共同关注、计算<strong>Jaccard</strong>系数等
-等上。</p></li>
+  <li>
+    <p>这个算法的时间空间复杂度，各是多少？如何分析？</p>
+  </li>
+  <li>
+    <p>工程实现里，都有哪些<strong>trick</strong>？如何加速？</p>
+  </li>
+  <li>
+    <p>这个算法可能用在哪些方面？有哪些应用？你比如说吧，求交集的算法，就广泛用在倒排索引、新浪微博共同关注、计算<strong>Jaccard</strong>系数等 
+等上。</p>
+  </li>
 </ul>
-
 
 <p>除了看书，还有就是很重要的：刷题啦。主要有<strong>poj</strong>，<strong>zoj</strong>等。找一个网站，认真刷一些题目，踏踏实实的，别浮躁。</p>
 
 <hr />
+<p>### 项目层面</p>
 
-<h3>项目层面</h3>
-
-<p>如果实验室比较牛，基本上忙项目就足够累死累活了；不过做了相对给力的项目，对于找工作，还是有很大帮助的。基本上不用怎么愁了。
+<p>如果实验室比较牛，基本上忙项目就足够累死累活了；不过做了相对给力的项目，对于找工作，还是有很大帮助的。基本上不用怎么愁了。 
 如果老板这儿没项目呢？</p>
 
-<p>如果实验室比较水，那就尽量去实习。大公司的实习经验很能给简历加分。如果老板不让你出去实习。既然实验室很水，说明自由时间
+<p>如果实验室比较水，那就尽量去实习。大公司的实习经验很能给简历加分。如果老板不让你出去实习。既然实验室很水，说明自由时间 
 比较多，那还是可以干很多事。比如说，<strong>github</strong>上就有很多开源项目，你可以选择一两个著名的，阅读源码，然后尝试自己也参与进去。</p>
 
 <p>说几个我比较感兴趣的开源项目吧：<strong>redis</strong>，<strong>spark</strong>。</p>
 
 <hr />
-
-<h3>专业层面</h3>
+<p>### 专业层面</p>
 
 <p>你对数据挖掘很精通，你对推荐系统很熟悉。你在<strong>NIPS</strong>，<strong>SIGIR</strong>上发表论文无数；你是百度推荐大赛，阿里巴巴大数据比赛冠军常客。</p>
 
@@ -175,12 +192,19 @@
 <p>专业层面，可以做的东西非常多。比如，你对数据挖掘很感兴趣，那么数据挖掘中的常见模型，我们了解多少？机器学习，我们掌握到什么程度了？举个例子：</p>
 
 <ul>
-<li><p><strong>SVM</strong>和<strong>logistic regression</strong>这两种<strong>model</strong>，有什么特点？各自的适用场合？</p></li>
-<li><p><strong>feature selection</strong>的常用方法有哪些？为什么<strong>lasso</strong>可以作为<strong>feature selection</strong>？</p></li>
-<li><p><strong>Adaboosting</strong>为什么不容易<strong>over-fitting</strong>？你能不能从<strong>statistical view</strong>来解释解释？</p></li>
-<li><p>哦，你和我说，你不是搞学术研究，你反感<strong>Learning Theory</strong>，你说你是一个工程师，那你写了多少代码？</p></li>
+  <li>
+    <p><strong>SVM</strong>和<strong>logistic regression</strong>这两种<strong>model</strong>，有什么特点？各自的适用场合？</p>
+  </li>
+  <li>
+    <p><strong>feature selection</strong>的常用方法有哪些？为什么<strong>lasso</strong>可以作为<strong>feature selection</strong>？</p>
+  </li>
+  <li>
+    <p><strong>Adaboosting</strong>为什么不容易<strong>over-fitting</strong>？你能不能从<strong>statistical view</strong>来解释解释？</p>
+  </li>
+  <li>
+    <p>哦，你和我说，你不是搞学术研究，你反感<strong>Learning Theory</strong>，你说你是一个工程师，那你写了多少代码？</p>
+  </li>
 </ul>
-
 
 <p><strong>scikit-learn</strong>，<strong>weka</strong>，以及<strong>spark</strong>，你会用哪个工具？（熟悉一种工具）</p>
 
@@ -191,30 +215,26 @@
 <p>哦，最好熟悉下<strong>linux</strong>的基本使用。</p>
 
 <hr />
-
-<h3>最后的话</h3>
+<p>### 最后的话</p>
 
 <p>如果能在读研期间做到这里的一点或者几点，到时候甚至不需要翻《编程之美》或者<strong>leetcode</strong>就毫无压力啦。 最后说几点个人感受。</p>
 
 <ul>
-<li>算法牛，项目牛，长得又帅，又精通很多语言，这种人，是不多见的。</li>
+  <li>算法牛，项目牛，长得又帅，又精通很多语言，这种人，是不多见的。</li>
 </ul>
-
 
 <p>也就是说，你想拿一个好<strong>offer</strong>，一般只要有一两点突出，就可以了。</p>
 
 <ul>
-<li>互联网面试，除了个别公司个别面试官，一般都是要考查（考查？考察？这两个词有什么区别？考察是调研、研究、分析的意思）算法的
+  <li>互联网面试，除了个别公司个别面试官，一般都是要考查（考查？考察？这两个词有什么区别？考察是调研、研究、分析的意思）算法的 
 。你研一的时候准备，看书做题，总比研三的时候抱佛脚来的好吧？</li>
 </ul>
-
 
 <p>况且，算法的学习，也不仅仅是为了面试吧？可能是受益终身的。或者，吹牛皮装逼作为谈资，也是可以的。</p>
 
 <ul>
-<li>别轻易说我就要去某某公司。到时候，你会发现，选择比你想象的多。</li>
+  <li>别轻易说我就要去某某公司。到时候，你会发现，选择比你想象的多。</li>
 </ul>
-
 
 <p>也有可能比你想象的还少，为什么？</p>
 

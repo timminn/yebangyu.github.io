@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -92,7 +108,6 @@
 
 <!--more-->
 
-
 <p>开发机（<strong>Client</strong>）：这一台机器上有我们的项目、工程文件、代码，平时我们在这台机器上写代码，要编译的对象也在这台机器上。机器<strong>IP</strong>为<strong>192.168.1.99</strong></p>
 
 <p>服务器（<strong>Server</strong>）：负责编译的机器，一共有<strong>3</strong>台。<strong>IP</strong>分别为<strong>192.168.1.11</strong>,<strong>192.168.1.22</strong>,<strong>192.168.1.33</strong>.</p>
@@ -101,7 +116,7 @@
 
 <p>以上所有机器都是安装的<strong>Ubuntu 14.04</strong>操作系统。</p>
 
-<h2>服务器</h2>
+<h2 id="section">服务器</h2>
 
 <p>1，安装<strong>gcc</strong></p>
 
@@ -149,7 +164,7 @@ distccd   3458  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distccd --pid-file=/var/run/distccd.pid --log-file=/var/log/distccd.log --daemon --allow 127.0.0.1 --listen 0.0.0.0 --nice 10
 </code></pre>
 
-<h2>开发机</h2>
+<h2 id="section-1">开发机</h2>
 
 <p>1，安装<strong>Distcc</strong></p>
 

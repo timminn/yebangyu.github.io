@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -90,18 +106,17 @@
 
 <p>需要安装的组件主要包括OctoPress、Github、Ruby、Python等，在配置的过程中，主要参考了本文末尾的参考链接，在此表示衷心的感谢。</p>
 
-<h3>Github</h3>
+<h3 id="github">Github</h3>
 
 <p>首先，得有一个Github的账号，便于托管。在申请了Github账号之后，建立一个个人仓库，仓库的命名必须是<code>yourusername.Github.io</code>这样的形式。如果您有购买个人域名，还可以通过CNAME来完成绑定。这一步可以google一下</p>
 
-<h3>Ruby</h3>
+<h3 id="ruby">Ruby</h3>
 
 <p>安装Ruby的时候需要特别注意勾选“Add Ruby executables to your PATH”</p>
 
 <!--more-->
 
-
-<h3>DevKit</h3>
+<h3 id="devkit">DevKit</h3>
 
 <p>下载解压到某个目录（例如DevKit），打开cmd，执行如下口令</p>
 
@@ -110,7 +125,7 @@ ruby dk.rb init
 ruby dk.rb install
 </code></pre>
 
-<h3>Python</h3>
+<h3 id="python">Python</h3>
 
 <p>安装python2.7并添加系统变量。切记，一定不能用python3，否则很多功能没法正常使用，例如代码高亮。</p>
 
@@ -119,7 +134,7 @@ ruby dk.rb install
 <pre><code>easy_install pygments
 </code></pre>
 
-<h3>OctoPress</h3>
+<h3 id="octopress">OctoPress</h3>
 
 <p>首先，通过git命令将OctoPress下载到本地</p>
 
@@ -135,7 +150,7 @@ gem sources -l
 
 <p>请特别注意，第一行里，是https，而不是http。</p>
 
-<p>修改Gemfile下的文件，把将第一行的<a href="http://rubygems.org/">http://rubygems.org/</a> 改为<a href="https://ruby.taobao.org/">https://ruby.taobao.org/</a></p>
+<p>修改Gemfile下的文件，把将第一行的http://rubygems.org/ 改为https://ruby.taobao.org/</p>
 
 <p>然后，依次执行如下命令</p>
 
@@ -148,9 +163,9 @@ bundle install
 <pre><code>rake install
 </code></pre>
 
-<p>环境基本上就配置好了，运行<code>rake preview</code>，然后打开<a href="http://127.0.0.1:4000/">http://127.0.0.1:4000/</a> 看看效果吧，恩，本地的效果。接下去就要写文章，继而发布到Github上了。</p>
+<p>环境基本上就配置好了，运行<code>rake preview</code>，然后打开http://127.0.0.1:4000/ 看看效果吧，恩，本地的效果。接下去就要写文章，继而发布到Github上了。</p>
 
-<h3>编写文章</h3>
+<h3 id="section">编写文章</h3>
 
 <p>运行<code>rake new_post['helloworld']</code></p>
 
@@ -158,7 +173,7 @@ bundle install
 
 <p>写完文章，就可以生成了，命令是<code>rake generate</code> ，然后再通过前面的<code>rake preview</code>来预览下</p>
 
-<h3>发布</h3>
+<h3 id="section-1">发布</h3>
 
 <p>运行命令，<code>rake setup_Github_pages</code> 来设置您的Github账号。注意，这一步得在git bash下完成，而不是Windows命令提示符下。</p>
 
@@ -166,41 +181,42 @@ bundle install
 
 <p>这样一篇文章就发布出去了。以后写新文章或者更改文章后，只需要<code>rake generate</code> 然后 <code>rake deploy</code> 就可以啦</p>
 
-<h3>参考资料：</h3>
+<h3 id="section-2">参考资料：</h3>
 
 <p>Octopress在MAC下的安装、配置</p>
 
-<p><a href="http://www.chongh.wiki/blog/2015/12/16/octopress-tutorial/">http://www.chongh.wiki/blog/2015/12/16/octopress-tutorial/</a></p>
+<p>http://www.chongh.wiki/blog/2015/12/16/octopress-tutorial/</p>
 
 <p>Ocotpress在Windows下的安装、配置：</p>
 
-<p><a href="http://www.cnblogs.com/oec2003/archive/2013/05/27/3100896.html">http://www.cnblogs.com/oec2003/archive/2013/05/27/3100896.html</a></p>
+<p>http://www.cnblogs.com/oec2003/archive/2013/05/27/3100896.html</p>
 
 <p>Octopress的个性化配置：</p>
 
-<p><a href="http://www.tuicool.com/articles/miaUR3">http://www.tuicool.com/articles/miaUR3</a></p>
+<p>http://www.tuicool.com/articles/miaUR3</p>
 
-<p><a href="http://www.tuicool.com/articles/VbqYNjn">http://www.tuicool.com/articles/VbqYNjn</a></p>
+<p>http://www.tuicool.com/articles/VbqYNjn</p>
 
-<p><a href="http://foggry.com/blog/2014/04/28/custom-your-octopress-blog/">http://foggry.com/blog/2014/04/28/custom-your-octopress-blog/</a></p>
+<p>http://foggry.com/blog/2014/04/28/custom-your-octopress-blog/</p>
 
 <p>Octopress添加多说评论功能：</p>
 
-<p><a href="http://droidyue.com/blog/2014/07/29/integrate-duoshuo-in-octopress/">http://droidyue.com/blog/2014/07/29/integrate-duoshuo-in-octopress/</a></p>
+<p>http://droidyue.com/blog/2014/07/29/integrate-duoshuo-in-octopress/</p>
 
-<p><a href="http://dev.duoshuo.com/threads/5364eb968df62dd658bc77af">http://dev.duoshuo.com/threads/5364eb968df62dd658bc77af</a></p>
+<p>http://dev.duoshuo.com/threads/5364eb968df62dd658bc77af</p>
 
 <p>其他：</p>
 
-<p><a href="http://blog.txx.im/blog/2013/09/04/liquid-exception-about-braces/">http://blog.txx.im/blog/2013/09/04/liquid-exception-about-braces/</a></p>
+<p>http://blog.txx.im/blog/2013/09/04/liquid-exception-about-braces/</p>
 
-<p><a href="http://khaos.Github.io/blog/2012/12/06/using-chinese-category-tags-in-octopress/">http://khaos.Github.io/blog/2012/12/06/using-chinese-category-tags-in-octopress/</a></p>
+<p>http://khaos.Github.io/blog/2012/12/06/using-chinese-category-tags-in-octopress/</p>
 
-<p><a href="https://Github.com/imathis/octopress/issues/1683">https://Github.com/imathis/octopress/issues/1683</a></p>
+<p>https://Github.com/imathis/octopress/issues/1683</p>
 
-<p><a href="http://stackoverflow.com/questions/14932141/octopress-capitalization-in-new-posts">http://stackoverflow.com/questions/14932141/octopress-capitalization-in-new-posts</a></p>
+<p>http://stackoverflow.com/questions/14932141/octopress-capitalization-in-new-posts</p>
 
-<p><a href="http://blog.depressedmarvin.com/2014/07/08/new-google-fonts-cdn/">http://blog.depressedmarvin.com/2014/07/08/new-google-fonts-cdn/</a></p>
+<p>http://blog.depressedmarvin.com/2014/07/08/new-google-fonts-cdn/</p>
+
 </div>
 
 

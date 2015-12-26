@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -166,17 +182,13 @@ bool is_valid_int64(const Double &amp;value);
   </header>
 
 
-  <div class="entry-content"><p>本文介绍多线程环境下并行编程的基础设施。主要包括：</p>
+  <div class="entry-content"><p>本文介绍多线程环境下并行编程的基础设施。主要包括：
+&gt; * volatile
+&gt; * __thread
+&gt; * Memory Barrier
+&gt; * __sync_synchronize</p>
 
-<blockquote><ul>
-<li>volatile</li>
-<li>__thread</li>
-<li>Memory Barrier</li>
-<li>__sync_synchronize</li>
-</ul>
-</blockquote>
-
-<h2>volatile</h2>
+<h2 id="volatile">volatile</h2>
 
 <p>编译器有时候为了优化性能，会将一些变量的值缓存到寄存器中，因此如果编译器发现该变量的值没有改变的话，将从寄存器里读出该值，这样可以避免内存访问。</p>
 
@@ -218,15 +230,16 @@ bool is_valid_int64(const Double &amp;value);
 
 <p>本章介绍了并行编程的工具和途径，具体包括</p>
 
-<blockquote><ul>
-<li>Shell Script Languages</li>
-<li>POSIX 多进程</li>
-<li>POSIX 多线程</li>
-<li>原子操作</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>Shell Script Languages</li>
+    <li>POSIX 多进程</li>
+    <li>POSIX 多线程</li>
+    <li>原子操作</li>
+  </ul>
 </blockquote>
 
-<h2>Shell Script Language</h2>
+<h2 id="shell-script-language">Shell Script Language</h2>
 
 </div>
   
@@ -307,16 +320,18 @@ bool is_valid_int64(const Double &amp;value);
 
   <div class="entry-content"><p>最近帮很多朋友<strong>review</strong>他们的简历，总结起来存在以下问题：</p>
 
-<blockquote><ul>
-<li>简历太多页</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>简历太多页</li>
+  </ul>
 </blockquote>
 
 <p>请尽量不超过两页。一般地，每个<strong>hr</strong>阅读简历的时间大概在<strong>20</strong>s甚至更少，写那么多页不仅毫无必要，而且有害。 而且我怀疑一般的应届毕业生不大可能说写三页的履历。有些人说，你写不了三页是你水平不行，经历不丰富。按我说，写三四页不是履历丰富，而是根本不会写作。</p>
 
-<blockquote><ul>
-<li>大量无用信息</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>大量无用信息</li>
+  </ul>
 </blockquote>
 
 </div>
@@ -355,14 +370,15 @@ bool is_valid_int64(const Double &amp;value);
 
 <p>这章介绍了影响<strong>CPU</strong>执行效率的几个因素。具体包括：</p>
 
-<blockquote><ul>
-<li>流水线被打断</li>
-<li>内存访问</li>
-<li>原子操作</li>
-<li>Memory Barrier</li>
-<li>Cache Misses</li>
-<li>IO 操作</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>流水线被打断</li>
+    <li>内存访问</li>
+    <li>原子操作</li>
+    <li>Memory Barrier</li>
+    <li>Cache Misses</li>
+    <li>IO 操作</li>
+  </ul>
 </blockquote>
 
 </div>
@@ -399,20 +415,21 @@ bool is_valid_int64(const Double &amp;value);
 
   <div class="entry-content"><p>你想进什么公司，和你读什么计算机方向，关系不是很大。只要是理工科的学生，面对技术岗位，其实机会是差不多的。</p>
 
-<p>至于你想什么职位，那显然和你的专业/方向关系较大，比如说很多大数据职位，就明确表示要求你<strong>DM</strong>/<strong>ML</strong>/<strong>NLP</strong>/<strong>IR</strong>背景，但是这也只是说这些
+<p>至于你想什么职位，那显然和你的专业/方向关系较大，比如说很多大数据职位，就明确表示要求你<strong>DM</strong>/<strong>ML</strong>/<strong>NLP</strong>/<strong>IR</strong>背景，但是这也只是说这些 
 学生可能更有优势些，事实上，数学和统计学出身的，很多搞这个非常牛逼的。</p>
 
-<p>所以，不要问选什么导师，选什么方向；也不要问我的实验室很水老板很菜我还能找到好工作吗？你要问的是：我想毕业去互联
+<p>所以，不要问选什么导师，选什么方向；也不要问我的实验室很水老板很菜我还能找到好工作吗？你要问的是：我想毕业去互联 
 网公司，我读研的这几年是应该打酱油呢，还是打地沟油？</p>
 
 <p>想找一个好的互联网技术类、研发类工作，无非就是以下<strong>4</strong>点，你任选一点，做好了，都是有利的，哪<strong>4</strong>点？</p>
 
-<blockquote><ul>
-<li>语言层面</li>
-<li>算法层面</li>
-<li>项目层面</li>
-<li>专业层面</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>语言层面</li>
+    <li>算法层面</li>
+    <li>项目层面</li>
+    <li>专业层面</li>
+  </ul>
 </blockquote>
 
 </div>
@@ -453,11 +470,11 @@ bool is_valid_int64(const Double &amp;value);
 
 <p>需要安装的组件主要包括OctoPress、Github、Ruby、Python等，在配置的过程中，主要参考了本文末尾的参考链接，在此表示衷心的感谢。</p>
 
-<h3>Github</h3>
+<h3 id="github">Github</h3>
 
 <p>首先，得有一个Github的账号，便于托管。在申请了Github账号之后，建立一个个人仓库，仓库的命名必须是<code>yourusername.Github.io</code>这样的形式。如果您有购买个人域名，还可以通过CNAME来完成绑定。这一步可以google一下</p>
 
-<h3>Ruby</h3>
+<h3 id="ruby">Ruby</h3>
 
 <p>安装Ruby的时候需要特别注意勾选“Add Ruby executables to your PATH”</p>
 

@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -88,20 +104,20 @@
 
 <p>本章介绍了并行编程的工具和途径，具体包括</p>
 
-<blockquote><ul>
-<li>Shell Script Languages</li>
-<li>POSIX 多进程</li>
-<li>POSIX 多线程</li>
-<li>原子操作</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>Shell Script Languages</li>
+    <li>POSIX 多进程</li>
+    <li>POSIX 多线程</li>
+    <li>原子操作</li>
+  </ul>
 </blockquote>
 
-<h2>Shell Script Language</h2>
+<h2 id="shell-script-language">Shell Script Language</h2>
 
 <!--more-->
 
-
-<p>如果不同的执行单元之间没有过多的数据交互，待执行的任务分区性较好，那么我们可以考虑通过<strong>Shell</strong>创建多个进程来完成任务。例如，我们需要计算每连续的<strong>100</strong>个元素的和，需要计算3组，好吧，比如说我们需要计算<strong>1+2+3+&hellip;+100</strong>；<strong>101+102+&hellip;200</strong>；<strong>201+201+&hellip;+300</strong>，那么我们可以编写一个程序，然后通过<strong>Shell</strong>创建<strong>3</strong>个进程，通过命令行传入参数（比如这里的待求和的元素的起点）。</p>
+<p>如果不同的执行单元之间没有过多的数据交互，待执行的任务分区性较好，那么我们可以考虑通过<strong>Shell</strong>创建多个进程来完成任务。例如，我们需要计算每连续的<strong>100</strong>个元素的和，需要计算3组，好吧，比如说我们需要计算<strong>1+2+3+…+100</strong>；<strong>101+102+…200</strong>；<strong>201+201+…+300</strong>，那么我们可以编写一个程序，然后通过<strong>Shell</strong>创建<strong>3</strong>个进程，通过命令行传入参数（比如这里的待求和的元素的起点）。</p>
 
 <pre><code>compute 1 &gt; compute_1.out &amp;
 compute 101 &gt; compute_2.out &amp;
@@ -109,7 +125,7 @@ compute 201 &gt; compute_3.out &amp;
 wait
 </code></pre>
 
-<p>其中<strong>compute</strong>是可执行程序名，<strong>1</strong>、<strong>101</strong>、<strong>201</strong>是命令行参数，<strong>> x.out</strong>代表将输出结果重定向到文件<strong>x.out</strong>中，<strong>&amp;</strong>表示程序后台运行。<strong>wait</strong>表示等待运行程序结束。</p>
+<p>其中<strong>compute</strong>是可执行程序名，<strong>1</strong>、<strong>101</strong>、<strong>201</strong>是命令行参数，<strong>&gt; x.out</strong>代表将输出结果重定向到文件<strong>x.out</strong>中，<strong>&amp;</strong>表示程序后台运行。<strong>wait</strong>表示等待运行程序结束。</p>
 
 <p>那么多进程的并行设计有什么缺点呢？</p>
 
@@ -119,7 +135,7 @@ wait
 
 <p>3，多进程间的同步相对费事复杂。</p>
 
-<h2>POSIX 多进程</h2>
+<h2 id="posix-">POSIX 多进程</h2>
 
 <p>可以通过<strong>fork</strong>、<strong>kill</strong>、<strong>wait</strong>等原语来创建、管理进程。书里简单介绍了这几个原语的使用，小结一下就是：</p>
 
@@ -127,7 +143,7 @@ wait
 
 <p>2，<strong>parent process</strong>和<strong>child process</strong>并不<strong>share memory</strong>。</p>
 
-<h2>POSIX 多线程</h2>
+<h2 id="posix--1">POSIX 多线程</h2>
 
 <p>可以通过<strong>pthread_mutex_lock</strong>以及<strong>pthread_mutex_unlock</strong>等原语，以加锁和释放锁的方式，使用多线程来并行设计。</p>
 
@@ -159,13 +175,13 @@ wait
 
 <p>实验表明，当读线程的数目增多，每次<strong>acquire lock</strong>时，花在修改数据结构（锁也是一种数据结构实现，当一个读线程<strong>acquire</strong>或者<strong>release</strong>成功显然需要对数据结构进行修改，加加减减神马的）的时间将显著影响<strong>scalability</strong>。极端情况下，当<strong>n</strong>个读线程同时<strong>acquire</strong>时，第<strong>n</strong>个线程需要等前面的<strong>n-1</strong>个线程都修改完毕，它才能修改。</p>
 
-<p>同时，注意到线程有<strong>n</strong>个，而<strong>CPU</strong> <strong>cores</strong>只有<strong>64</strong>个，因此当<strong>n&lt;=64</strong>时，每个<strong>thread</strong>可以独享一个<strong>core</strong>，当<strong>n>64</strong>后，根据鸽巢原理，至少有一个<strong>core</strong>上有多个<strong>thread</strong>在运行，这也会带来性能下降。</p>
+<p>同时，注意到线程有<strong>n</strong>个，而<strong>CPU</strong> <strong>cores</strong>只有<strong>64</strong>个，因此当<strong>n&lt;=64</strong>时，每个<strong>thread</strong>可以独享一个<strong>core</strong>，当<strong>n&gt;64</strong>后，根据鸽巢原理，至少有一个<strong>core</strong>上有多个<strong>thread</strong>在运行，这也会带来性能下降。</p>
 
 <p>因此，读写锁比较适合临界区比较大的情形（有文件<strong>IO</strong>或者网络访问等）。</p>
 
 <p>如果临界区比较短呢？比如我仅仅是加加一个变量呢？哦，那么原子操作可能是一个很好的选择。</p>
 
-<h2>原子操作</h2>
+<h2 id="section">原子操作</h2>
 
 <p><strong>gcc</strong>内置提供了一系列的原子操作。很多操作有两个版本，比如说：</p>
 

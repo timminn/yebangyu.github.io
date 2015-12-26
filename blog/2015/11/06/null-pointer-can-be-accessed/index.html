@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -90,49 +106,45 @@
 
 <!--more-->
 
-
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include&lt;iostream&gt;</span>
-</span><span class='line'><span class="cp">#include&lt;cstdlib&gt;</span>
-</span><span class='line'><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
-</span><span class='line'><span class="k">class</span> <span class="nc">Test1</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="k">private</span><span class="o">:</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
-</span><span class='line'><span class="k">public</span><span class="o">:</span>
-</span><span class='line'>  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
-</span><span class='line'>  <span class="p">{</span>
-</span><span class='line'>    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Test1: Core or not ? &quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">Test1</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span><span class="p">();</span><span class="c1">//会core吗？会出大事吗？</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;iostream&gt;</span>
+</span><span class="line"><span class="cp">#include&lt;cstdlib&gt;</span>
+</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">Test1</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">private</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Test1: Core or not ? &quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">Test1</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class="line">  <span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span><span class="p">();</span><span class="c1">//会core吗？会出大事吗？</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 <p>这里，<strong>p</strong>是一个空指针，通过这个空指针，我们访问了函数<strong>f</strong>。没<strong>core</strong>，没问题，成功输出了 <strong>Test1: Core or not ?</strong></p>
 
@@ -150,48 +162,47 @@
 
 <p>有没有感觉了？嗯，相信有了。我们继续往下看：</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include&lt;iostream&gt;</span>
-</span><span class='line'><span class="cp">#include&lt;cstdlib&gt;</span>
-</span><span class='line'><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
-</span><span class='line'><span class="k">static</span> <span class="kt">int</span> <span class="n">global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-</span><span class='line'><span class="k">class</span> <span class="nc">Test2</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="k">private</span><span class="o">:</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
-</span><span class='line'><span class="k">public</span><span class="o">:</span>
-</span><span class='line'>  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
-</span><span class='line'>  <span class="p">{</span>
-</span><span class='line'>    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Test1: Core or not ? &quot;</span><span class="o">&lt;&lt;</span><span class="n">global</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span><span class="c1">//access global</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">Test2</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span><span class="p">();</span><span class="c1">//会core吗？会出大事吗？</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;iostream&gt;</span>
+</span><span class="line"><span class="cp">#include&lt;cstdlib&gt;</span>
+</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class="line"><span class="k">static</span> <span class="kt">int</span> <span class="n">global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">Test2</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">private</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Test1: Core or not ? &quot;</span><span class="o">&lt;&lt;</span><span class="n">global</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span><span class="c1">//access global</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">Test2</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class="line">  <span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span><span class="p">();</span><span class="c1">//会core吗？会出大事吗？</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 <p>也没问题。</p>
 
@@ -213,55 +224,53 @@ Test1 obj2;
 
 <p>而函数<strong>f</strong>呢？它是独立于对象存放的，自然没问题。一般说来，<strong>f</strong>位于程序的代码段，而全局变量一般位于<strong>BSS</strong>段或者<strong>DATA</strong>段（这个比较复杂，和该全局变量是否初始化以及初始化为<strong>0</strong>还是非<strong>0</strong>有关）。而当我们定义对象时，才为该对象分配内存，才有数据成员<strong>a</strong>的存在：</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include&lt;iostream&gt;</span>
-</span><span class='line'><span class="cp">#include&lt;cstdlib&gt;</span>
-</span><span class='line'><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
-</span><span class='line'><span class="k">static</span> <span class="kt">int</span> <span class="n">global1</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">//DATA段</span>
-</span><span class='line'><span class="k">static</span> <span class="kt">int</span> <span class="n">global2</span><span class="p">;</span> <span class="c1">//BSS段</span>
-</span><span class='line'><span class="k">class</span> <span class="nc">Test3</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="k">private</span><span class="o">:</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
-</span><span class='line'><span class="k">public</span><span class="o">:</span>
-</span><span class='line'>  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
-</span><span class='line'>  <span class="p">{</span>
-</span><span class='line'>    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Test1: Core or not ? &quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'><span class="n">Test3</span> <span class="n">obj3</span><span class="p">;</span> <span class="c1">//DATA段 (调用默认构造函数进行初始化)</span>
-</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">Test3</span> <span class="n">obj1</span><span class="p">;</span> <span class="c1">//stack段。定义obj1，这时候自然为a分配内存了</span>
-</span><span class='line'>  <span class="n">Test3</span> <span class="o">*</span><span class="n">obj2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Test3</span><span class="p">();</span><span class="c1">//heap段，也为a分配内存了。</span>
-</span><span class='line'>  <span class="n">Test3</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span><span class="c1">//只是声明，没有定义。没有对象，也没有a。</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;iostream&gt;</span>
+</span><span class="line"><span class="cp">#include&lt;cstdlib&gt;</span>
+</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class="line"><span class="k">static</span> <span class="kt">int</span> <span class="n">global1</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">//DATA段</span>
+</span><span class="line"><span class="k">static</span> <span class="kt">int</span> <span class="n">global2</span><span class="p">;</span> <span class="c1">//BSS段</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">Test3</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">private</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Test1: Core or not ? &quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="n">Test3</span> <span class="n">obj3</span><span class="p">;</span> <span class="c1">//DATA段 (调用默认构造函数进行初始化)</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">Test3</span> <span class="n">obj1</span><span class="p">;</span> <span class="c1">//stack段。定义obj1，这时候自然为a分配内存了</span>
+</span><span class="line">  <span class="n">Test3</span> <span class="o">*</span><span class="n">obj2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Test3</span><span class="p">();</span><span class="c1">//heap段，也为a分配内存了。</span>
+</span><span class="line">  <span class="n">Test3</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span><span class="c1">//只是声明，没有定义。没有对象，也没有a。</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 <p>受王杰兄（微博：@skyline09_）启发和提示，其实我们可以换一种形式来理解。</p>
 
 <p>我们知道，<strong>C++</strong>中，类的非静态成员函数会被编译器改写：</p>
@@ -286,37 +295,35 @@ Test__f(p);
 <p>那么，<strong>this</strong>指针可以操纵哪些东西呢？哦，类的非静态数据成员。而类的静态数据成员，全局变量等，是不会通过<strong>this</strong>指针访问的，因此，上例中，访问<strong>a</strong>崩溃，访问<strong>global</strong>则安全。</p>
 
 <p>最后，我们看一个问题。这个问题，最早我是从杜克伟兄（微博：@小伙伴-小伙伴儿）那里听到的。</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="k">class</span> <span class="nc">Test4</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="k">public</span><span class="o">:</span>
-</span><span class='line'>  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
-</span><span class='line'>  <span class="p">{</span>
-</span><span class='line'>    <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span> <span class="c1">// 有问题吗？</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">Test4</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span><span class="p">();</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">Test4</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span> <span class="c1">// 有问题吗？</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">Test4</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class="line">  <span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span><span class="p">();</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 <p>没问题。<strong>&amp;(*this)</strong>就是<strong>this</strong>，值和<strong>p</strong>相等。因此上面会输出<strong>0</strong>。</p>
 

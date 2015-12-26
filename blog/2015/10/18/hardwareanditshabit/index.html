@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -88,22 +104,22 @@
 
 <p>这章介绍了影响<strong>CPU</strong>执行效率的几个因素。具体包括：</p>
 
-<blockquote><ul>
-<li>流水线被打断</li>
-<li>内存访问</li>
-<li>原子操作</li>
-<li>Memory Barrier</li>
-<li>Cache Misses</li>
-<li>IO 操作</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>流水线被打断</li>
+    <li>内存访问</li>
+    <li>原子操作</li>
+    <li>Memory Barrier</li>
+    <li>Cache Misses</li>
+    <li>IO 操作</li>
+  </ul>
 </blockquote>
 
 <!--more-->
 
-
 <p>这其中，前面两个，流水线被打断以及内存访问主要针对串行程序，而后面四个主要针对并行程序，因为在并行程序中显得更为突出。</p>
 
-<h3>流水线被打断</h3>
+<h3 id="section">流水线被打断</h3>
 
 <p>现代<strong>CPU</strong>执行指令采用流水线设计和指令预取机制，而影响流水的两种重要情况是停机等待和分支判断失败。前者是<strong>CPU</strong>没有足够的信息来判断取哪些指令（例如，涉及到<strong>C++</strong>中的虚函数时）。而分支判断失败，则是取了指令但是没取对。例如</p>
 
@@ -139,7 +155,7 @@ else
 }
 </code></pre>
 
-<h3>内存访问</h3>
+<h3 id="section-1">内存访问</h3>
 
 <p>这个不用说了，内存访问是昂贵操作，相对于寄存器、<strong>cache</strong>而言。</p>
 
@@ -147,11 +163,11 @@ else
 
 <p>数组通常有比较好的内存访问模式，也就是说访问了<strong>a[0]</strong>，就可以将<strong>a[1]</strong>,<strong>a[2]</strong>,<strong>a[3]</strong>等存进<strong>cache</strong>，等访问到<strong>a[1]</strong>时不需要去访问内存了。但是一般用指针实现的链表的访问模式则比较差。恩，所谓的空间局部性。</p>
 
-<h3>原子操作</h3>
+<h3 id="section-2">原子操作</h3>
 
 <p><strong>gcc</strong>内置提供了一系列的原子操作，包括著名的用于<strong>CAS</strong>(<strong>compare</strong> <strong>and</strong> <strong>swap</strong>)的<strong>__sync_bool_compare_and_swap</strong>等。当多个线程对一个内存变量进行原子操作时，往往依赖于硬件支持。在<strong>x86</strong>下，原子操作时，锁住总线，防止其他<strong>cpu</strong> <strong>core</strong>访问该内存单元。</p>
 
-<h3>Memory Barrier</h3>
+<h3 id="memory-barrier">Memory Barrier</h3>
 
 <p><strong>CPU</strong>对指令可能采取乱序执行，以达到优化的目的。但是，并发访问的锁破坏了这种机制。</p>
 
@@ -167,7 +183,7 @@ d = 4;
 
 <p><strong>lock</strong>和<strong>unlock</strong>中包含了<strong>memory</strong> <strong>barrier</strong>。由于<strong>memory</strong> <strong>barrier</strong>和乱序执行是对着干的，用来防止乱序执行的；而乱序执行一般是优化的手段和方法，因此<strong>memory</strong> <strong>barrier</strong>往往带来性能下降。</p>
 
-<h3>Cache Misses</h3>
+<h3 id="cache-misses">Cache Misses</h3>
 
 <p>先贴一张现代<strong>CPU</strong>和<strong>cache</strong>架构粗略图。</p>
 

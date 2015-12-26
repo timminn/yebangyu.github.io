@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -88,88 +104,83 @@
 
 <!--more-->
 
-
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-<span class='line-number'>36</span>
-<span class='line-number'>37</span>
-<span class='line-number'>38</span>
-</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include&lt;iostream&gt;</span>
-</span><span class='line'><span class="cp">#include&lt;thread&gt;</span>
-</span><span class='line'><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
-</span><span class='line'><span class="k">class</span> <span class="nc">SmartPointer</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="k">public</span><span class="o">:</span>
-</span><span class='line'>  <span class="n">SmartPointer</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">p</span><span class="p">)</span>
-</span><span class='line'>  <span class="p">{</span>
-</span><span class='line'>    <span class="n">pointee_</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span>
-</span><span class='line'>    <span class="n">ref_counts_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'>  <span class="p">}</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="o">*</span><span class="n">pointee_</span><span class="p">;</span>
-</span><span class='line'>  <span class="kt">int</span> <span class="n">ref_counts_</span><span class="p">;</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'><span class="n">SmartPointer</span> <span class="nf">sp</span><span class="p">(</span><span class="k">new</span> <span class="kt">int</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
-</span><span class='line'><span class="kt">void</span> <span class="nf">Reader</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="o">++</span><span class="n">sp</span><span class="p">.</span><span class="n">ref_counts_</span><span class="p">;</span>
-</span><span class='line'>  <span class="n">cout</span><span class="o">&lt;&lt;*</span><span class="p">(</span><span class="n">sp</span><span class="p">.</span><span class="n">pointee_</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
-</span><span class='line'>  <span class="o">--</span><span class="n">sp</span><span class="p">.</span><span class="n">ref_counts_</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="kt">void</span> <span class="nf">Writer</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="k">if</span> <span class="p">(</span><span class="n">sp</span><span class="p">.</span><span class="n">ref_counts_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
-</span><span class='line'>    <span class="k">delete</span> <span class="n">sp</span><span class="p">.</span><span class="n">pointee_</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="kr">thread</span> <span class="n">t1</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
-</span><span class='line'>  <span class="kr">thread</span> <span class="n">t2</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
-</span><span class='line'>  <span class="kr">thread</span> <span class="n">t3</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
-</span><span class='line'>  <span class="kr">thread</span> <span class="n">t4</span><span class="p">(</span><span class="n">Writer</span><span class="p">);</span>
-</span><span class='line'>  <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class='line'>  <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class='line'>  <span class="n">t3</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class='line'>  <span class="n">t4</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+<span class="line-number">29</span>
+<span class="line-number">30</span>
+<span class="line-number">31</span>
+<span class="line-number">32</span>
+<span class="line-number">33</span>
+<span class="line-number">34</span>
+<span class="line-number">35</span>
+<span class="line-number">36</span>
+<span class="line-number">37</span>
+<span class="line-number">38</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;iostream&gt;</span>
+</span><span class="line"><span class="cp">#include&lt;thread&gt;</span>
+</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">SmartPointer</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="n">SmartPointer</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">p</span><span class="p">)</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">pointee_</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span>
+</span><span class="line">    <span class="n">ref_counts_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="kt">int</span> <span class="o">*</span><span class="n">pointee_</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">ref_counts_</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="n">SmartPointer</span> <span class="nf">sp</span><span class="p">(</span><span class="k">new</span> <span class="kt">int</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">Reader</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="o">++</span><span class="n">sp</span><span class="p">.</span><span class="n">ref_counts_</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;*</span><span class="p">(</span><span class="n">sp</span><span class="p">.</span><span class="n">pointee_</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="o">--</span><span class="n">sp</span><span class="p">.</span><span class="n">ref_counts_</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">Writer</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">sp</span><span class="p">.</span><span class="n">ref_counts_</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+</span><span class="line">    <span class="k">delete</span> <span class="n">sp</span><span class="p">.</span><span class="n">pointee_</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kr">thread</span> <span class="n">t1</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
+</span><span class="line">  <span class="kr">thread</span> <span class="n">t2</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
+</span><span class="line">  <span class="kr">thread</span> <span class="n">t3</span><span class="p">(</span><span class="n">Reader</span><span class="p">);</span>
+</span><span class="line">  <span class="kr">thread</span> <span class="n">t4</span><span class="p">(</span><span class="n">Writer</span><span class="p">);</span>
+</span><span class="line">  <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+</span><span class="line">  <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+</span><span class="line">  <span class="n">t3</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+</span><span class="line">  <span class="n">t4</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 <p>然而事实上，这样做是错的。其中的<strong>race condition</strong>请读者自行分析。</p>
 
 <p>那么，<strong>Hazard Pointer</strong>(<strong>HP</strong>)和<strong>Smart Pointer</strong>(<strong>SP</strong>)有什么区别呢？它们的共同点就是管理对应对象的生命周期，然而这两者有本质的区别，<strong>HP</strong>是线程安全的，而<strong>SP</strong>不是。</p>

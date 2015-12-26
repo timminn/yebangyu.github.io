@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -86,32 +102,32 @@
 
 <div class="entry-content"><p>推荐几本近期阅读的好书。</p>
 
-<h2>Recommender Systems Handbook</h2>
+<h2 id="recommender-systems-handbook">Recommender Systems Handbook</h2>
 
 <!--more-->
-
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/recommendersystemhandbook2nd.jpg" alt="rsh" /></p>
 
 <p>这本书最近出第二版了，和第一版相比新增了不少内容，我最感兴趣的是其中的第11章，<strong>Recommender Systems in Industry: A Netflix Case Study</strong>，<strong>Xavier Amatriain</strong>大牛所写。</p>
 
-<h2>Distributed Systems : An Algorithmic Approach</h2>
+<h2 id="distributed-systems--an-algorithmic-approach">Distributed Systems : An Algorithmic Approach</h2>
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/distributedsystem.jpg" alt="dsaaa" /></p>
 
 <p>这本书去年出的第二版(第一版没看过)，貌似增加了<strong>paxos</strong>等不少内容。这本书强烈推荐，和其他分布式系统书籍相比，它不扯淡，也不是百科全书一样各种列词条全而不深，这本书实实在在的讲了一些内容，非常适合作为分布式系统的入门书。</p>
 
-<h2>Shared-Memory Synchronization</h2>
+<h2 id="shared-memory-synchronization">Shared-Memory Synchronization</h2>
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/sharedmemorysync.jpg" alt="sms" /></p>
 
 <p>并发编程（多处理器编程）方面的书籍，涉及到原子操作、<strong>spin lock</strong>、<strong>lock free</strong>等内容，配合其他书籍，效果更佳。</p>
 
-<h2>The Go Programming Language</h2>
+<h2 id="the-go-programming-language">The Go Programming Language</h2>
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/thegoprogramminglanguage.jpg" alt="tgpl" /></p>
 
 <p><strong>Go</strong>语言编程入门书，作者之一<strong>Brian W. Kernighan</strong>，不用多介绍了吧。估计不久就要被列为<strong>Go</strong>语言的圣经了。为嘛学<strong>Go</strong>？个人对其中的并行特性比较感兴趣。</p>
+
 </div>
 
 

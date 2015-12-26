@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -97,14 +113,13 @@
 
 <!--more-->
 
-
 <p>开发机（<strong>Client</strong>）：这一台机器上有我们的项目、工程文件、代码，平时我们在这台机器上写代码，要编译的对象也在这台机器上。机器<strong>IP</strong>为<strong>192.168.1.99</strong>。</p>
 
 <p>服务器（<strong>Server</strong>）：负责编译的机器，一共有<strong>3</strong>台。<strong>IP</strong>分别为<strong>192.168.1.11</strong>,<strong>192.168.1.22</strong>,<strong>192.168.1.33</strong>。</p>
 
 <p>调度器（<strong>Scheduler</strong>）：调度程序<strong>Dmucs</strong>所在的机器，负责把编译任务合理的派发到编译机器（服务器）的编译程序上。<strong>IP</strong>为<strong>192.168.1.88</strong>。</p>
 
-<h2>服务器</h2>
+<h2 id="section">服务器</h2>
 
 <p>1，安装<strong>gcc</strong></p>
 
@@ -177,7 +192,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>其中，<strong>192.168.1.88</strong>是调度程序所在机器的<strong>IP</strong>地址。</p>
 
-<h2>调度器</h2>
+<h2 id="section-1">调度器</h2>
 
 <p>1，安装<strong>Dmucs</strong></p>
 
@@ -202,7 +217,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 <pre><code>sudo service dmucs start
 </code></pre>
 
-<h2>开发机</h2>
+<h2 id="section-2">开发机</h2>
 
 <p>1，安装<strong>Distcc</strong></p>
 
@@ -250,7 +265,7 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 
 <p>那么生成的<strong>makefile</strong>文件将自动使用<strong>Distcc</strong>和<strong>Dmucs</strong>了。</p>
 
-<h2>附录：调度策略</h2>
+<h2 id="section-3">附录：调度策略</h2>
 
 <p>根据<a href="http://dmucs.sourceforge.net/">文档</a>，<strong>Dmucs</strong>的调度策略是：</p>
 

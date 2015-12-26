@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -90,16 +106,15 @@
 
 <p>以前，只知道其中十一个点钟的分析；对于3点钟，一直没有思路。于是发了一条朋友圈，求助大神解释其中的3点钟。在刘梓溪、贾顾森、黎鸣等大神的指导下，明白了其中是怎么回事。所以这里介绍下这十二个点，应该如何解释。个人观点，仅供参考。</p>
 
-<h2>12点</h2>
+<h2 id="section">12点</h2>
 
 <p>不用说了，1728的立方根。</p>
 
-<h2>1点</h2>
+<h2 id="section-1">1点</h2>
 
 <p>可能很多人不大知道，这是勒让德常数，表示为：</p>
 
 <!--more-->
-
 
 <p>$\lim_{x \rightarrow +\infty} {ln(x) - \frac{x}{\pi(x)}}$</p>
 
@@ -107,17 +122,17 @@
 
 <p>这个值经过勒让德、高斯等一批数学大佬的努力，最后被数学家Charles Jean证明为1。</p>
 
-<h2>2点</h2>
+<h2 id="section-2">2点</h2>
 
 <p>无穷递缩等比级数的求和，首项为1，公比为$\frac{1}{2}$ ，所以它的和为</p>
 
 <p>S = $\frac{a_1}{1-q}$ = 2</p>
 
-<h2>3点</h2>
+<h2 id="section-3">3点</h2>
 
-<p>在刘梓溪、贾顾森、黎鸣等大神的提示下，终于知道了。&amp;#后面接十进制数，&amp;#x后面接十六进制数，其中十六进制33，等于十进制51，即'3'。不过这里的i，是什么鬼？</p>
+<p>在刘梓溪、贾顾森、黎鸣等大神的提示下，终于知道了。&amp;#后面接十进制数，&amp;#x后面接十六进制数，其中十六进制33，等于十进制51，即’3’。不过这里的i，是什么鬼？</p>
 
-<h2>4点</h2>
+<h2 id="section-4">4点</h2>
 
 <p>同余问题（Modular Multiplicative Inverse）</p>
 
@@ -129,7 +144,7 @@
 
 <p>$x =  4$</p>
 
-<h2>5点</h2>
+<h2 id="section-5">5点</h2>
 
 <p>$\phi$表示黄金分割比，$\phi = \frac{\sqrt{5} - 1}{2} $</p>
 
@@ -137,51 +152,51 @@
 
 <p>不过这个地方，我没搞懂，不知道这是不是这幅图作者的笔误？个人认为应该是</p>
 
-<p>$(2\phi+1)<sup>2</sup>$</p>
+<p>$(2\phi+1)^2$</p>
 
 <p>而不是</p>
 
-<p>$(2\phi-1)<sup>2</sup>$</p>
+<p>$(2\phi-1)^2$</p>
 
-<h2>6点</h2>
+<h2 id="section-6">6点</h2>
 
 <p>不用说了，阶乘。</p>
 
-<h2>7点</h2>
+<h2 id="section-7">7点</h2>
 
-<p>表示6.999999999&hellip;其中9的头上一横，表示循环节是9。</p>
+<p>表示6.999999999…其中9的头上一横，表示循环节是9。</p>
 
-<p>那么，6.9999&hellip;.为什么等于7呢？恩，还是无穷递缩等比级数的视角来考虑，就老少皆宜了。</p>
+<p>那么，6.9999….为什么等于7呢？恩，还是无穷递缩等比级数的视角来考虑，就老少皆宜了。</p>
 
-<p>6.9999&hellip;= 6 + 0.9 + 0.99 + 0.999 + 0.9999 + &hellip;</p>
+<p>6.9999…= 6 + 0.9 + 0.99 + 0.999 + 0.9999 + …</p>
 
 <p>后面的那个，</p>
 
-<p>0.9 + 0.99 + 0.999 + 0.9999 + &hellip;</p>
+<p>0.9 + 0.99 + 0.999 + 0.9999 + …</p>
 
 <p>首项为0.9，公比为0.1，收敛于1。</p>
 
-<p>因此6.9999&hellip; = 7</p>
+<p>因此6.9999… = 7</p>
 
-<h2>8点</h2>
+<h2 id="section-8">8点</h2>
 
 <p>代表1000（二进制），因为只有第一个是亮的，其他是暗的。（亮为1，暗为0，bitmap的感觉。可能是盲文），因此为8。</p>
 
-<h2>9点</h2>
+<h2 id="section-9">9点</h2>
 
 <p>四进制。21（四进制） = 2 * 4 + 1 = 9。</p>
 
-<h2>10点</h2>
+<h2 id="section-10">10点</h2>
 
 <p>组合数，5! /(2! * 3!) = 10</p>
 
-<h2>11点</h2>
+<h2 id="section-11">11点</h2>
 
 <p>十六进制，A是10，B是11，C是12。注意，注意，这里是0x0B，不是0x08。哈哈。</p>
 
 <p>点评：知识点有点重复，比如进制就有好几个。给个好评吧，但不是五星的。</p>
 
-<h2>感谢</h2>
+<h2 id="section-12">感谢</h2>
 
 <p>感谢朋友刘梓溪、贾顾森、黎鸣指导我如何解读其中的3点钟。</p>
 </div>

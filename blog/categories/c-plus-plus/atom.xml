@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-26T13:45:48+08:00</updated>
+  <updated>2015-12-26T13:58:14+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -20,14 +20,14 @@
     <id>http://www.yebangyu.org/blog/2015/11/15/static-const-in-cpp</id>
     <content type="html"><![CDATA[<p>废话不多说了，开始这次的讨论吧。</p>
 
-<h2>提出问题</h2>
+<h2 id="section">提出问题</h2>
 
 <p>同事颜廷帅（微博：@颜挺帅）拿了一段代码让我分析。以下代码，能编译链接通过吗？</p>
 
 <!--more-->
 
-
-<pre><code class="c++">void f(const int &amp;value)
+<p><code>c++
+void f(const int &amp;value)
 {
 }
 class Test
@@ -40,15 +40,15 @@ int main()
   f(Test::a);
   return 0;
 }
-</code></pre>
+</code></p>
 
 <p>我的第一感觉是：应该没问题，吧。在<strong>Visual Studio 2013</strong> 实验了下，顺利通过，一切正常.</p>
 
-<p>然而同事说，<strong>gcc</strong>下是报错的：Undefined reference to &lsquo;Test::a&rsquo;</p>
+<p>然而同事说，<strong>gcc</strong>下是报错的：Undefined reference to ‘Test::a’</p>
 
 <p>这是为什么？</p>
 
-<h2>分析问题</h2>
+<h2 id="section-1">分析问题</h2>
 
 <p>写作本文时所用的环境是<strong>gcc 4.8.2 (Ubuntu 14.04 , X86平台)</strong>。</p>
 
@@ -67,16 +67,16 @@ int main()
 <p>我们可以看到类似如下的输出：</p>
 
 <pre><code>SYMBOL TABLE:
-00000000 l    df *ABS*  00000000 test.cpp
-00000000 l    d  .text  00000000 .text
-00000000 l    d  .data  00000000 .data
-00000000 l    d  .bss   00000000 .bss
-00000000 l    d  .note.GNU-stack    00000000 .note.GNU-stack
-00000000 l    d  .eh_frame  00000000 .eh_frame
-00000000 l    d  .comment   00000000 .comment
-00000000 g     F .text  00000005 _Z1fRKi
-00000005 g     F .text  00000019 main
-00000000         *UND*  00000000 _ZN4Test1aE
+00000000 l    df *ABS*	00000000 test.cpp
+00000000 l    d  .text	00000000 .text
+00000000 l    d  .data	00000000 .data
+00000000 l    d  .bss	00000000 .bss
+00000000 l    d  .note.GNU-stack	00000000 .note.GNU-stack
+00000000 l    d  .eh_frame	00000000 .eh_frame
+00000000 l    d  .comment	00000000 .comment
+00000000 g     F .text	00000005 _Z1fRKi
+00000005 g     F .text	00000019 main
+00000000         *UND*	00000000 _ZN4Test1aE
 </code></pre>
 
 <p>上面的最后一行，<strong>_ZN4Test1aE</strong>就是对应我们程序中声明的<strong>Test::a</strong>。之所以长得这么复杂、奇怪，是因为编译器做了<strong>mangling</strong>处理。</p>
@@ -85,7 +85,7 @@ int main()
 
 <p>*UND* : if the section is referenced in the file being dumped, but not defined there</p>
 
-<p>也就是<strong>_ZN4Test1aE</strong>在本<strong>.o</strong>文件中引用，然而它却木有定义。因此，报Undefined reference to &lsquo;Test::a'的错，也就情理之中了。</p>
+<p>也就是<strong>_ZN4Test1aE</strong>在本<strong>.o</strong>文件中引用，然而它却木有定义。因此，报Undefined reference to ‘Test::a’的错，也就情理之中了。</p>
 
 <p>那么，我们的程序是否真的引用了<strong>_ZN4Test1aE</strong>呢？恩，我们接着往下看。</p>
 
@@ -97,19 +97,20 @@ int main()
 <p>我们可以得到类似这样的汇编代码(做了整理，节选)：</p>
 
 <pre><code>main:
-    pushl   %ebp
-    movl    %esp, %ebp
-    subl    $4, %esp
-    movl    $_ZN4Test1aE, (%esp) ;看到没？_ZN4Test1aE ！
-    call    _Z1fRKi ;调用函数f
-    movl    $0, %eax
-    leave
-    ret
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$4, %esp
+	movl	$_ZN4Test1aE, (%esp) ;看到没？_ZN4Test1aE ！
+	call	_Z1fRKi ;调用函数f
+	movl	$0, %eax
+	leave
+	ret
 </code></pre>
 
 <p>虽然我们已经分析出为什么会报错，然而，我们还有一个疑问，就是，为什么下面的代码，是OK的？</p>
 
-<pre><code class="c++">void f(const int value) //这里没有 &amp;
+<p><code>c++
+void f(const int value) //这里没有 &amp;
 {
 }
 class Test
@@ -122,30 +123,31 @@ int main()
   f(Test::a);//没问题
   return 0;
 }
-</code></pre>
+</code></p>
 
 <p>恩，有了前面的基础，相信读者诸君已经知道怎么分析。我们可以用同样的方法，看看它的汇编代码：</p>
 
 <pre><code>main:
-    pushl   %ebp
-    movl    %esp, %ebp
-    subl    $4, %esp
-    movl    $1, (%esp)     ;看到没？1，不是_ZN4Test1aE，也不是Test::a
-    call    _Z1fi
-    movl    $0, %eax
-    leave
-    ret
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$4, %esp
+	movl	$1, (%esp)     ;看到没？1，不是_ZN4Test1aE，也不是Test::a
+	call	_Z1fi
+	movl	$0, %eax
+	leave
+	ret
 </code></pre>
 
 <p>也就是说，在这里，编译器只是把<strong>Test::a</strong>认作一个占位符，实际使用之处用<strong>1</strong>代替了。</p>
 
-<h2>解决问题</h2>
+<h2 id="section-2">解决问题</h2>
 
 <p>知道原因了，那么怎么解决呢？恩，至少三种方法：</p>
 
 <p>1，我们可以<strong>定义</strong>（而不是声明）<strong>Test::a</strong>。是的，上面的<code>static const int a = 1;</code>并不是它的定义式。如果要定义，那么我们应该这么做：</p>
 
-<pre><code class="c++">void f(const int &amp;value)//还是传引用
+<p><code>c++
+void f(const int &amp;value)//还是传引用
 {
 }
 class Test
@@ -159,15 +161,15 @@ int main()
   f(Test::a);//现在没问题了
   return 0;
 }
-</code></pre>
-
-<p>有兴趣的读者可以看看这个程序对应的符号表，就会发现<strong>Test::a</strong>被放在了程序的<strong>rodata section</strong>，而不是*UND*了。</p>
+</code>
+有兴趣的读者可以看看这个程序对应的符号表，就会发现<strong>Test::a</strong>被放在了程序的<strong>rodata section</strong>，而不是*UND*了。</p>
 
 <p>2，如果仅仅声明<strong>a</strong>，那么我们可以按值的方式使用它，这没问题。也就是只使用它的值；而不去获得它的地址(当然，也包括引用。引用本质上也是地址)。</p>
 
 <p>3，使用枚举类型。是的，枚举！像这样：</p>
 
-<pre><code class="c++">void f(const int &amp;value)//还是传引用
+<p><code>c++
+void f(const int &amp;value)//还是传引用
 {
 }
 class Test
@@ -180,9 +182,8 @@ int main()
   f(Test::a);//没问题
   return 0;
 }
-</code></pre>
-
-<p>那么，这种情况下，编译器是如何处理的呢？就留给读者诸君作为练习吧。</p>
+</code>
+那么，这种情况下，编译器是如何处理的呢？就留给读者诸君作为练习吧。</p>
 ]]></content>
   </entry>
   
@@ -197,8 +198,8 @@ int main()
 
 <!--more-->
 
-
-<pre><code class="c++">#include&lt;iostream&gt;
+<p><code>c++
+#include&lt;iostream&gt;
 #include&lt;cstdlib&gt;
 using namespace std;
 class Test1
@@ -217,7 +218,7 @@ int main()
   p-&gt;f();//会core吗？会出大事吗？
   return 0;
 }
-</code></pre>
+</code></p>
 
 <p>这里，<strong>p</strong>是一个空指针，通过这个空指针，我们访问了函数<strong>f</strong>。没<strong>core</strong>，没问题，成功输出了 <strong>Test1: Core or not ?</strong></p>
 
@@ -235,7 +236,8 @@ int main()
 
 <p>有没有感觉了？嗯，相信有了。我们继续往下看：</p>
 
-<pre><code class="c++">#include&lt;iostream&gt;
+<p><code>c++
+#include&lt;iostream&gt;
 #include&lt;cstdlib&gt;
 using namespace std;
 static int global = 1;
@@ -255,7 +257,7 @@ int main()
   p-&gt;f();//会core吗？会出大事吗？
   return 0;
 }
-</code></pre>
+</code></p>
 
 <p>也没问题。</p>
 
@@ -277,7 +279,8 @@ Test1 obj2;
 
 <p>而函数<strong>f</strong>呢？它是独立于对象存放的，自然没问题。一般说来，<strong>f</strong>位于程序的代码段，而全局变量一般位于<strong>BSS</strong>段或者<strong>DATA</strong>段（这个比较复杂，和该全局变量是否初始化以及初始化为<strong>0</strong>还是非<strong>0</strong>有关）。而当我们定义对象时，才为该对象分配内存，才有数据成员<strong>a</strong>的存在：</p>
 
-<pre><code class="c++">#include&lt;iostream&gt;
+<p><code>c++
+#include&lt;iostream&gt;
 #include&lt;cstdlib&gt;
 using namespace std;
 static int global1 = 1; //DATA段
@@ -300,9 +303,8 @@ int main()
   Test3 *p;//只是声明，没有定义。没有对象，也没有a。
   return 0;
 }
-</code></pre>
-
-<p>受王杰兄（微博：@skyline09_）启发和提示，其实我们可以换一种形式来理解。</p>
+</code>
+受王杰兄（微博：@skyline09_）启发和提示，其实我们可以换一种形式来理解。</p>
 
 <p>我们知道，<strong>C++</strong>中，类的非静态成员函数会被编译器改写：</p>
 
@@ -369,17 +371,16 @@ bool is_valid_int64(const Double &amp;value);
 
 <!--more-->
 
-
-<pre><code class="c++">class Double
+<p><code>c++
+class Double
 {
   public:
     int get_next_digit(bool &amp;is_decimal);
     bool is_zero();
     bool is_neg();
 };
-</code></pre>
-
-<p>通过调用<code>get_next_digit</code>，可以返回一个数字，不断调用它，可以得到所有<strong>digits</strong>。举个例子，对于值为<strong>45.67</strong>的一个<strong>Double</strong>对象，调用它的<code>get_next_digit</code>成员函数将依次得到</p>
+</code>
+通过调用<code>get_next_digit</code>，可以返回一个数字，不断调用它，可以得到所有<strong>digits</strong>。举个例子，对于值为<strong>45.67</strong>的一个<strong>Double</strong>对象，调用它的<code>get_next_digit</code>成员函数将依次得到</p>
 
 <p>4 is_decimal = false //表示整数部分</p>
 
@@ -395,7 +396,8 @@ bool is_valid_int64(const Double &amp;value);
 
 <p>一些新手可能会写这样的代码：</p>
 
-<pre><code class="c++">bool is_valid_uint64(const Double &amp;value)
+<p><code>c++
+bool is_valid_uint64(const Double &amp;value)
 {
   bool is_valid = true;
   int digits[2000];
@@ -481,19 +483,18 @@ bool is_valid_int64(const Double &amp;value)
   }
   return is_valid;
 }
-</code></pre>
+</code>
+这样的代码，存在诸多问题。</p>
 
-<p>这样的代码，存在诸多问题。</p>
-
-<h2>设计问题</h2>
+<h2 id="section">设计问题</h2>
 
 <p>不难发现，两个函数存在很多相似甚至相同的代码；而同一个函数内部，也有不少代码重复。重复的东西往往不是好的。重构？</p>
 
-<h2>性能问题</h2>
+<h2 id="section-1">性能问题</h2>
 
 <p>先获得所有digits，然后从最低位开始向最高位构造值，效率较低。难道没有可以从最高位开始，边获得边计算，不需要临时数组存储所有digits的方法吗？</p>
 
-<h2>正确性问题</h2>
+<h2 id="section-2">正确性问题</h2>
 
 <p>随便举几个例子：</p>
 
@@ -501,7 +502,7 @@ bool is_valid_int64(const Double &amp;value)
 
 <p>第<strong>68</strong>行，难道有小数部分就一定不是合法的<strong>int64</strong>吗？那么，<strong>123.000</strong>？嗯？</p>
 
-<h2>规范问题</h2>
+<h2 id="section-3">规范问题</h2>
 
 <p>帅哥，这么多代码，一行注释都没有，这样真的好吗？</p>
 
@@ -511,156 +512,165 @@ bool is_valid_int64(const Double &amp;value)
 
 <p>以下是我个人认为比较好的设计和实现，仅供参考。</p>
 
-<pre><code class="c++">
-bool is_valid_uint64(const Double &amp;value)
+<p>```c++</p>
 
-{
+<p>bool is_valid_uint64(const Double &amp;value)</p>
 
-  bool ret = false;
+<p>{</p>
 
-  check_range(&amp;ret, NULL, value);
+<p>bool ret = false;</p>
 
-  return ret;
+<p>check_range(&amp;ret, NULL, value);</p>
 
-}
+<p>return ret;</p>
 
+<p>}</p>
 
+<p>bool is_valid_int64(const Double &amp;value)</p>
 
-bool is_valid_int64(const Double &amp;value)
+<p>{</p>
 
-{
+<p>bool ret = false;</p>
 
-  bool ret = false;
+<p>check_range(NULL, &amp;ret, value);</p>
 
-  check_range(NULL, &amp;ret, value);
+<p>return ret;</p>
 
-  return ret;
+<p>}</p>
 
-}
+<p>void check_range(const Double &amp;value,</p>
 
+<pre><code>             bool *is_valid_uint64,
 
+             bool *is_valid_int64) const
+</code></pre>
 
-void check_range(const Double &amp;value,
+<p>{</p>
 
-                 bool *is_valid_uint64,
+<p>/*</p>
 
-                 bool *is_valid_int64) const
+<ul>
+  <li>
+    <p>对于一个负数的value，它不可能是一个合法的uint64.</p>
+  </li>
+  <li>
+    <p>因此，只剩下三种可能：</p>
+  </li>
+  <li>
+    <p>I 输入的value是负数，判断是否是合法的int64</p>
+  </li>
+  <li>
+    <p>II 输入的value是正数，判断是否是合法的uint64</p>
+  </li>
+  <li>
+    <p>III 输入的value是正数，判断是否是合法的int64</p>
+  </li>
+  <li>
+    <p>对于第II、III这两种情况：只要判断value的值是否超过uint64、int64的上界即可</p>
+  </li>
+  <li>
+    <p>对于第I种情况，我们利用-A &gt; -B 等价于 A &lt; B （其中A、B是正数）</p>
+  </li>
+  <li>
+    <p>因此，在第I种情况里，可以判断value的绝对值，是否超过int64的最小值的绝对值即可。</p>
+  </li>
+  <li>
+    <p>（int64的最小值的绝对值？那不就是int64的最大值？哦，不！）</p>
+  </li>
+  <li>
+    <p>因此，不管哪种情况，判断绝对值是否超过某个上界即可。</p>
+  </li>
+  <li>
+    <p>这三种情况，上界不一样。把三个上界存到了一个二维数组THRESHOLD里</p>
+  </li>
+</ul>
 
-{
+<p>*/</p>
 
-  /*
+<p>bool *is_valid = NULL;</p>
 
-   * 对于一个负数的value，它不可能是一个合法的uint64.
+<p>static const int FLAG_INT64 = 0;</p>
 
-   * 因此，只剩下三种可能：
+<p>static const int FLAG_UINT64 = 1;</p>
 
-   * I 输入的value是负数，判断是否是合法的int64
+<p>static const int SIGN_NEG = 0;</p>
 
-   * II 输入的value是正数，判断是否是合法的uint64
+<p>static const int SIGN_POS = 1;</p>
 
-   * III 输入的value是正数，判断是否是合法的int64
+<p>int flag = FLAG_INT64;</p>
 
-   * 对于第II、III这两种情况：只要判断value的值是否超过uint64、int64的上界即可
+<p>if (NULL != is_valid_uint64) {</p>
 
-   * 对于第I种情况，我们利用-A &gt; -B 等价于 A &lt; B （其中A、B是正数）
+<pre><code>is_valid = is_valid_uint64;
 
-   * 因此，在第I种情况里，可以判断value的绝对值，是否超过int64的最小值的绝对值即可。
+flag = FLAG_UINT64;
+</code></pre>
 
-   * （int64的最小值的绝对值？那不就是int64的最大值？哦，不！）
+<p>} else {</p>
 
-   * 因此，不管哪种情况，判断绝对值是否超过某个上界即可。
+<pre><code>is_valid = is_valid_int64;
+</code></pre>
 
-   * 这三种情况，上界不一样。把三个上界存到了一个二维数组THRESHOLD里
+<p>}</p>
 
-  */
+<p>*is_valid = true;</p>
 
+<p>if (value.is_zero()) {</p>
 
+<pre><code>//do nothing。0是合法的uint64，也是合法的int64
+</code></pre>
 
-  bool *is_valid = NULL;
+<p>} else {</p>
 
-  static const int FLAG_INT64 = 0;
+<pre><code>int sign = value.is_neg() ? SIGN_NEG : SIGN_POS;
 
-  static const int FLAG_UINT64 = 1;
+if ((SIGN_NEG == sign) &amp;&amp; (FLAG_UINT64 == flag)) {
 
-  static const int SIGN_NEG = 0;
+  *is_valid = false;//负数不可能是合法的uint64
 
-  static const int SIGN_POS = 1;
+} else {
 
-  int flag = FLAG_INT64;
+  uint64_t valueUint = 0;
 
-  if (NULL != is_valid_uint64) {
+  static uint64_t ABS_INT64_MIN = 9223372036854775808ULL;
 
-    is_valid = is_valid_uint64;
+                                     //int64        uint64
 
-    flag = FLAG_UINT64;
+  static uint64_t THRESHOLD[2][2] = { {ABS_INT64_MIN, 0}, //neg
 
-  } else {
+                                     {INT64_MAX,     UINT64_MAX} }; //pos
 
-    is_valid = is_valid_int64;
+  int digit = 0;
 
-  }
+  bool is_decimal = false;
 
-  *is_valid = true;
+  while ((digit = value.get_next_digit(is_decimal)) != -1) {
 
-  if (value.is_zero()) {
+    if (!is_decimal) {
 
-    //do nothing。0是合法的uint64，也是合法的int64
+      //为了防止溢出，我们不能这么写:
 
-  } else {
+      //"value * 10 + digit &gt; THRESHOLD[index]"
 
-    int sign = value.is_neg() ? SIGN_NEG : SIGN_POS;
+      if (valueUint &gt; (THRESHOLD[sign][flag] - digit) / 10) {
 
-    if ((SIGN_NEG == sign) &amp;&amp; (FLAG_UINT64 == flag)) {
+        *is_valid = false;
 
-      *is_valid = false;//负数不可能是合法的uint64
+        break;
+
+      } else {
+
+        valueUint = valueUint * 10 + digit;//霍纳法则（也叫秦九韶算法）
+
+      }
 
     } else {
 
-      uint64_t valueUint = 0;
+      if (!digit) {
 
-      static uint64_t ABS_INT64_MIN = 9223372036854775808ULL;
+        *is_valid = false; //小数部分必须是0；否则不可能是合法的uint64、int64
 
-                                         //int64        uint64
-
-      static uint64_t THRESHOLD[2][2] = { {ABS_INT64_MIN, 0}, //neg
-
-                                         {INT64_MAX,     UINT64_MAX} }; //pos
-
-      int digit = 0;
-
-      bool is_decimal = false;
-
-      while ((digit = value.get_next_digit(is_decimal)) != -1) {
-
-        if (!is_decimal) {
-
-          //为了防止溢出，我们不能这么写:
-
-          //"value * 10 + digit &gt; THRESHOLD[index]"
-
-          if (valueUint &gt; (THRESHOLD[sign][flag] - digit) / 10) {
-
-            *is_valid = false;
-
-            break;
-
-          } else {
-
-            valueUint = valueUint * 10 + digit;//霍纳法则（也叫秦九韶算法）
-
-          }
-
-        } else {
-
-          if (!digit) {
-
-            *is_valid = false; //小数部分必须是0；否则不可能是合法的uint64、int64
-
-            break;
-
-          }
-
-        }
+        break;
 
       }
 
@@ -670,6 +680,12 @@ void check_range(const Double &amp;value,
 
 }
 </code></pre>
+
+<p>}</p>
+
+<p>}
+```</p>
+
 ]]></content>
   </entry>
   
@@ -692,7 +708,6 @@ void check_range(const Double &amp;value,
 <p>由于<strong>g</strong>没有返回值，因此这么写似乎是天经地义的。能不能优雅点？</p>
 
 <!--more-->
-
 
 <p>借助于逗号表达式，我们可以这样：</p>
 

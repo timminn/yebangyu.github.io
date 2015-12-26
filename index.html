@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -93,11 +109,11 @@
 
 <p>以前，只知道其中十一个点钟的分析；对于3点钟，一直没有思路。于是发了一条朋友圈，求助大神解释其中的3点钟。在刘梓溪、贾顾森、黎鸣等大神的指导下，明白了其中是怎么回事。所以这里介绍下这十二个点，应该如何解释。个人观点，仅供参考。</p>
 
-<h2>12点</h2>
+<h2 id="section">12点</h2>
 
 <p>不用说了，1728的立方根。</p>
 
-<h2>1点</h2>
+<h2 id="section-1">1点</h2>
 
 <p>可能很多人不大知道，这是勒让德常数，表示为：</p>
 
@@ -133,7 +149,7 @@
   </header>
 
 
-  <div class="entry-content"><h2>Motivation &amp; Intuition</h2>
+  <div class="entry-content"><h2 id="motivation--intuition">Motivation &amp; Intuition</h2>
 
 <p>为什么引入<strong>Cuckoo Hashing</strong>？</p>
 
@@ -176,7 +192,7 @@
 
   <div class="entry-content"><p>推荐几本近期阅读的好书。</p>
 
-<h2>Recommender Systems Handbook</h2>
+<h2 id="recommender-systems-handbook">Recommender Systems Handbook</h2>
 
 </div>
   
@@ -246,7 +262,7 @@
 
   <div class="entry-content"><p>废话不多说了，直接开始讨论。</p>
 
-<h2>险象环生</h2>
+<h2 id="section">险象环生</h2>
 
 <p>首先看以下的程序，有问题吗？</p>
 
@@ -365,7 +381,7 @@
 
   <div class="entry-content"><p>废话不多说了，开始这次的讨论吧。</p>
 
-<h2>提出问题</h2>
+<h2 id="section">提出问题</h2>
 
 <p>同事颜廷帅（微博：@颜挺帅）拿了一段代码让我分析。以下代码，能编译链接通过吗？</p>
 
@@ -437,7 +453,7 @@
 
   <div class="entry-content"><p>2015就要过去了，2016就要来了。简单回顾下这一年。</p>
 
-<h2>老婆来京</h2>
+<h2 id="section">老婆来京</h2>
 
 <p>老婆来北京工作了。哈哈，不用苦逼异地恋了。三年的异地恋，让我学会很多东西。我本是一个负责任的人，老婆又是相对独立、不粘人的自强的人，这三年的异地恋，总体来说非常融洽、顺利。哈哈。</p>
 

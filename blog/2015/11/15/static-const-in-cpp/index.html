@@ -29,6 +29,22 @@
   <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
 <link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
 <link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
   
 
 </head>
@@ -86,51 +102,47 @@
 
 <div class="entry-content"><p>废话不多说了，开始这次的讨论吧。</p>
 
-<h2>提出问题</h2>
+<h2 id="section">提出问题</h2>
 
 <p>同事颜廷帅（微博：@颜挺帅）拿了一段代码让我分析。以下代码，能编译链接通过吗？</p>
 
 <!--more-->
 
-
-
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">)</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="k">class</span> <span class="nc">Test</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="k">public</span><span class="o">:</span>
-</span><span class='line'>  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">f</span><span class="p">(</span><span class="n">Test</span><span class="o">::</span><span class="n">a</span><span class="p">);</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">Test</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">f</span><span class="p">(</span><span class="n">Test</span><span class="o">::</span><span class="n">a</span><span class="p">);</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 <p>我的第一感觉是：应该没问题，吧。在<strong>Visual Studio 2013</strong> 实验了下，顺利通过，一切正常.</p>
 
-<p>然而同事说，<strong>gcc</strong>下是报错的：Undefined reference to &lsquo;Test::a&rsquo;</p>
+<p>然而同事说，<strong>gcc</strong>下是报错的：Undefined reference to ‘Test::a’</p>
 
 <p>这是为什么？</p>
 
-<h2>分析问题</h2>
+<h2 id="section-1">分析问题</h2>
 
 <p>写作本文时所用的环境是<strong>gcc 4.8.2 (Ubuntu 14.04 , X86平台)</strong>。</p>
 
@@ -149,16 +161,16 @@
 <p>我们可以看到类似如下的输出：</p>
 
 <pre><code>SYMBOL TABLE:
-00000000 l    df *ABS*  00000000 test.cpp
-00000000 l    d  .text  00000000 .text
-00000000 l    d  .data  00000000 .data
-00000000 l    d  .bss   00000000 .bss
-00000000 l    d  .note.GNU-stack    00000000 .note.GNU-stack
-00000000 l    d  .eh_frame  00000000 .eh_frame
-00000000 l    d  .comment   00000000 .comment
-00000000 g     F .text  00000005 _Z1fRKi
-00000005 g     F .text  00000019 main
-00000000         *UND*  00000000 _ZN4Test1aE
+00000000 l    df *ABS*	00000000 test.cpp
+00000000 l    d  .text	00000000 .text
+00000000 l    d  .data	00000000 .data
+00000000 l    d  .bss	00000000 .bss
+00000000 l    d  .note.GNU-stack	00000000 .note.GNU-stack
+00000000 l    d  .eh_frame	00000000 .eh_frame
+00000000 l    d  .comment	00000000 .comment
+00000000 g     F .text	00000005 _Z1fRKi
+00000005 g     F .text	00000019 main
+00000000         *UND*	00000000 _ZN4Test1aE
 </code></pre>
 
 <p>上面的最后一行，<strong>_ZN4Test1aE</strong>就是对应我们程序中声明的<strong>Test::a</strong>。之所以长得这么复杂、奇怪，是因为编译器做了<strong>mangling</strong>处理。</p>
@@ -167,7 +179,7 @@
 
 <p>*UND* : if the section is referenced in the file being dumped, but not defined there</p>
 
-<p>也就是<strong>_ZN4Test1aE</strong>在本<strong>.o</strong>文件中引用，然而它却木有定义。因此，报Undefined reference to &lsquo;Test::a'的错，也就情理之中了。</p>
+<p>也就是<strong>_ZN4Test1aE</strong>在本<strong>.o</strong>文件中引用，然而它却木有定义。因此，报Undefined reference to ‘Test::a’的错，也就情理之中了。</p>
 
 <p>那么，我们的程序是否真的引用了<strong>_ZN4Test1aE</strong>呢？恩，我们接着往下看。</p>
 
@@ -179,134 +191,129 @@
 <p>我们可以得到类似这样的汇编代码(做了整理，节选)：</p>
 
 <pre><code>main:
-    pushl   %ebp
-    movl    %esp, %ebp
-    subl    $4, %esp
-    movl    $_ZN4Test1aE, (%esp) ;看到没？_ZN4Test1aE ！
-    call    _Z1fRKi ;调用函数f
-    movl    $0, %eax
-    leave
-    ret
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$4, %esp
+	movl	$_ZN4Test1aE, (%esp) ;看到没？_ZN4Test1aE ！
+	call	_Z1fRKi ;调用函数f
+	movl	$0, %eax
+	leave
+	ret
 </code></pre>
 
 <p>虽然我们已经分析出为什么会报错，然而，我们还有一个疑问，就是，为什么下面的代码，是OK的？</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">value</span><span class="p">)</span> <span class="c1">//这里没有 &amp;</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="k">class</span> <span class="nc">Test</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="k">public</span><span class="o">:</span>
-</span><span class='line'>  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">f</span><span class="p">(</span><span class="n">Test</span><span class="o">::</span><span class="n">a</span><span class="p">);</span><span class="c1">//没问题</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">value</span><span class="p">)</span> <span class="c1">//这里没有 &amp;</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">Test</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">f</span><span class="p">(</span><span class="n">Test</span><span class="o">::</span><span class="n">a</span><span class="p">);</span><span class="c1">//没问题</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 <p>恩，有了前面的基础，相信读者诸君已经知道怎么分析。我们可以用同样的方法，看看它的汇编代码：</p>
 
 <pre><code>main:
-    pushl   %ebp
-    movl    %esp, %ebp
-    subl    $4, %esp
-    movl    $1, (%esp)     ;看到没？1，不是_ZN4Test1aE，也不是Test::a
-    call    _Z1fi
-    movl    $0, %eax
-    leave
-    ret
+	pushl	%ebp
+	movl	%esp, %ebp
+	subl	$4, %esp
+	movl	$1, (%esp)     ;看到没？1，不是_ZN4Test1aE，也不是Test::a
+	call	_Z1fi
+	movl	$0, %eax
+	leave
+	ret
 </code></pre>
 
 <p>也就是说，在这里，编译器只是把<strong>Test::a</strong>认作一个占位符，实际使用之处用<strong>1</strong>代替了。</p>
 
-<h2>解决问题</h2>
+<h2 id="section-2">解决问题</h2>
 
 <p>知道原因了，那么怎么解决呢？恩，至少三种方法：</p>
 
 <p>1，我们可以<strong>定义</strong>（而不是声明）<strong>Test::a</strong>。是的，上面的<code>static const int a = 1;</code>并不是它的定义式。如果要定义，那么我们应该这么做：</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">)</span><span class="c1">//还是传引用</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="k">class</span> <span class="nc">Test</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="k">public</span><span class="o">:</span>
-</span><span class='line'>  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'><span class="k">const</span> <span class="kt">int</span> <span class="n">Test</span><span class="o">::</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="c1">//定义a</span>
-</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">f</span><span class="p">(</span><span class="n">Test</span><span class="o">::</span><span class="n">a</span><span class="p">);</span><span class="c1">//现在没问题了</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">)</span><span class="c1">//还是传引用</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">Test</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="k">const</span> <span class="kt">int</span> <span class="n">Test</span><span class="o">::</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="c1">//定义a</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">f</span><span class="p">(</span><span class="n">Test</span><span class="o">::</span><span class="n">a</span><span class="p">);</span><span class="c1">//现在没问题了</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 <p>有兴趣的读者可以看看这个程序对应的符号表，就会发现<strong>Test::a</strong>被放在了程序的<strong>rodata section</strong>，而不是*UND*了。</p>
 
 <p>2，如果仅仅声明<strong>a</strong>，那么我们可以按值的方式使用它，这没问题。也就是只使用它的值；而不去获得它的地址(当然，也包括引用。引用本质上也是地址)。</p>
 
 <p>3，使用枚举类型。是的，枚举！像这样：</p>
 
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">)</span><span class="c1">//还是传引用</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'><span class="k">class</span> <span class="nc">Test</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'><span class="k">public</span><span class="o">:</span>
-</span><span class='line'>  <span class="k">enum</span> <span class="n">HELLOWORLD</span> <span class="p">{</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">};</span> <span class="c1">//枚举，而不是 static const</span>
-</span><span class='line'><span class="p">};</span>
-</span><span class='line'><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class='line'><span class="p">{</span>
-</span><span class='line'>  <span class="n">f</span><span class="p">(</span><span class="n">Test</span><span class="o">::</span><span class="n">a</span><span class="p">);</span><span class="c1">//没问题</span>
-</span><span class='line'>  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">)</span><span class="c1">//还是传引用</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">Test</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="k">enum</span> <span class="n">HELLOWORLD</span> <span class="p">{</span><span class="n">a</span> <span class="o">=</span> <span class="mi">1</span><span class="p">};</span> <span class="c1">//枚举，而不是 static const</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">f</span><span class="p">(</span><span class="n">Test</span><span class="o">::</span><span class="n">a</span><span class="p">);</span><span class="c1">//没问题</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 <p>那么，这种情况下，编译器是如何处理的呢？就留给读者诸君作为练习吧。</p>
 </div>
 

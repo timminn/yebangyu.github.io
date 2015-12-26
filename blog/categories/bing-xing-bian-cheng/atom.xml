@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-26T13:45:48+08:00</updated>
+  <updated>2015-12-26T13:58:14+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -22,8 +22,8 @@
 
 <!--more-->
 
-
-<pre><code class="c++">#include&lt;iostream&gt;
+<p><code>c++
+#include&lt;iostream&gt;
 #include&lt;thread&gt;
 using namespace std;
 class SmartPointer
@@ -61,9 +61,8 @@ int main()
   t4.join();
   return 0;
 }
-</code></pre>
-
-<p>然而事实上，这样做是错的。其中的<strong>race condition</strong>请读者自行分析。</p>
+</code>
+然而事实上，这样做是错的。其中的<strong>race condition</strong>请读者自行分析。</p>
 
 <p>那么，<strong>Hazard Pointer</strong>(<strong>HP</strong>)和<strong>Smart Pointer</strong>(<strong>SP</strong>)有什么区别呢？它们的共同点就是管理对应对象的生命周期，然而这两者有本质的区别，<strong>HP</strong>是线程安全的，而<strong>SP</strong>不是。</p>
 
@@ -82,14 +81,14 @@ int main()
     <id>http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer</id>
     <content type="html"><![CDATA[<p>废话不多说了，直接开始讨论。</p>
 
-<h2>险象环生</h2>
+<h2 id="section">险象环生</h2>
 
 <p>首先看以下的程序，有问题吗？</p>
 
 <!--more-->
 
-
-<pre><code class="c++">#include&lt;iostream&gt;
+<p><code>c++
+#include&lt;iostream&gt;
 #include&lt;thread&gt; //C++11中的多线程基础设施
 using namespace std;
 int *p = new int(2);
@@ -112,20 +111,20 @@ int main()
   t2.join();
   return 0;
 }
-</code></pre>
-
-<p>答案当然是有问题。这个程序存在如下的<strong>race</strong> <strong>condition</strong>：如果当线程<strong>reader</strong>判断完<strong>p</strong>发现它不是<strong>nullptr</strong>后，还未执行第<strong>8</strong>行就被调度出去，轮到线程<strong>writer</strong>执行，它执行完<strong>13</strong>、<strong>14</strong>行后，又继续调度线程<strong>reader</strong>，此时执行第<strong>8</strong>行导致程序崩溃。</p>
+</code>
+答案当然是有问题。这个程序存在如下的<strong>race</strong> <strong>condition</strong>：如果当线程<strong>reader</strong>判断完<strong>p</strong>发现它不是<strong>nullptr</strong>后，还未执行第<strong>8</strong>行就被调度出去，轮到线程<strong>writer</strong>执行，它执行完<strong>13</strong>、<strong>14</strong>行后，又继续调度线程<strong>reader</strong>，此时执行第<strong>8</strong>行导致程序崩溃。</p>
 
 <p>这里的问题，可以不精确地表述为：多线程程序中，某线程通过一个指针访问一段内存时，如何保证指针所指向的那块内存是有效的？</p>
 
-<h2>Hazard Pointer</h2>
+<h2 id="hazard-pointer">Hazard Pointer</h2>
 
 <p>这当然有多种方法，加一把互斥锁就万事大吉了(当然，得注意锁本身的生命周期)。不过本文讨论的是<strong>lock</strong> <strong>free</strong>情况下的内存管理，这里要介绍的是<strong>2004</strong>年左右提出的<strong>Hazard</strong> <strong>Pointer</strong>方法。</p>
 
 <p>接着看以下代码：</p>
 
-<pre><code class="c++">#include&lt;thread&gt;
-#include&lt;iostream&gt;
+<p>```c++
+#include<thread>
+#include<iostream>
 #define Strong_Memory_Barrier __sync_synchronize
 #define ACCESS_ONCE(x) (* (volatile typeof(x) *) &amp;(x))
 using namespace std;
@@ -133,13 +132,13 @@ struct HazardPointer
 {
   HazardPointer() :p_(nullptr){}
   int *p_; //Hazard Pointer封装了原始指针
-};
+};</iostream></thread></p>
 
-int *p = new int(2); //原始指针
+<p>int *p = new int(2); //原始指针</p>
 
-HazardPointer *hp = new HazardPointer(); //只有一个线程可以写
+<p>HazardPointer *hp = new HazardPointer(); //只有一个线程可以写</p>
 
-class Writer
+<p>class Writer
 {
 public:
   void retire(int *tmp) {
@@ -181,7 +180,7 @@ public:
     } while (tmp != ACCESS_ONCE(p));//仔细想想，为什么这里还要判断？
     if (nullptr != tmp) { //不妨想想，这里为什么也要判断？
       //it is safe to access *tmp from now on
-      cout &lt;&lt; *tmp &lt;&lt; endl;//没问题~
+      cout « *tmp « endl;//没问题~
     }
     //when you finish reading it, just release it .
     release();//其实就是告诉Writer：用完了，可以释放了。
@@ -195,7 +194,7 @@ int main()
   t2.join();
   return 0;
 }
-</code></pre>
+```</p>
 
 <p>总结：</p>
 
@@ -207,17 +206,17 @@ int main()
 
 <p>至于<strong>53</strong>行，请读者自行分析。</p>
 
-<h2>最后思考</h2>
+<h2 id="section-1">最后思考</h2>
 
 <p>那么，<strong>Hazard</strong> <strong>Pointer</strong>的内存空间，谁来负责管理？</p>
 
 <p>在实际程序里，一般所需<strong>Hazard</strong> <strong>Pointer</strong>的数量不会太多且较为固定，因此基本上只申请，不释放了。</p>
 
-<h2>参考文献</h2>
+<h2 id="section-2">参考文献</h2>
 
-<p><a href="https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf">https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf</a></p>
+<p>https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf</p>
 
-<h2>特别感谢</h2>
+<h2 id="section-3">特别感谢</h2>
 
 <p>感谢<a href="http://weibo.com/hanfooo">韩富晟</a>先生对我的指点，让我加深了对<strong>Hazard</strong> <strong>Pointer</strong>的认识。</p>
 ]]></content>
@@ -228,24 +227,19 @@ int main()
     <link href="http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure/"/>
     <updated>2015-10-31T18:43:00+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure</id>
-    <content type="html"><![CDATA[<p>本文介绍多线程环境下并行编程的基础设施。主要包括：</p>
+    <content type="html"><![CDATA[<p>本文介绍多线程环境下并行编程的基础设施。主要包括：
+&gt; * volatile
+&gt; * __thread
+&gt; * Memory Barrier
+&gt; * __sync_synchronize</p>
 
-<blockquote><ul>
-<li>volatile</li>
-<li>__thread</li>
-<li>Memory Barrier</li>
-<li>__sync_synchronize</li>
-</ul>
-</blockquote>
-
-<h2>volatile</h2>
+<h2 id="volatile">volatile</h2>
 
 <p>编译器有时候为了优化性能，会将一些变量的值缓存到寄存器中，因此如果编译器发现该变量的值没有改变的话，将从寄存器里读出该值，这样可以避免内存访问。</p>
 
 <p>但是这种做法有时候会有问题。如果该变量确实（以某种很难检测的方式）被修改呢？那岂不是读到错的值？是的。在多线程情况下，问题更为突出：当某个线程对一个内存单元进行修改后，其他线程如果从寄存器里读取该变量可能读到老值，未更新的值，错误的值，不新鲜的值。</p>
 
 <!--more-->
-
 
 <p>如何防止这样错误的“优化”？方法就是给变量加上<strong>volatile</strong>修饰。</p>
 
@@ -273,7 +267,8 @@ int b = i;//强制从内存中读取实时的i的值
 
 <p>第一点比较好理解，对于第二点，我们来看一个很经典的例子：</p>
 
-<pre><code class="c++">volatile int is_ready = 0;
+<p>```c++
+volatile int is_ready = 0;
 char message[123];
 void thread_A
 {
@@ -284,20 +279,21 @@ void thread_A
 }
 void thread_B
 {
-  strcpy(message,"everything seems ok");
+  strcpy(message,”everything seems ok”);
   is_ready = 1;
-}
-</code></pre>
+}</p>
 
-<p>线程<strong>B</strong>中，虽然<strong>is_ready</strong>有<strong>volatile</strong>修饰，但是这里的<strong>volatile</strong>不提供任何<strong>Memory Barrier</strong>，因此<strong>12</strong>行和<strong>13</strong>行可能被乱序执行，<code>is_ready = 1</code>被执行，而<strong>message</strong>还未被正确设置，导致线程<strong>A</strong>读到错误的值。</p>
+<p>```
+线程<strong>B</strong>中，虽然<strong>is_ready</strong>有<strong>volatile</strong>修饰，但是这里的<strong>volatile</strong>不提供任何<strong>Memory Barrier</strong>，因此<strong>12</strong>行和<strong>13</strong>行可能被乱序执行，<code>is_ready = 1</code>被执行，而<strong>message</strong>还未被正确设置，导致线程<strong>A</strong>读到错误的值。</p>
 
 <p>这意味着，在多线程中使用<strong>volatile</strong>需要非常谨慎、小心。</p>
 
-<h2>__thread</h2>
+<h2 id="thread">__thread</h2>
 
 <p><strong>__thread</strong>是<strong>gcc</strong>内置的用于多线程编程的基础设施。用<strong>__thread</strong>修饰的变量，每个线程都拥有一份实体，相互独立，互不干扰。举个例子：</p>
 
-<pre><code class="c++">#include&lt;iostream&gt;  
+<p><code>c++
+#include&lt;iostream&gt;  
 #include&lt;pthread.h&gt;  
 #include&lt;unistd.h&gt;  
 using namespace std;  
@@ -325,7 +321,7 @@ void* thread2(void* arg)
   cout&lt;&lt;++i&lt;&lt;endl;//输出 2，而不是3
   return NULL;
 } 
-</code></pre>
+</code></p>
 
 <p>需要注意的是：</p>
 
@@ -333,15 +329,16 @@ void* thread2(void* arg)
 
 <p>2，被<strong>__thread</strong>修饰的变量只能在编译期初始化，且只能通过常量表达式来初始化。</p>
 
-<h2>Memory Barrier</h2>
+<h2 id="memory-barrier">Memory Barrier</h2>
 
 <p>为了优化，现代编译器和<strong>CPU</strong>可能会乱序执行指令。例如：</p>
 
-<pre><code class="c++">int a = 1;
+<p><code>c++
+int a = 1;
 int b = 2;
 a = b + 3;
 b = 10;
-</code></pre>
+</code></p>
 
 <p><strong>CPU</strong>乱序执行后，第4行语句和第5行语句的执行顺序可能变为先<code>b=10</code>然后再<code>a=b+3</code></p>
 
@@ -351,11 +348,12 @@ b = 10;
 
 <p>生成的汇编代码可能是：</p>
 
-<pre><code>movl    b(%rip), %eax ; 将b的值暂存入%eax
+<p><code>
+movl    b(%rip), %eax ; 将b的值暂存入%eax
 movl    $10, b(%rip) ; b = 10
 addl    $3, %eax ; %eax加3
 movl    %eax, a(%rip) ; 将%eax也就是b+3的值写入a,即 a = b + 3
-</code></pre>
+</code></p>
 
 <p>这并不奇怪，为了优化性能，有时候确实可以这么做。但是在多线程并行编程中，有时候乱序就会出问题。</p>
 
@@ -371,7 +369,7 @@ movl    %eax, a(%rip) ; 将%eax也就是b+3的值写入a,即 a = b + 3
 
 <p>所以，很容易知道，加锁，也就是<strong>lock</strong>对应<strong>acquire barrier</strong>；释放锁，也就是<strong>unlock</strong>对应<strong>release barrier</strong>。哦，那么<strong>full barrier</strong>呢？</p>
 
-<h2>__sync_synchronize</h2>
+<h2 id="syncsynchronize">__sync_synchronize</h2>
 
 <p><code>__sync_synchronize</code>就是一种<strong>full barrier</strong>。</p>
 ]]></content>
@@ -386,20 +384,20 @@ movl    %eax, a(%rip) ; 将%eax也就是b+3的值写入a,即 a = b + 3
 
 <p>本章介绍了并行编程的工具和途径，具体包括</p>
 
-<blockquote><ul>
-<li>Shell Script Languages</li>
-<li>POSIX 多进程</li>
-<li>POSIX 多线程</li>
-<li>原子操作</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>Shell Script Languages</li>
+    <li>POSIX 多进程</li>
+    <li>POSIX 多线程</li>
+    <li>原子操作</li>
+  </ul>
 </blockquote>
 
-<h2>Shell Script Language</h2>
+<h2 id="shell-script-language">Shell Script Language</h2>
 
 <!--more-->
 
-
-<p>如果不同的执行单元之间没有过多的数据交互，待执行的任务分区性较好，那么我们可以考虑通过<strong>Shell</strong>创建多个进程来完成任务。例如，我们需要计算每连续的<strong>100</strong>个元素的和，需要计算3组，好吧，比如说我们需要计算<strong>1+2+3+&hellip;+100</strong>；<strong>101+102+&hellip;200</strong>；<strong>201+201+&hellip;+300</strong>，那么我们可以编写一个程序，然后通过<strong>Shell</strong>创建<strong>3</strong>个进程，通过命令行传入参数（比如这里的待求和的元素的起点）。</p>
+<p>如果不同的执行单元之间没有过多的数据交互，待执行的任务分区性较好，那么我们可以考虑通过<strong>Shell</strong>创建多个进程来完成任务。例如，我们需要计算每连续的<strong>100</strong>个元素的和，需要计算3组，好吧，比如说我们需要计算<strong>1+2+3+…+100</strong>；<strong>101+102+…200</strong>；<strong>201+201+…+300</strong>，那么我们可以编写一个程序，然后通过<strong>Shell</strong>创建<strong>3</strong>个进程，通过命令行传入参数（比如这里的待求和的元素的起点）。</p>
 
 <pre><code>compute 1 &gt; compute_1.out &amp;
 compute 101 &gt; compute_2.out &amp;
@@ -407,7 +405,7 @@ compute 201 &gt; compute_3.out &amp;
 wait
 </code></pre>
 
-<p>其中<strong>compute</strong>是可执行程序名，<strong>1</strong>、<strong>101</strong>、<strong>201</strong>是命令行参数，<strong>> x.out</strong>代表将输出结果重定向到文件<strong>x.out</strong>中，<strong>&amp;</strong>表示程序后台运行。<strong>wait</strong>表示等待运行程序结束。</p>
+<p>其中<strong>compute</strong>是可执行程序名，<strong>1</strong>、<strong>101</strong>、<strong>201</strong>是命令行参数，<strong>&gt; x.out</strong>代表将输出结果重定向到文件<strong>x.out</strong>中，<strong>&amp;</strong>表示程序后台运行。<strong>wait</strong>表示等待运行程序结束。</p>
 
 <p>那么多进程的并行设计有什么缺点呢？</p>
 
@@ -417,7 +415,7 @@ wait
 
 <p>3，多进程间的同步相对费事复杂。</p>
 
-<h2>POSIX 多进程</h2>
+<h2 id="posix-">POSIX 多进程</h2>
 
 <p>可以通过<strong>fork</strong>、<strong>kill</strong>、<strong>wait</strong>等原语来创建、管理进程。书里简单介绍了这几个原语的使用，小结一下就是：</p>
 
@@ -425,7 +423,7 @@ wait
 
 <p>2，<strong>parent process</strong>和<strong>child process</strong>并不<strong>share memory</strong>。</p>
 
-<h2>POSIX 多线程</h2>
+<h2 id="posix--1">POSIX 多线程</h2>
 
 <p>可以通过<strong>pthread_mutex_lock</strong>以及<strong>pthread_mutex_unlock</strong>等原语，以加锁和释放锁的方式，使用多线程来并行设计。</p>
 
@@ -457,13 +455,13 @@ wait
 
 <p>实验表明，当读线程的数目增多，每次<strong>acquire lock</strong>时，花在修改数据结构（锁也是一种数据结构实现，当一个读线程<strong>acquire</strong>或者<strong>release</strong>成功显然需要对数据结构进行修改，加加减减神马的）的时间将显著影响<strong>scalability</strong>。极端情况下，当<strong>n</strong>个读线程同时<strong>acquire</strong>时，第<strong>n</strong>个线程需要等前面的<strong>n-1</strong>个线程都修改完毕，它才能修改。</p>
 
-<p>同时，注意到线程有<strong>n</strong>个，而<strong>CPU</strong> <strong>cores</strong>只有<strong>64</strong>个，因此当<strong>n&lt;=64</strong>时，每个<strong>thread</strong>可以独享一个<strong>core</strong>，当<strong>n>64</strong>后，根据鸽巢原理，至少有一个<strong>core</strong>上有多个<strong>thread</strong>在运行，这也会带来性能下降。</p>
+<p>同时，注意到线程有<strong>n</strong>个，而<strong>CPU</strong> <strong>cores</strong>只有<strong>64</strong>个，因此当<strong>n&lt;=64</strong>时，每个<strong>thread</strong>可以独享一个<strong>core</strong>，当<strong>n&gt;64</strong>后，根据鸽巢原理，至少有一个<strong>core</strong>上有多个<strong>thread</strong>在运行，这也会带来性能下降。</p>
 
 <p>因此，读写锁比较适合临界区比较大的情形（有文件<strong>IO</strong>或者网络访问等）。</p>
 
 <p>如果临界区比较短呢？比如我仅仅是加加一个变量呢？哦，那么原子操作可能是一个很好的选择。</p>
 
-<h2>原子操作</h2>
+<h2 id="section">原子操作</h2>
 
 <p><strong>gcc</strong>内置提供了一系列的原子操作。很多操作有两个版本，比如说：</p>
 
@@ -486,22 +484,22 @@ wait
 
 <p>这章介绍了影响<strong>CPU</strong>执行效率的几个因素。具体包括：</p>
 
-<blockquote><ul>
-<li>流水线被打断</li>
-<li>内存访问</li>
-<li>原子操作</li>
-<li>Memory Barrier</li>
-<li>Cache Misses</li>
-<li>IO 操作</li>
-</ul>
+<blockquote>
+  <ul>
+    <li>流水线被打断</li>
+    <li>内存访问</li>
+    <li>原子操作</li>
+    <li>Memory Barrier</li>
+    <li>Cache Misses</li>
+    <li>IO 操作</li>
+  </ul>
 </blockquote>
 
 <!--more-->
 
-
 <p>这其中，前面两个，流水线被打断以及内存访问主要针对串行程序，而后面四个主要针对并行程序，因为在并行程序中显得更为突出。</p>
 
-<h3>流水线被打断</h3>
+<h3 id="section">流水线被打断</h3>
 
 <p>现代<strong>CPU</strong>执行指令采用流水线设计和指令预取机制，而影响流水的两种重要情况是停机等待和分支判断失败。前者是<strong>CPU</strong>没有足够的信息来判断取哪些指令（例如，涉及到<strong>C++</strong>中的虚函数时）。而分支判断失败，则是取了指令但是没取对。例如</p>
 
@@ -537,7 +535,7 @@ else
 }
 </code></pre>
 
-<h3>内存访问</h3>
+<h3 id="section-1">内存访问</h3>
 
 <p>这个不用说了，内存访问是昂贵操作，相对于寄存器、<strong>cache</strong>而言。</p>
 
@@ -545,11 +543,11 @@ else
 
 <p>数组通常有比较好的内存访问模式，也就是说访问了<strong>a[0]</strong>，就可以将<strong>a[1]</strong>,<strong>a[2]</strong>,<strong>a[3]</strong>等存进<strong>cache</strong>，等访问到<strong>a[1]</strong>时不需要去访问内存了。但是一般用指针实现的链表的访问模式则比较差。恩，所谓的空间局部性。</p>
 
-<h3>原子操作</h3>
+<h3 id="section-2">原子操作</h3>
 
 <p><strong>gcc</strong>内置提供了一系列的原子操作，包括著名的用于<strong>CAS</strong>(<strong>compare</strong> <strong>and</strong> <strong>swap</strong>)的<strong>__sync_bool_compare_and_swap</strong>等。当多个线程对一个内存变量进行原子操作时，往往依赖于硬件支持。在<strong>x86</strong>下，原子操作时，锁住总线，防止其他<strong>cpu</strong> <strong>core</strong>访问该内存单元。</p>
 
-<h3>Memory Barrier</h3>
+<h3 id="memory-barrier">Memory Barrier</h3>
 
 <p><strong>CPU</strong>对指令可能采取乱序执行，以达到优化的目的。但是，并发访问的锁破坏了这种机制。</p>
 
@@ -565,7 +563,7 @@ d = 4;
 
 <p><strong>lock</strong>和<strong>unlock</strong>中包含了<strong>memory</strong> <strong>barrier</strong>。由于<strong>memory</strong> <strong>barrier</strong>和乱序执行是对着干的，用来防止乱序执行的；而乱序执行一般是优化的手段和方法，因此<strong>memory</strong> <strong>barrier</strong>往往带来性能下降。</p>
 
-<h3>Cache Misses</h3>
+<h3 id="cache-misses">Cache Misses</h3>
 
 <p>先贴一张现代<strong>CPU</strong>和<strong>cache</strong>架构粗略图。</p>
 
