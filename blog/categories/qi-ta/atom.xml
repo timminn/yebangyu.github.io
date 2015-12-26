@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 其他 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/qi-ta/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-26T13:58:14+08:00</updated>
+  <updated>2015-12-26T14:00:13+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -48,7 +48,9 @@
 
 <h2 id="section-3">3点</h2>
 
-<p>在刘梓溪、贾顾森、黎鸣等大神的提示下，终于知道了。&amp;#后面接十进制数，&amp;#x后面接十六进制数，其中十六进制33，等于十进制51，即’3’。不过这里的i，是什么鬼？</p>
+<p>在刘梓溪、贾顾森、黎鸣等大神的提示下，终于知道了。</p>
+
+<p>广泛用于XML、html中。&amp;#后面接十进制数，&amp;#x后面接十六进制数，其中十六进制33，等于十进制51，即’3’。不过这里的i，是什么鬼？</p>
 
 <h2 id="section-4">4点</h2>
 
@@ -68,13 +70,7 @@
 
 <p>黄金分割比在斐波那契数列的通项公式中出现。</p>
 
-<p>不过这个地方，我没搞懂，不知道这是不是这幅图作者的笔误？个人认为应该是</p>
-
-<p>$(2\phi+1)^2$</p>
-
-<p>而不是</p>
-
-<p>$(2\phi-1)^2$</p>
+<p>不过这个地方，我没搞懂，不知道这是不是这幅图作者的笔误？个人认为应该是 $(2\phi+1)^2$ 而不是 $(2\phi-1)^2$</p>
 
 <h2 id="section-6">6点</h2>
 
@@ -116,7 +112,7 @@
 
 <h2 id="section-12">感谢</h2>
 
-<p>感谢朋友刘梓溪、贾顾森、黎鸣指导我如何解读其中的3点钟。</p>
+<p>感谢朋友刘梓溪、贾顾森、黎鸣告诉我如何解读其中的3点钟。</p>
 ]]></content>
   </entry>
   
