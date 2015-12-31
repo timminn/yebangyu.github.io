@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-31T22:09:00+08:00</updated>
+  <updated>2015-12-31T22:50:16+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -191,7 +191,7 @@ sys     0m0.000s
 
 <h2 id="section-4">感谢</h2>
 
-<p>本文发出后，微博网友@Debin_IIE指出了本文的一个笔误。非常感谢。</p>
+<p>本文发出后，微博网友@Debin_IIE指出了一个笔误。非常感谢。</p>
 ]]></content>
   </entry>
   
@@ -409,11 +409,16 @@ int main()
     <link href="http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure/"/>
     <updated>2015-10-31T18:43:00+08:00</updated>
     <id>http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure</id>
-    <content type="html"><![CDATA[<p>本文介绍多线程环境下并行编程的基础设施。主要包括：
-&gt; * volatile
-&gt; * __thread
-&gt; * Memory Barrier
-&gt; * __sync_synchronize</p>
+    <content type="html"><![CDATA[<p>本文介绍多线程环境下并行编程的基础设施。主要包括：</p>
+
+<blockquote>
+  <ul>
+    <li>volatile</li>
+    <li>__thread</li>
+    <li>Memory Barrier</li>
+    <li>__sync_synchronize</li>
+  </ul>
+</blockquote>
 
 <h2 id="volatile">volatile</h2>
 
