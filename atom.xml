@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-26T14:56:07+08:00</updated>
+  <updated>2015-12-31T21:47:06+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -52,7 +52,7 @@
 
 <p>广泛用于XML、HTML中。&amp;#后面接十进制字符，&amp;#x后面接十六进制字符。相当于转义序列吧。</p>
 
-<p>其中十六进制33，等于十进制51，即’3’。不过这里的i，是什么鬼？</p>
+<p>其中十六进制33，等于十进制51，即’3’。</p>
 
 <h2 id="section-4">4点</h2>
 
