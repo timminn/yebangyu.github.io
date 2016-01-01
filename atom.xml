@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2015-12-31T22:50:16+08:00</updated>
+  <updated>2016-01-01T13:33:43+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -378,16 +378,15 @@ sys     0m0.000s
 
 <p>为什么引入<strong>Cuckoo Hashing</strong>？</p>
 
-<p>常见的<strong>hashing</strong>处理冲突方法一般包括两种：开散列（<strong>Separate Chaining</strong>）和闭散列<strong>（Linear / Quadratic Probing</strong>
-）。开散列是将冲突的元素组织成一个链表（其实组织成一个二叉搜索树也是完全没问题的，甚至跳表也行），闭散列将冲突的元素还是放在哈希表<strong>slot</strong>中，使用线性探测等方法进行处理。</p>
+<p>常见的<strong>hashing</strong>处理冲突方法一般包括两种：<strong>Separate Chaining</strong>和<strong>Open Addressing</strong>（<strong>Linear Probing</strong>）。<strong>Separate Chaining</strong>是将冲突的元素组织成一个链表（其实组织成一个二叉搜索树也是完全没问题的，甚至跳表也行），<strong>Open Addressing</strong>将冲突的元素还是放在哈希表<strong>slot</strong>中，使用线性探测等方法进行处理。</p>
 
 <p>那么，这两种方法，都有啥优缺点呢？</p>
 
 <!--more-->
 
-<p>开散列，实现简单，但是对<strong>cache</strong>不友好，<strong>cache miss rate</strong>较高。</p>
+<p><strong>Separate Chaining</strong> : 实现简单，但是对<strong>cache</strong>不友好，<strong>cache miss rate</strong>较高。</p>
 
-<p>闭散列，实现相对复杂一点点，对<strong>cache</strong>很友好，但是对<strong>load factor</strong>要求苛刻：<strong>load factor</strong>稍高性能就急剧下降。</p>
+<p><strong>Open Addressing</strong> : 实现相对复杂一点点，对<strong>cache</strong>很友好，但是对<strong>load factor</strong>要求苛刻：<strong>load factor</strong>稍高性能就急剧下降。</p>
 
 <p>这两种方式下，查找某个元素的最坏时间都是<strong>O(n)</strong>。</p>
 

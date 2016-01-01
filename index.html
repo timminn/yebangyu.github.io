@@ -191,8 +191,7 @@ MathJax.Hub.Config({
 
 <p>为什么引入<strong>Cuckoo Hashing</strong>？</p>
 
-<p>常见的<strong>hashing</strong>处理冲突方法一般包括两种：开散列（<strong>Separate Chaining</strong>）和闭散列<strong>（Linear / Quadratic Probing</strong>
-）。开散列是将冲突的元素组织成一个链表（其实组织成一个二叉搜索树也是完全没问题的，甚至跳表也行），闭散列将冲突的元素还是放在哈希表<strong>slot</strong>中，使用线性探测等方法进行处理。</p>
+<p>常见的<strong>hashing</strong>处理冲突方法一般包括两种：<strong>Separate Chaining</strong>和<strong>Open Addressing</strong>（<strong>Linear Probing</strong>）。<strong>Separate Chaining</strong>是将冲突的元素组织成一个链表（其实组织成一个二叉搜索树也是完全没问题的，甚至跳表也行），<strong>Open Addressing</strong>将冲突的元素还是放在哈希表<strong>slot</strong>中，使用线性探测等方法进行处理。</p>
 
 <p>那么，这两种方法，都有啥优缺点呢？</p>
 
@@ -557,7 +556,7 @@ MathJax.Hub.Config({
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
 <p>
-  Copyright &copy; 2015 - Yebangyu -
+  Copyright &copy; 2016 - Yebangyu -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 
