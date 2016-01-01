@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-01T16:26:59+08:00</updated>
+  <updated>2016-01-01T16:32:58+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -410,31 +410,76 @@ sys     0m0.000s
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table1.jpg" alt="table1" /></p>
 
-<p>Table</p>
+<p>Table1</p>
 
 <table>
   <thead>
     <tr>
-      <th>项目</th>
-      <th>价格</th>
-      <th>数量</th>
+      <th>slot</th>
+      <th>key</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>计算机</td>
-      <td>1600</td>
-      <td>5</td>
+      <td>0</td>
+      <td>11</td>
     </tr>
     <tr>
-      <td>手机</td>
-      <td>12</td>
-      <td>12</td>
-    </tr>
-    <tr>
-      <td>管线</td>
       <td>1</td>
-      <td>234</td>
+      <td>78</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>95</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>32</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>64</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>vacant</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Table2</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>slot</th>
+      <th>key</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>66</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>54</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>vacant</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>33</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>49</td>
     </tr>
   </tbody>
 </table>
@@ -452,6 +497,80 @@ sys     0m0.000s
 <p>执行<strong>rearrange</strong>动作，选择<strong>Table2</strong>，将<strong>slot index = 3</strong>的元素<strong>33</strong>踢出，插入<strong>77</strong>。然后被踢出的元素<strong>33</strong>，计算它在<strong>Table1</strong>中的<strong>index</strong>为<strong>slot index1 = hf2(33) = 2</strong>，因此将<strong>95</strong>踢出，插入<strong>33</strong>。被踢出的元素<strong>95</strong>在<strong>Table2</strong>中的<strong>slot index</strong>为<strong>2</strong>，该<strong>slot</strong>为<strong>vacant</strong>，没人使用，因此将<strong>95</strong>插入。完毕。现在的<strong>Tables</strong>中元素为：</p>
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table2.jpg" alt="table2" /></p>
+
+<p>Table1</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>slot</th>
+      <th>key</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>11</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>78</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>33</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>32</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>64</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>vacant</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Table2</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>slot</th>
+      <th>key</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0</td>
+      <td>66</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>54</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>95</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>77</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>13</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>49</td>
+    </tr>
+  </tbody>
+</table>
 
 <p>值得注意的是，<strong>rearrange</strong>可能失败（表满了;或者发生“死循环”），此时需要进行<strong>rehash</strong>，因此代码里需要有一定的判断。当<strong>K=2</strong>时，只要<strong>load factor</strong>低于<strong>50%</strong>，需要<strong>rehash</strong>的概率很小很小。</p>
 
