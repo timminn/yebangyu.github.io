@@ -134,8 +134,6 @@ MathJax.Hub.Config({
 
 <p>举个例子吧，假如某个时刻，两个哈希表的内容如下：</p>
 
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table1.jpg" alt="table1" /></p>
-
 <p>Table1</p>
 
 <table>
@@ -221,8 +219,6 @@ MathJax.Hub.Config({
 <p><strong>Table2</strong>中的<strong>index</strong>为<strong>3</strong>的<strong>slot</strong>已经被<strong>33</strong>占了。因此执行<strong>rearrange</strong>。</p>
 
 <p>执行<strong>rearrange</strong>动作，选择<strong>Table2</strong>，将<strong>slot index = 3</strong>的元素<strong>33</strong>踢出，插入<strong>77</strong>。然后被踢出的元素<strong>33</strong>，计算它在<strong>Table1</strong>中的<strong>index</strong>为<strong>slot index1 = hf2(33) = 2</strong>，因此将<strong>95</strong>踢出，插入<strong>33</strong>。被踢出的元素<strong>95</strong>在<strong>Table2</strong>中的<strong>slot index</strong>为<strong>2</strong>，该<strong>slot</strong>为<strong>vacant</strong>，没人使用，因此将<strong>95</strong>插入。完毕。现在的<strong>Tables</strong>中元素为：</p>
-
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table2.jpg" alt="table2" /></p>
 
 <p>Table1</p>
 

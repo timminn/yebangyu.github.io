@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-01T16:32:58+08:00</updated>
+  <updated>2016-01-01T16:35:35+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -51,8 +51,6 @@
 <p><strong>rearrange</strong>操作的过程：随机选出一张表，将<strong>slot index</strong>对应的那个元素踢出(<strong>evict</strong>)，把我们待插入的元素插到那个位置。那被踢出来的元素呢？尝试插入到另外一张表对应的<strong>slot</strong>处，这时候可能又踢出一个元素，接下去就是递归的执行这个过程，直到所有元素都安置妥当。</p>
 
 <p>举个例子吧，假如某个时刻，两个哈希表的内容如下：</p>
-
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table1.jpg" alt="table1" /></p>
 
 <p>Table1</p>
 
@@ -139,8 +137,6 @@
 <p><strong>Table2</strong>中的<strong>index</strong>为<strong>3</strong>的<strong>slot</strong>已经被<strong>33</strong>占了。因此执行<strong>rearrange</strong>。</p>
 
 <p>执行<strong>rearrange</strong>动作，选择<strong>Table2</strong>，将<strong>slot index = 3</strong>的元素<strong>33</strong>踢出，插入<strong>77</strong>。然后被踢出的元素<strong>33</strong>，计算它在<strong>Table1</strong>中的<strong>index</strong>为<strong>slot index1 = hf2(33) = 2</strong>，因此将<strong>95</strong>踢出，插入<strong>33</strong>。被踢出的元素<strong>95</strong>在<strong>Table2</strong>中的<strong>slot index</strong>为<strong>2</strong>，该<strong>slot</strong>为<strong>vacant</strong>，没人使用，因此将<strong>95</strong>插入。完毕。现在的<strong>Tables</strong>中元素为：</p>
-
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/table2.jpg" alt="table2" /></p>
 
 <p>Table1</p>
 

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: web | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/web/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-01T16:32:58+08:00</updated>
+  <updated>2016-01-01T16:35:35+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -133,10 +133,17 @@ bundle install
 
 <p>http://stackoverflow.com/questions/14932141/octopress-capitalization-in-new-posts</p>
 
+<p>字体：</p>
+
 <p>http://blog.depressedmarvin.com/2014/07/08/new-google-fonts-cdn/</p>
+
+<p>数学公式：</p>
 
 <p>http://dreamrunner.org/blog/2014/03/09/octopresszhong-shi-yong-latexxie-shu-xue-gong-shi/</p>
 
+<p>表格：</p>
+
+<p>http://codemany.com/blog/tricks-and-tips-for-octopress/</p>
 ]]></content>
   </entry>
   
