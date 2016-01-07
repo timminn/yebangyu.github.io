@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-07T23:05:09+08:00</updated>
+  <updated>2016-01-07T23:08:47+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -14,11 +14,11 @@
 
   
   <entry>
-    <title type="html"><![CDATA[timingcprograminlinux]]></title>
+    <title type="html"><![CDATA[Linux下C++程序计时方法]]></title>
     <link href="http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux/"/>
     <updated>2016-01-07T23:02:14+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux</id>
-    <content type="html"><![CDATA[<p>最近简单学习了下Linux下C++程序计时的一些函数和方法，总结如下。没啥insight了。</p>
+    <content type="html"><![CDATA[<p>最近简单学习了下<strong>Linux</strong>下<strong>C++</strong>程序计时的一些函数和方法，总结如下。没啥<strong>insight</strong>了。</p>
 
 <p>方法一：</p>
 
@@ -64,6 +64,7 @@
 </span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
+
 <p>不难看出，<code>gettimeofday</code>只能精确到微秒；如果想精确到纳秒呢？</p>
 
 <p>方法三：</p>
@@ -100,7 +101,7 @@
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>这里说的都是wall clock，如果想获得cpu执行时间，以及了解<code>clock_gettime</code>参数的解释和可能的取值，可以man一下。</p>
+<p>这里说的都是<strong>wall clock</strong>，如果想获得<strong>cpu</strong>执行时间，以及了解<code>clock_gettime</code>参数的解释和可能的取值，可以<strong>man</strong>一下。</p>
 ]]></content>
   </entry>
   
