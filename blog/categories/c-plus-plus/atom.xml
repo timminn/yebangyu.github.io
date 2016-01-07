@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-01T16:39:48+08:00</updated>
+  <updated>2016-01-07T23:05:09+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,69 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[timingcprograminlinux]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux/"/>
+    <updated>2016-01-07T23:02:14+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux</id>
+    <content type="html"><![CDATA[<p>最近简单学习了下Linux下C++程序计时的一些函数和方法，总结如下。没啥insight了。</p>
+
+<p>方法一：</p>
+
+<p>如果是想统计某个程序的运行时间，那么可以使用</p>
+
+<pre><code>time ./a.out
+</code></pre>
+
+<!--more-->
+
+<p>方法二：</p>
+
+<p>如果是想对某个函数或者语句进行计时，那么有别的方法。比如说，<code>gettimeofday</code>函数。直接贴示例代码:</p>
+
+<p><code>c++
+#include &lt;sys/time.h&gt;
+void f()
+{
+  //...
+}
+int main()
+{
+  struct timeval t1, t2;
+  gettimeofday(&amp;t1, NULL);
+  f();
+  gettimeofday(&amp;t2, NULL);
+  //那么函数f运行所花的时间为
+  //deltaT = (t2.tv_sec-t1.tv_sec) * 1000000 + t2.tv_usec-t1.tv_usec 微秒
+  return 0;
+}
+</code>
+不难看出，<code>gettimeofday</code>只能精确到微秒；如果想精确到纳秒呢？</p>
+
+<p>方法三：</p>
+
+<p><code>c++
+#include &lt;time.h&gt;
+void f()
+{
+  //...
+}
+int main()
+{
+  timespec t1, t2;
+  clock_gettime(CLOCK_MONOTONIC, &amp;t1);
+  f();
+  clock_gettime(CLOCK_MONOTONIC, &amp;t2);
+  //那么f所花时间为
+  //deltaT = (t2.tv_sec - t1.tv_sec) * 10^9 + t2.tv_nsec - t1.tv_nsec 纳秒
+  return 0;
+}
+</code></p>
+
+<p>这里说的都是wall clock，如果想获得cpu执行时间，以及了解<code>clock_gettime</code>参数的解释和可能的取值，可以man一下。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[再谈C++中的static const]]></title>

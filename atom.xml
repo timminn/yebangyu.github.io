@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-01T16:39:48+08:00</updated>
+  <updated>2016-01-07T23:05:09+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,97 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[timingcprograminlinux]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux/"/>
+    <updated>2016-01-07T23:02:14+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux</id>
+    <content type="html"><![CDATA[<p>最近简单学习了下Linux下C++程序计时的一些函数和方法，总结如下。没啥insight了。</p>
+
+<p>方法一：</p>
+
+<p>如果是想统计某个程序的运行时间，那么可以使用</p>
+
+<pre><code>time ./a.out
+</code></pre>
+
+<!--more-->
+
+<p>方法二：</p>
+
+<p>如果是想对某个函数或者语句进行计时，那么有别的方法。比如说，<code>gettimeofday</code>函数。直接贴示例代码:</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include &lt;sys/time.h&gt;</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="c1">//...</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">struct</span> <span class="n">timeval</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">;</span>
+</span><span class="line">  <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span><span class="line">  <span class="n">f</span><span class="p">();</span>
+</span><span class="line">  <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span><span class="line">  <span class="c1">//那么函数f运行所花的时间为</span>
+</span><span class="line">  <span class="c1">//deltaT = (t2.tv_sec-t1.tv_sec) * 1000000 + t2.tv_usec-t1.tv_usec 微秒</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>不难看出，<code>gettimeofday</code>只能精确到微秒；如果想精确到纳秒呢？</p>
+
+<p>方法三：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include &lt;time.h&gt;</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="c1">//...</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">timespec</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">;</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t1</span><span class="p">);</span>
+</span><span class="line">  <span class="n">f</span><span class="p">();</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t2</span><span class="p">);</span>
+</span><span class="line">  <span class="c1">//那么f所花时间为</span>
+</span><span class="line">  <span class="c1">//deltaT = (t2.tv_sec - t1.tv_sec) * 10^9 + t2.tv_nsec - t1.tv_nsec 纳秒</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>这里说的都是wall clock，如果想获得cpu执行时间，以及了解<code>clock_gettime</code>参数的解释和可能的取值，可以man一下。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[诡异的程序性能问题]]></title>

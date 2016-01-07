@@ -1,0 +1,331 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>timingcprograminlinux - Yebangyu's Blog</title>
+  <meta name="author" content="Yebangyu">
+
+  
+  <meta name="description" content="linux timing c++ 计时 gettimeofday clock_gettime">
+  <meta name="keywords" content="linux timing c++ 计时 gettimeofday  clock_gettime">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Yebangyu's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Yebangyu's Blog</a></h1>
+  
+    <h2>Specialized in Concurrent Programming and C++.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.baidu.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="www.yebangyu.org">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About Me</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">timingcprograminlinux</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-07T23:02:14+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>7</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:02 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>最近简单学习了下Linux下C++程序计时的一些函数和方法，总结如下。没啥insight了。</p>
+
+<p>方法一：</p>
+
+<p>如果是想统计某个程序的运行时间，那么可以使用</p>
+
+<pre><code>time ./a.out
+</code></pre>
+
+<!--more-->
+
+<p>方法二：</p>
+
+<p>如果是想对某个函数或者语句进行计时，那么有别的方法。比如说，<code>gettimeofday</code>函数。直接贴示例代码:</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include &lt;sys/time.h&gt;</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="c1">//...</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">struct</span> <span class="n">timeval</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">;</span>
+</span><span class="line">  <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span><span class="line">  <span class="n">f</span><span class="p">();</span>
+</span><span class="line">  <span class="n">gettimeofday</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+</span><span class="line">  <span class="c1">//那么函数f运行所花的时间为</span>
+</span><span class="line">  <span class="c1">//deltaT = (t2.tv_sec-t1.tv_sec) * 1000000 + t2.tv_usec-t1.tv_usec 微秒</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>不难看出，<code>gettimeofday</code>只能精确到微秒；如果想精确到纳秒呢？</p>
+
+<p>方法三：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include &lt;time.h&gt;</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="c1">//...</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">timespec</span> <span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">;</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t1</span><span class="p">);</span>
+</span><span class="line">  <span class="n">f</span><span class="p">();</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t2</span><span class="p">);</span>
+</span><span class="line">  <span class="c1">//那么f所花时间为</span>
+</span><span class="line">  <span class="c1">//deltaT = (t2.tv_sec - t1.tv_sec) * 10^9 + t2.tv_nsec - t1.tv_nsec 纳秒</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>这里说的都是wall clock，如果想获得cpu执行时间，以及了解<code>clock_gettime</code>参数的解释和可能的取值，可以man一下。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Yebangyu</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-01-07T23:02:14+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>7</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:02 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/c-plus-plus/'>c++</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2015/12/30/falsesharing/" title="Previous Post: 诡异的程序性能问题">&laquo; 诡异的程序性能问题</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/07/timingcprograminlinux/">timingcprograminlinux</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/falsesharing/">诡异的程序性能问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/26/aprogrammersclock/">程序员时钟解读</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/19/cuckoo-hashing/">Introduction To Cuckoo Hashing</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/16/readinglist/">2015-12-16 近期好书推荐</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>友情链接</h1>
+  <ul>
+    <li>
+	  <li><a href="http://www.chongh.wiki/">wangchonghua</a></li>
+      <li><a href="http://www.armsword.com">armsword</a></li>
+    </li>
+  </ul>
+</section><section>
+  <h1>Yebangyu</h1>
+  <p>福建人。热爱历史、K歌、NBA</p>
+  <p>帝都码农</p>
+  <p>历史学家，专治三国史</p>
+</section>
+<section>
+ <h1>Categories</h1>
+ <ul id="categories">
+  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (5)</a></li>
+<li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
+<li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
+<li class='category'><a href='/blog/categories/li-shi/'>历史 (1)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (6)</a></li>
+<li class='category'><a href='/blog/categories/suan-fa/'>算法 (1)</a></li>
+<li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>
+
+ </ul>
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+<p>
+  Copyright &copy; 2016 - Yebangyu -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
