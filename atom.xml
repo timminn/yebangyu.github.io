@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-07T23:08:47+08:00</updated>
+  <updated>2016-01-08T12:12:03+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -114,7 +114,7 @@
 
 <h2 id="section">提出问题</h2>
 
-<p>如果我说下面的程序存在性能问题，你信吗？</p>
+<p>如果我说下面的程序存在性能问题，您信吗？</p>
 
 <!--more-->
 
@@ -200,7 +200,7 @@ sys     0m0.000s
 
 <p>解决方法二：假如<strong>global</strong>不是一个数组呢？而是包含多个变量的结构体呢(这种情形也很常见)？上面的方法就不灵了吧？</p>
 
-<p>恩，上面的方法不灵了，而且上面的方法太笨。网上有很多资料告诉你怎么定义变量让其<strong>cacheline aligned</strong>，这也是那些博客千篇一律的做法。还有没有其他方法？有。接着往下看。</p>
+<p>恩，上面的方法不灵了，而且上面的方法太笨。网上有很多资料告诉您怎么定义变量让其<strong>cacheline aligned</strong>，这也是那些博客千篇一律的做法。还有没有其他方法？有。接着往下看。</p>
 
 <p>解决方法三：重点来了。</p>
 
@@ -270,11 +270,11 @@ sys     0m0.000s
 
 <p>解决方法四：</p>
 
-<p><strong>global</strong>神马变量？全局变量。<strong>counter1/counter2</strong>什么变量？局部变量。</p>
+<p><strong>global</strong>神马变量？全局变量。<strong>counter1/counter2</strong>神马变量？局部变量。</p>
 
 <p>有没有一种东东，既有全局的性质，又有局部的效果（线程私有）呢？</p>
 
-<p>恩，如果您看过我以前写的<a href="http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure/">这篇</a>博客，就不会对__thread感到陌生。对！提供强大<strong>scalability</strong>的利器，就是它了！</p>
+<p>恩，如果您看过我以前写的<a href="http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure/">这篇</a>博客，就不会对<strong>__thread</strong>感到陌生。对！提供强大<strong>scalability</strong>的利器，就是它了！</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -329,7 +329,7 @@ user	0m0.644s
 sys     0m0.000s
 </code></pre>
 
-<p>不过其他线程如何读取到每个计数线程的<strong>counter</strong>呢？不难，但是也不是那么简单，背后牵扯到很多问题（其实本文最大的目的是通过<strong>false sharing</strong>，揭示<strong>partition</strong>这种并发编程里最大的设计原则）。我们下次专门聊。</p>
+<p>不过其他线程如何读取到每个计数线程的<strong>counter</strong>呢？不难，但是也不是那么简单，背后涉及到很多问题（其实本文最大的目的是通过<strong>false sharing</strong>，揭示<strong>partition</strong>这种并发编程里最大的设计原则）。我们下次专门聊。</p>
 
 <h2 id="section-3">附录</h2>
 
