@@ -165,7 +165,7 @@ else
 
 <h3 id="section-2">原子操作</h3>
 
-<p><strong>gcc</strong>内置提供了一系列的原子操作，包括著名的用于<strong>CAS</strong>(<strong>compare</strong> <strong>and</strong> <strong>swap</strong>)的<strong>__sync_bool_compare_and_swap</strong>等。当多个线程对一个内存变量进行原子操作时，往往依赖于硬件支持。在<strong>x86</strong>下，原子操作时，锁住总线，防止其他<strong>cpu</strong> <strong>core</strong>访问该内存单元。</p>
+<p><strong>gcc</strong>内置提供了一系列的原子操作，包括著名的用于<strong>CAS</strong>(<strong>compare</strong> <strong>and</strong> <strong>swap</strong>)的<strong>__sync_bool_compare_and_swap</strong>等。当多个线程对一个内存变量进行原子操作时，往往依赖于硬件支持。在早期的<strong>Intel CPU</strong>里，原子操作时，锁住总线，防止其他<strong>cpu</strong> <strong>core</strong>访问该内存单元。</p>
 
 <h3 id="memory-barrier">Memory Barrier</h3>
 
