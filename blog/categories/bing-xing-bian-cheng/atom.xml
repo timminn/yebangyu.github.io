@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-09T22:54:55+08:00</updated>
+  <updated>2016-01-09T23:06:55+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -20,7 +20,7 @@
     <id>http://www.yebangyu.org/blog/2016/01/09/memoryconsistencyandcachecoherence</id>
     <content type="html"><![CDATA[<h2 id="memory-consistency">Memory Consistency</h2>
 
-<p>Memory Consistency(MC)，有时候又叫做Memory Consistency Model或者Memory Model。为了理解为什么需要引入这种东西，我们首先看以下程序：</p>
+<p><strong>Memory Consistency</strong>(<strong>MC</strong>)，有时候又叫做<strong>Memory Consistency Model</strong>或者<strong>Memory Model</strong>。为了理解为什么需要引入这种东西，我们首先看以下程序：</p>
 
 <!--more-->
 
@@ -39,39 +39,43 @@ S2：y=2
 L2：r2=x
 </code></pre>
 
-<p>两个线程执行完之后，r1和r2可能是什么值？</p>
+<p>两个线程执行完之后，<strong>r1</strong>和<strong>r2</strong>可能是什么值？</p>
 
 <p>注意到线程是并发、交替执行的，下面是可能的执行顺序和相应结果：</p>
 
-<p>S1 L1 S2 L2 那么r1=0 r2=2
-S1 S2 L1 L2 那么r1=1 r2=2
-S2 L2 S1 L1 那么r1=2 r2=0</p>
+<p><strong>S1 L1 S2 L2</strong> 那么<strong>r1=0 r2=2</strong></p>
 
-<p>这些都是意料之内、情理之中的。但是在x86体系结构下，很可能得到r1=0 r2=0这样的结果。是不是大吃一惊？</p>
+<p><strong>S1 S2 L1 L2</strong> 那么<strong>r1=1 r2=2</strong></p>
 
-<p>如果没有Memory Consistency，那么程序员对于自己编写的多线程程序会输出什么将一无所知：天知道会输出什么。</p>
+<p><strong>S2 L2 S1 L1</strong> 那么<strong>r1=2 r2=0</strong></p>
 
-<p>因此，Memory Consistency就是一种程序员（编程语言）、编译器、CPU间的协议。这个协议保证了程序读取内存时可能得到什么值，会得到什么值。</p>
+<p>这些都是意料之内、情理之中的。但是在<strong>x86</strong>体系结构下，很可能得到<strong>r1=0 r2=0</strong>这样的结果。是不是大吃一惊？</p>
+
+<p>如果没有<strong>Memory Consistency</strong>，那么程序员对于自己编写的多线程程序会输出什么将一无所知：天知道会输出什么。</p>
+
+<p>因此，<strong>Memory Consistency</strong>就是一种程序员（编程语言）、编译器、CPU间的协议。这个协议保证了程序读取内存时可能得到什么值，会得到什么值。</p>
 
 <h2 id="sequential-consistency">Sequential Consistency</h2>
 
-<p>在Sequential Consistency这种Memory Model下，刚才讨论的那个程序不可能输出r1=0 r2=0这种结果。此话怎讲？这就牵涉到一个问题：什么是Sequential Consistency（SC）</p>
+<p>在<strong>Sequential Consistency</strong>这种<strong>Memory Model</strong>下，刚才讨论的那个程序不可能输出<strong>r1=0 r2=0</strong>这种结果。怎么说？这就牵涉到一个问题：什么是<strong>Sequential Consistency</strong>（<strong>SC</strong>）。</p>
 
-<p>根据Leslie Lamport在1979年9月发表的论文”How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs”里提出的SC的定义：</p>
+<p>根据<strong>Leslie Lamport</strong>在<strong>1979</strong>年<strong>9</strong>月发表的论文”<strong>How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs</strong>“里提出的<strong>SC</strong>的定义：</p>
 
-<p>the result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.</p>
+<p><strong>the result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.</strong></p>
 
-<p>根据这个定义，在SC模型下，任何execution的执行顺序（我们称为Total Order）必须respect每个线程的Program Order。什么是Program Order？对于以上程序，在Thread1中，S1先于L1；在Thread2中，S2先于L2。这就是Program Order。</p>
+<p>根据这个定义，在<strong>SC</strong>模型下，任何<strong>execution</strong>的执行顺序（我们称为<strong>Memory Order</strong>）必须<strong>respect</strong>每个线程的<strong>Program Order</strong>。什么是<strong>Program Order</strong>？对于以上程序，在<strong>Thread1</strong>中，<strong>S1</strong>先于<strong>L1</strong>；在<strong>Thread2</strong>中，<strong>S2</strong>先于<strong>L2</strong>。这就是<strong>Program Order</strong>。</p>
 
-<p>请时刻注意，Program Order只针对某个线程内的语句而言，不涉及到跨线程。比如Thread1中的S1和Thread2中的L2，就无所谓什么Program Order了。</p>
+<p>请时刻注意，<strong>Program Order</strong>只针对某个线程内的语句而言，不涉及到跨线程。比如<strong>Thread1</strong>中的<strong>S1</strong>和<strong>Thread2</strong>中的<strong>L2</strong>，就无所谓什么<strong>Program Order</strong>了。</p>
 
-<p>好了，现在知道为什么在SC下，有些结果可能出现，有些不可能了。</p>
+<p>好了，现在知道为什么在<strong>SC</strong>下，有些结果可能出现，有些不可能了。</p>
 
-<p>S1 L1 S2 L2 那么r1=0 r2=2 没问题，没有违背S1&lt;L1 S2&lt;L2
-S1 S2 L1 L2 那么r1=1 r2=2 没问题，没有违背S1&lt;L1 S2&lt;L2
-S2 L2 S1 L1 那么r1=2 r2=0 没问题，没有违背S1&lt;L1 S2&lt;L2</p>
+<p><strong>S1 L1 S2 L2 r1=0 r2=2</strong> 没问题，没有违背<strong>S1&lt;L1 S2&lt;L2</strong></p>
 
-<p>而对于r1=0 r2=0，在SC下，我们找不到一个能respect Program Order的Memory Order。因为r1=0，说明L1&lt;S2，r2=0说明L2&lt;S1；而S1&lt;L1，S2&lt;L2，不难看出这里形成了一个环。</p>
+<p><strong>S1 S2 L1 L2 r1=1 r2=2</strong> 没问题，没有违背<strong>S1&lt;L1 S2&lt;L2</strong></p>
+
+<p><strong>S2 L2 S1 L1 r1=2 r2=0</strong> 没问题，没有违背<strong>S1&lt;L1 S2&lt;L2</strong></p>
+
+<p>而对于<strong>r1=0 r2=0</strong>，在<strong>SC</strong>下，我们找不到一个能<strong>respect Program Order</strong>的<strong>Memory Order</strong>。因为<strong>r1=0</strong>，说明<strong>L1&lt;S2</strong>，<strong>r2=0</strong>说明<strong>L2&lt;S1</strong>；而<strong>S1&lt;L1，S2&lt;L2</strong>，不难看出这里形成了一个环。</p>
 
 <h2 id="cache-coherence">Cache Coherence</h2>
 
@@ -79,15 +83,15 @@ S2 L2 S1 L1 那么r1=2 r2=0 没问题，没有违背S1&lt;L1 S2&lt;L2</p>
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/cpuand%20cache.png" alt="memorycache" /></p>
 
-<p>(图片来源于Paul大叔的《Is Parallel Programming Hard》这本书第三章)</p>
+<p>(图片来源于<strong>Paul</strong>大叔的《<strong>Is Parallel Programming Hard</strong>》这本书第三章)</p>
 
-<p>多个CPU cores，每个core上有自己的Cache。我们知道，Cache是部分内存的映射和缓存，或者说，副本。这就带来一个问题：副本一致性。内存只有一个，每个cpu cores却有自己的内存副本，如何保证大家看到的内容是一样的、一致的、正确的呢？这就是Cache Coherence(CC)要解决的问题。</p>
+<p>多个<strong>CPU cores</strong>，每个<strong>core</strong>上有自己的<strong>Cache</strong>。我们知道，<strong>Cache</strong>是部分内存的映射和缓存，或者说，副本。这就带来一个问题：副本一致性。内存只有一个，每个<strong>cpu cores</strong>却有自己的内存副本，如何保证大家看到的内容是一样的、一致的、正确的呢？这就是<strong>Cache Coherence(CC)</strong>要解决的问题。</p>
 
 <h2 id="cache-coherence--vs-memory-consistency">Cache Coherence  VS Memory Consistency</h2>
 
-<p>从以上分析，我们不难看出。CC和MC涉及的是两个不同层面的东西，解决的是不同的问题，不可混淆。CC解决的是副本一致性问题；MC保证的是多线程程序可以读到什么值。</p>
+<p>从以上分析，我们不难看出。<strong>CC</strong>和<strong>MC</strong>涉及的是两个不同层面的东西，解决的是不同的问题，不可混淆。<strong>CC</strong>解决的是副本一致性问题；<strong>MC</strong>保证的是多线程程序访问内存时可以（可能）读到什么值。</p>
 
-<p>两者有联系吗？有。实现Memory Consistency时，Cache Coherence有时候可以作为一个black box tool来使用。细节下次我们接着聊。</p>
+<p>两者有联系吗？有。实现<strong>Memory Consistency</strong>时可能会使用到<strong>Cache Coherence</strong>。细节下次我们接着聊。</p>
 ]]></content>
   </entry>
   
