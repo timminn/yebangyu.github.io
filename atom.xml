@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-09T23:06:55+08:00</updated>
+  <updated>2016-01-09T23:39:43+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -53,15 +53,15 @@ L2：r2=x
 
 <p>如果没有<strong>Memory Consistency</strong>，那么程序员对于自己编写的多线程程序会输出什么将一无所知：天知道会输出什么。</p>
 
-<p>因此，<strong>Memory Consistency</strong>就是一种程序员（编程语言）、编译器、CPU间的协议。这个协议保证了程序读取内存时可能得到什么值，会得到什么值。</p>
+<p>因此，<strong>Memory Consistency</strong>就是一种程序员（编程语言）、编译器、CPU间的协议。这个协议保证了程序访问内存时可能得到什么值，会得到什么值。</p>
 
 <h2 id="sequential-consistency">Sequential Consistency</h2>
 
 <p>在<strong>Sequential Consistency</strong>这种<strong>Memory Model</strong>下，刚才讨论的那个程序不可能输出<strong>r1=0 r2=0</strong>这种结果。怎么说？这就牵涉到一个问题：什么是<strong>Sequential Consistency</strong>（<strong>SC</strong>）。</p>
 
-<p>根据<strong>Leslie Lamport</strong>在<strong>1979</strong>年<strong>9</strong>月发表的论文”<strong>How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs</strong>“里提出的<strong>SC</strong>的定义：</p>
+<p>根据<strong>Leslie Lamport</strong>在<strong>1979</strong>年<strong>9</strong>月发表的论文《<strong>How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs</strong>》里提出的<strong>SC</strong>的定义：</p>
 
-<p><strong>the result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.</strong></p>
+<p>the result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.</p>
 
 <p>根据这个定义，在<strong>SC</strong>模型下，任何<strong>execution</strong>的执行顺序（我们称为<strong>Memory Order</strong>）必须<strong>respect</strong>每个线程的<strong>Program Order</strong>。什么是<strong>Program Order</strong>？对于以上程序，在<strong>Thread1</strong>中，<strong>S1</strong>先于<strong>L1</strong>；在<strong>Thread2</strong>中，<strong>S2</strong>先于<strong>L2</strong>。这就是<strong>Program Order</strong>。</p>
 
@@ -89,7 +89,7 @@ L2：r2=x
 
 <h2 id="cache-coherence--vs-memory-consistency">Cache Coherence  VS Memory Consistency</h2>
 
-<p>从以上分析，我们不难看出。<strong>CC</strong>和<strong>MC</strong>涉及的是两个不同层面的东西，解决的是不同的问题，不可混淆。<strong>CC</strong>解决的是副本一致性问题；<strong>MC</strong>保证的是多线程程序访问内存时可以（可能）读到什么值。</p>
+<p>从以上分析，我们不难看出，<strong>CC</strong>和<strong>MC</strong>涉及的是两个不同层面的东西，解决的是不同的问题，不可混淆。<strong>CC</strong>解决的是副本一致性问题；<strong>MC</strong>保证的是多线程程序访问内存时可以（可能）读到什么值。</p>
 
 <p>两者有联系吗？有。实现<strong>Memory Consistency</strong>时可能会使用到<strong>Cache Coherence</strong>。细节下次我们接着聊。</p>
 ]]></content>
