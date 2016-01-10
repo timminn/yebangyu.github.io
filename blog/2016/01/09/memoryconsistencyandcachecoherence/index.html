@@ -147,7 +147,7 @@ L2：r2=x
 
 <p>the result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.</p>
 
-<p>根据这个定义，在<strong>SC</strong>模型下，任何<strong>execution</strong>的执行顺序（我们称为<strong>Memory Order</strong>）必须<strong>respect</strong>每个线程的<strong>Program Order</strong>。什么是<strong>Program Order</strong>？对于以上程序，在<strong>Thread1</strong>中，<strong>S1</strong>先于<strong>L1</strong>；在<strong>Thread2</strong>中，<strong>S2</strong>先于<strong>L2</strong>。这就是<strong>Program Order</strong>。</p>
+<p>根据这个定义，在<strong>SC</strong>模型下，任何<strong>execution</strong>的执行顺序（我们称为<strong>Memory Order</strong>）必须<strong>respect</strong>每个线程的<strong>Program Order</strong>。什么是<strong>Program Order</strong>？对于以上程序，在<strong>Thread1</strong>中，<strong>S1</strong>先于<strong>L1</strong>（不妨记为<strong>S1&lt;L1</strong>）；在<strong>Thread2</strong>中，<strong>S2</strong>先于<strong>L2</strong>（记为<strong>S2&lt;L2</strong>）。这就是<strong>Program Order</strong>。</p>
 
 <p>请时刻注意，<strong>Program Order</strong>只针对某个线程内的语句而言，不涉及到跨线程。比如<strong>Thread1</strong>中的<strong>S1</strong>和<strong>Thread2</strong>中的<strong>L2</strong>，就无所谓什么<strong>Program Order</strong>了。</p>
 
