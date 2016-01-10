@@ -187,7 +187,7 @@ L2：r2=x
 
 <p>2，为什么<strong>x86</strong>下可能得出<strong>r1=0 r2=0</strong>的结果？</p>
 
-<p>因为<strong>S1</strong>是写一个变量而<strong>L1</strong>是读取另一个变量（两个变量，或者说两个内存地址），这种情况下的写读可能被<strong>CPU</strong>乱序：先执行<strong>L1</strong>，再执行<strong>S1</strong>。（为了性能，所谓的延后写）</p>
+<p>因为<strong>S1</strong>是写一个内存变量而<strong>L1</strong>是读取另一个内存变量（两个变量，或者说两个内存地址），这种情况下的写读可能被<strong>CPU</strong>乱序：先执行<strong>L1</strong>，再执行<strong>S1</strong>。（为了性能，所谓的延后写）</p>
 </div>
 
 
