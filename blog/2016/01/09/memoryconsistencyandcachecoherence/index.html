@@ -181,7 +181,7 @@ L2：r2=x
 
 <p>如果不加任何同步设施，仅仅考虑上面的程序，那么答案是：无法保证。因为线程的推进速度不同，哪条指令先被执行也一无所知。这个程序重跑几次，也可能输出不同的结果出来。</p>
 
-<p>也就是说，<strong>Memory Model</strong>保证的是，例如，当线程<strong>2</strong>看到<strong>x=1</strong>的时候，线程<strong>1</strong>是否已经执行了<strong>L1</strong>。也就说，<strong>Memory Model</strong>确保当一件事情发生时，有其他什么事情<strong>has happened</strong>。在<strong>SC</strong>中，当<strong>L1</strong>发生时，说明或者说暗示着，<strong>S1</strong>已经发生了。</p>
+<p>也就是说，<strong>Memory Model</strong>保证的是，例如，当线程<strong>2</strong>看到<strong>x=1</strong>的时候，线程<strong>1</strong>是否已经执行了<strong>L1</strong>。也就是说，<strong>Memory Model</strong>确保当一件事情发生时，有其他什么事情<strong>has happened</strong>。在<strong>SC</strong>中，当<strong>L1</strong>发生时，说明或者说暗示着，<strong>S1</strong>已经发生了。</p>
 
 <p>2，为什么<strong>x86</strong>下可能得出<strong>r1=0 r2=0</strong>的结果？</p>
 
