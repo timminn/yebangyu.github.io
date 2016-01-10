@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-10T11:13:05+08:00</updated>
+  <updated>2016-01-10T12:05:32+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -47,7 +47,7 @@ L2：r2=x
 
 <p><strong>S1 L1 S2 L2</strong> 那么<strong>r1=0 r2=2</strong></p>
 
-<p><strong>S1 S2 L1 L2</strong> 那么<strong>r1=1 r2=2</strong></p>
+<p><strong>S1 S2 L1 L2</strong> 那么<strong>r1=2 r2=1</strong></p>
 
 <p><strong>S2 L2 S1 L1</strong> 那么<strong>r1=2 r2=0</strong></p>
 
@@ -106,6 +106,10 @@ L2：r2=x
 <p>2，为什么<strong>x86</strong>下可能得出<strong>r1=0 r2=0</strong>的结果？</p>
 
 <p>因为<strong>S1</strong>是写一个内存变量而<strong>L1</strong>是读取另一个内存变量（两个变量，或者说两个内存地址），这种情况下的写读可能被<strong>CPU</strong>乱序：先执行<strong>L1</strong>，再执行<strong>S1</strong>。（为了性能，所谓的延后写）</p>
+
+<h2 id="section-1">感谢</h2>
+
+<p>本文发出后，微博网友@linyvxiang 指出了其中的一个笔误，非常感谢。</p>
 ]]></content>
   </entry>
   
