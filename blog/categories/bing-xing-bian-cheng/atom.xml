@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-10T12:05:32+08:00</updated>
+  <updated>2016-01-10T12:09:43+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -55,7 +55,7 @@ L2：r2=x
 
 <p>如果没有<strong>Memory Consistency</strong>，那么程序员对于自己编写的多线程程序会输出什么将一无所知：天知道会输出什么。</p>
 
-<p>因此，<strong>Memory Consistency</strong>就是一种程序员（编程语言）、编译器、CPU间的协议。这个协议保证了程序访问内存时可能得到什么值，会得到什么值。</p>
+<p>因此，<strong>Memory Consistency</strong>就是程序员（编程语言）、编译器、CPU间的一种协议。这个协议保证了程序访问内存时可能得到什么值，会得到什么值。</p>
 
 <h2 id="sequential-consistency">Sequential Consistency</h2>
 
@@ -101,13 +101,13 @@ L2：r2=x
 
 <p>如果不加任何同步设施，仅仅考虑上面的程序，那么答案是：无法保证。因为线程的推进速度不同，哪条指令先被执行也一无所知。这个程序重跑几次，也可能输出不同的结果出来。</p>
 
-<p>也就是说，<strong>Memory Model</strong>保证的是，例如，当线程<strong>2</strong>看到<strong>x=1</strong>的时候，线程<strong>1</strong>是否已经执行了<strong>L1</strong>。也就是说，<strong>Memory Model</strong>确保当一件事情发生时，有其他什么事情<strong>has happened</strong>。在<strong>SC</strong>中，当<strong>L1</strong>发生时，说明或者说暗示着，<strong>S1</strong>已经发生了。</p>
+<p>也就是说，<strong>Memory Model</strong>保证的是，例如，当线程<strong>2</strong>看到<strong>x</strong>等于<strong>1</strong>的时候，线程<strong>1</strong>是否已经执行了<strong>L1</strong>。也就是说，<strong>Memory Model</strong>确保当一件事情发生时，有其他什么事情<strong>has happened</strong>。在<strong>SC</strong>中，当<strong>L1</strong>发生时，说明或者说暗示着，<strong>S1</strong>已经发生了。</p>
 
 <p>2，为什么<strong>x86</strong>下可能得出<strong>r1=0 r2=0</strong>的结果？</p>
 
 <p>因为<strong>S1</strong>是写一个内存变量而<strong>L1</strong>是读取另一个内存变量（两个变量，或者说两个内存地址），这种情况下的写读可能被<strong>CPU</strong>乱序：先执行<strong>L1</strong>，再执行<strong>S1</strong>。（为了性能，所谓的延后写）</p>
 
-<h2 id="section-1">感谢</h2>
+<h2 id="section-1">致谢</h2>
 
 <p>本文发出后，微博网友@linyvxiang 指出了其中的一个笔误，非常感谢。</p>
 ]]></content>
@@ -289,7 +289,7 @@ sys     0m0.000s
 
 <p>2，程序计时我用的是 <code>time ./a.out</code>的方式。</p>
 
-<h2 id="section-4">感谢</h2>
+<h2 id="section-4">致谢</h2>
 
 <p>本文发出后，微博网友@Debin_IIE指出了一个笔误。非常感谢。</p>
 ]]></content>
@@ -498,7 +498,7 @@ int main()
 
 <p>https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf</p>
 
-<h2 id="section-3">特别感谢</h2>
+<h2 id="section-3">致谢</h2>
 
 <p>感谢<a href="http://weibo.com/hanfooo">韩富晟</a>先生对我的指点，让我加深了对<strong>Hazard</strong> <strong>Pointer</strong>的认识。</p>
 ]]></content>
