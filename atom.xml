@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-17T10:00:29+08:00</updated>
+  <updated>2016-01-17T10:07:08+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -20,8 +20,9 @@
     <id>http://www.yebangyu.org/blog/2016/01/17/concurrenyandparallism</id>
     <content type="html"><![CDATA[<p>什么是并发(<strong>Concurrency，Concurrent</strong>)，什么是并行(<strong>parallism，Parallel</strong>)？这两者有什么区别？本文收录一下我听过的、我见过的、我看过的一些人的看法。仅供参考：</p>
 
-<p><strong>Paul Butcher</strong> 
-<strong>Paul Butcher</strong>在他的《<strong>Seven Concurrency Models in Seven Weeks</strong>
+<h2 id="paul-butcher">Paul Butcher</h2>
+
+<p><strong>Paul Butcher</strong>在他的《<strong>Seven Concurrency Models in Seven Weeks</strong>
 》里开篇就谈到：</p>
 
 <!--more-->
@@ -34,18 +35,19 @@ portions of the problem in parallel</p>
 
 <p>也就是说，并发是<strong>问题域</strong>，并行是<strong>解决域</strong>。问题是并发的，解决方法是并行的。</p>
 
-<p>** Rob Pike**</p>
+<h2 id="rob-pike">Rob Pike</h2>
 
 <p><strong>Rob</strong>是<strong>Go</strong>语言之父，《<strong>The Unix Programming Environment</strong>》 和 《<strong>The Practice of Programming</strong>》（最近正在重读这本小册子）的作者。他有一个经典的解释：</p>
 
-<p>Concurrency is about dealing with lots of things at once.
-Parallelism is about doing lots of things at once.</p>
+<p>Concurrency is about dealing with lots of things at once.</p>
+
+<p>Parallelism is about doing lots of things at once.</p>
 
 <p>嘿嘿，这个有点意思，不过只能自己慢慢意会了。</p>
 
-<p><strong>Paul E. McKenney</strong></p>
+<h2 id="paul-e-mckenney">Paul E. McKenney</h2>
 
-<p>又是一个<strong>Paul</strong>。不过这个<strong>Paul</strong>大叔是<strong>IBM</strong>的研究人员，写了一本非常幽默并且有深度书：《<strong>Is Parallel Programming Hard, And, If So, What Can You Do About It?</strong>》（最近一直在细读，并且做读书笔记，感兴趣的读者可以看我的相关<a href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/">博客</a>。） 在这本书（<strong>v2015.01.31a</strong>版本）的第<strong>319</strong>页，有一个附录，介绍 <strong>What is the Difference Between</strong>
+<p>又是一个<strong>Paul</strong>。不过这个<strong>Paul</strong>大叔是<strong>IBM</strong>的研究人员，写了一本非常幽默并且有深度的书：《<strong>Is Parallel Programming Hard, And, If So, What Can You Do About It?</strong>》（最近一直在细读，并且做读书笔记，感兴趣的读者可以看我的相关<a href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/">博客</a>。） 在这本书（<strong>v2015.01.31a</strong>版本）的第<strong>319</strong>页，有一个附录，介绍 <strong>What is the Difference Between</strong>
 “<strong>Concurrent</strong>” <strong>and</strong> “<strong>Parallel</strong>”?时说：</p>
 
 <p>From a classic computing perspective, “concurrent” and
@@ -59,7 +61,7 @@ the two</p>
 for “data parallel,” and treats “concurrent” as pretty
 much everything else</p>
 
-<p>也就是说，<strong>concurrency</strong>有很强的<strong>interdependencies</strong>，它们之间可能要做各种通信，基于比如说<strong>locks</strong>啊，<strong>transactions</strong>啊，等等同步机制。相比，<strong>parallel</strong>中组件的相互依赖就很少。新浪微博网友 <a href="http://weibo.com/u/1085583241">@小恶魔提利昂</a>就持这种观点，他说：“发任务处理的时候，会在并发处理时候可以交换信息，有CSP式的，也可以内存共享式的，但是在外部看到的效果是若干核或若干线程/协程同时对应这些并发任务。并行处理的话，同时处理的任务要做到上下文环境都是隔离的。”</p>
+<p>也就是说，<strong>concurrency</strong>有很强的<strong>interdependencies</strong>，它们之间可能要做各种通信，基于比如说<strong>locks</strong>啊，<strong>transactions</strong>啊，等等同步机制。相比，<strong>parallel</strong>中组件的相互依赖就很少。新浪微博网友 <a href="http://weibo.com/u/1085583241">@小恶魔提利昂</a>就持这种观点，他说：“并发任务处理的时候，会在并发处理时候可以交换信息，有CSP式的，也可以内存共享式的，但是在外部看到的效果是若干核或若干线程/协程同时对应这些并发任务。并行处理的话，同时处理的任务要做到上下文环境都是隔离的。”</p>
 
 <p>Now, this second perspective can be thought of as making
 the workload match the available scheduler, with parallel
@@ -75,9 +77,9 @@ schedulers.</p>
 
 <p>以上就是<strong>Paul McKenney</strong>大致的观点。</p>
 
-<p><strong>yebangyu</strong></p>
+<h2 id="yebangyu">yebangyu</h2>
 
-<p>个人的观点是：</p>
+<p>个人观点：</p>
 
 <p>1，没必要区分这两个词。</p>
 
