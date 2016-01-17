@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-14T22:20:35+08:00</updated>
+  <updated>2016-01-17T10:00:29+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,80 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Concurrent and Parallel]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/01/17/concurrenyandparallism/"/>
+    <updated>2016-01-17T09:49:00+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/01/17/concurrenyandparallism</id>
+    <content type="html"><![CDATA[<p>什么是并发(<strong>Concurrency，Concurrent</strong>)，什么是并行(<strong>parallism，Parallel</strong>)？这两者有什么区别？本文收录一下我听过的、我见过的、我看过的一些人的看法。仅供参考：</p>
+
+<p><strong>Paul Butcher</strong> 
+<strong>Paul Butcher</strong>在他的《<strong>Seven Concurrency Models in Seven Weeks</strong>
+》里开篇就谈到：</p>
+
+<!--more-->
+
+<p>An alternative way of thinking about this is that concurrency is an aspect of
+the problem domain—your program needs to handle multiple simultaneous
+(or near-simultaneous) events. Parallelism, by contrast, is an aspect of the
+solution domain—you want to make your program faster by processing different
+portions of the problem in parallel</p>
+
+<p>也就是说，并发是<strong>问题域</strong>，并行是<strong>解决域</strong>。问题是并发的，解决方法是并行的。</p>
+
+<p>** Rob Pike**</p>
+
+<p><strong>Rob</strong>是<strong>Go</strong>语言之父，《<strong>The Unix Programming Environment</strong>》 和 《<strong>The Practice of Programming</strong>》（最近正在重读这本小册子）的作者。他有一个经典的解释：</p>
+
+<p>Concurrency is about dealing with lots of things at once.
+Parallelism is about doing lots of things at once.</p>
+
+<p>嘿嘿，这个有点意思，不过只能自己慢慢意会了。</p>
+
+<p><strong>Paul E. McKenney</strong></p>
+
+<p>又是一个<strong>Paul</strong>。不过这个<strong>Paul</strong>大叔是<strong>IBM</strong>的研究人员，写了一本非常幽默并且有深度书：《<strong>Is Parallel Programming Hard, And, If So, What Can You Do About It?</strong>》（最近一直在细读，并且做读书笔记，感兴趣的读者可以看我的相关<a href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/">博客</a>。） 在这本书（<strong>v2015.01.31a</strong>版本）的第<strong>319</strong>页，有一个附录，介绍 <strong>What is the Difference Between</strong>
+“<strong>Concurrent</strong>” <strong>and</strong> “<strong>Parallel</strong>”?时说：</p>
+
+<p>From a classic computing perspective, “concurrent” and
+“parallel” are clearly synonyms. However, this has not
+stopped many people from drawing distinctions between
+the two</p>
+
+<p>说明<strong>Paul</strong>大叔认为，其实这两者是一回事，有些人非得区分。好吧，那就区分吧。这些人是如何区分呢？有两个<strong>perspective</strong>：</p>
+
+<p>The first perspective treats “parallel” as an abbreviation
+for “data parallel,” and treats “concurrent” as pretty
+much everything else</p>
+
+<p>也就是说，<strong>concurrency</strong>有很强的<strong>interdependencies</strong>，它们之间可能要做各种通信，基于比如说<strong>locks</strong>啊，<strong>transactions</strong>啊，等等同步机制。相比，<strong>parallel</strong>中组件的相互依赖就很少。新浪微博网友 <a href="http://weibo.com/u/1085583241">@小恶魔提利昂</a>就持这种观点，他说：“发任务处理的时候，会在并发处理时候可以交换信息，有CSP式的，也可以内存共享式的，但是在外部看到的效果是若干核或若干线程/协程同时对应这些并发任务。并行处理的话，同时处理的任务要做到上下文环境都是隔离的。”</p>
+
+<p>Now, this second perspective can be thought of as making
+the workload match the available scheduler, with parallel
+workloads able to operate on a simple scheduler
+and concurrent workloads requiring more sophisticated
+schedulers.</p>
+
+<p>恩，第二个角度就是需不需要一个复杂的<strong>scheduler</strong>。</p>
+
+<p>但是<strong>Paul</strong>大叔说，这两个视角很可能是不可兼得或者说矛盾滴。此话怎讲？</p>
+
+<p>考虑每个<strong>CPU</strong>一个线程的基于<strong>lock</strong>通信的程序。是<strong>Concurrency</strong>吗？从第一个角度讲，是的，用<strong>lock</strong>啊，各种同步各种通信啊。从第二个角度看，又不是。</p>
+
+<p>以上就是<strong>Paul McKenney</strong>大致的观点。</p>
+
+<p><strong>yebangyu</strong></p>
+
+<p>个人的观点是：</p>
+
+<p>1，没必要区分这两个词。</p>
+
+<p>2，写书的时候，在书名的定义上需要区分。如果你是讲<strong>MPI、Open MP</strong>这类技术，建议用并行或者说<strong>parallel</strong>。如果是讲<strong>lock free、multi-thread</strong>这些共享内存编程的，建议用<strong>Concurrency</strong>。</p>
+
+<p>那么，<strong>Go</strong>语言这种<strong>CSP</strong>类型的<strong>Channel</strong>的呢？个人认为，都可以吧。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Memory Consistency和Cache Coherence]]></title>
@@ -2672,158 +2746,6 @@ d = 4;
 <p>7，<strong>Interconnect</strong>（<strong>cpu 0 &amp; cpu 1</strong>）将<strong>cacheline</strong>存入<strong>cpu 0</strong>的<strong>cache</strong>里。</p>
 
 <p>是啊，这已经是简单的情况了。想想看，什么情况下更复杂？</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[深谈读研如何提高技术]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/10/17/whattodoinmaster/"/>
-    <updated>2015-10-17T14:34:04+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/10/17/whattodoinmaster</id>
-    <content type="html"><![CDATA[<p>你想进什么公司，和你读什么计算机方向，关系不是很大。只要是理工科的学生，面对技术岗位，其实机会是差不多的。</p>
-
-<p>至于你想什么职位，那显然和你的专业/方向关系较大，比如说很多大数据职位，就明确表示要求你<strong>DM</strong>/<strong>ML</strong>/<strong>NLP</strong>/<strong>IR</strong>背景，但是这也只是说这些 
-学生可能更有优势些，事实上，数学和统计学出身的，很多搞这个非常牛逼的。</p>
-
-<p>所以，不要问选什么导师，选什么方向；也不要问我的实验室很水老板很菜我还能找到好工作吗？你要问的是：我想毕业去互联 
-网公司，我读研的这几年是应该打酱油呢，还是打地沟油？</p>
-
-<p>想找一个好的互联网技术类、研发类工作，无非就是以下<strong>4</strong>点，你任选一点，做好了，都是有利的，哪<strong>4</strong>点？</p>
-
-<blockquote>
-  <ul>
-    <li>语言层面</li>
-    <li>算法层面</li>
-    <li>项目层面</li>
-    <li>专业层面</li>
-  </ul>
-</blockquote>
-
-<!--more-->
-
-<p>具体分析如下：</p>
-
-<hr />
-
-<h2 id="section">语言层面</h2>
-
-<p>你是想搞<strong>C++</strong>还是<strong>Java</strong>？选定一门语言后，多看一些这方面的书。</p>
-
-<p><strong>C++</strong>，不用说了，<strong>《Effective C++》</strong>，<strong>《More Effective C++》</strong>，<strong>《Inside The C++ Object Model》</strong>等等。</p>
-
-<p><strong>Java</strong>，最好能看点虚拟机相关的。尤其是<strong>Java</strong>虚拟机的内存管理。以及多线程、线程池、设计模式等。</p>
-
-<p>问题来了：学<strong>C++</strong>好还是学<strong>Java</strong>好呢？语言争论每天都在发生，真的好无聊。建议按照方向和兴趣来选择，不靠谱的说：</p>
-
-<p>如果是想做大型游戏开发、底层研发、系统研发、驱动研发等等，就选用<strong>C</strong>/<strong>C++</strong>。</p>
-
-<p>如果是想做网站开发、网络研发、上层开发、<strong>Android</strong>开发等等，就选用<strong>Java</strong>。</p>
-
-<p>顺便说一下，有空可以学学<strong>Python</strong>。</p>
-
-<hr />
-
-<h2 id="section-1">算法层面</h2>
-
-<p>学好算法。这个有两条路，最好是并行，那就是看书和做题。</p>
-
-<p>看书的话，主要有《算法导论》、《算法》（<strong>Robert Sedgewick</strong>著）、《算法竞赛入门经典》、《挑战程序设计竞赛》</p>
-
-<p>找一本认真看，认真思考。证明过程可以不看，但是算法思想最好能懂，以及实现，最好能在纸张上写出来。复杂度总要知道吧？</p>
-
-<p>研一的时候，我就把算法导论上的很多算法，都自己亲自<strong>coding</strong>了下。</p>
-
-<p>特别复杂的数据结构，比如红黑树、<strong>B</strong>树，没空就别搞了。互联网面试一般都不要求的。</p>
-
-<p>主要是排序、查找、简单<strong>DP</strong>、贪心、图算法和搜索。 根据身边同学的面试经验，二分搜索和快速排序，是面试常备了。看书的时候，如果有 
-时间，可以思考几个问题：</p>
-
-<ul>
-  <li>
-    <p>这个算法的时间空间复杂度，各是多少？如何分析？</p>
-  </li>
-  <li>
-    <p>工程实现里，都有哪些<strong>trick</strong>？如何加速？</p>
-  </li>
-  <li>
-    <p>这个算法可能用在哪些方面？有哪些应用？你比如说吧，求交集的算法，就广泛用在倒排索引、新浪微博共同关注、计算<strong>Jaccard</strong>系数等 
-等上。</p>
-  </li>
-</ul>
-
-<p>除了看书，还有就是很重要的：刷题啦。主要有<strong>poj</strong>，<strong>zoj</strong>等。找一个网站，认真刷一些题目，踏踏实实的，别浮躁。</p>
-
-<hr />
-
-<h2 id="section-2">项目层面</h2>
-
-<p>如果实验室比较牛，基本上忙项目就足够累死累活了；不过做了相对给力的项目，对于找工作，还是有很大帮助的。基本上不用怎么愁了。 
-如果老板这儿没项目呢？</p>
-
-<p>如果实验室比较水，那就尽量去实习。大公司的实习经验很能给简历加分。如果老板不让你出去实习。既然实验室很水，说明自由时间 
-比较多，那还是可以干很多事。比如说，<strong>github</strong>上就有很多开源项目，你可以选择一两个著名的，阅读源码，然后尝试自己也参与进去。</p>
-
-<p>说几个我比较感兴趣的开源项目吧：<strong>redis</strong>，<strong>spark</strong>。</p>
-
-<hr />
-
-<h2 id="section-3">专业层面</h2>
-
-<p>你对数据挖掘很精通，你对推荐系统很熟悉。你在<strong>NIPS</strong>，<strong>SIGIR</strong>上发表论文无数；你是百度推荐大赛，阿里巴巴大数据比赛冠军常客。</p>
-
-<p>也就是说，除了尝试发顶会论文，还可以参加各种比赛。本专业本领域里都有什么比赛可以参加呢？搜一下微博或者知乎，或者问下师兄师姐，不就知道了？</p>
-
-<p>专业层面，可以做的东西非常多。比如，你对数据挖掘很感兴趣，那么数据挖掘中的常见模型，我们了解多少？机器学习，我们掌握到什么程度了？举个例子：</p>
-
-<ul>
-  <li>
-    <p><strong>SVM</strong>和<strong>logistic regression</strong>这两种<strong>model</strong>，有什么特点？各自的适用场合？</p>
-  </li>
-  <li>
-    <p><strong>feature selection</strong>的常用方法有哪些？为什么<strong>lasso</strong>可以作为<strong>feature selection</strong>？</p>
-  </li>
-  <li>
-    <p><strong>Adaboosting</strong>为什么不容易<strong>over-fitting</strong>？你能不能从<strong>statistical view</strong>来解释解释？</p>
-  </li>
-  <li>
-    <p>哦，你和我说，你不是搞学术研究，你反感<strong>Learning Theory</strong>，你说你是一个工程师，那你写了多少代码？</p>
-  </li>
-</ul>
-
-<p><strong>scikit-learn</strong>，<strong>weka</strong>，以及<strong>spark</strong>，你会用哪个工具？（熟悉一种工具）</p>
-
-<p>你有自己下载一些数据集跑跑实验吗？你有参加一些大数据相关的竞赛吗？（动手实验/参加比赛）</p>
-
-<p>专业层面，能做的，要做的，还有很多。</p>
-
-<p>哦，最好熟悉下<strong>linux</strong>的基本使用。</p>
-
-<hr />
-
-<h2 id="section-4">最后的话</h2>
-
-<p>如果能在读研期间做到这里的一点或者几点，到时候甚至不需要翻《编程之美》或者<strong>leetcode</strong>就毫无压力啦。 最后说几点个人感受。</p>
-
-<ul>
-  <li>算法牛，项目牛，长得又帅，又精通很多语言，这种人，是不多见的。</li>
-</ul>
-
-<p>也就是说，你想拿一个好<strong>offer</strong>，一般只要有一两点突出，就可以了。</p>
-
-<ul>
-  <li>互联网面试，除了个别公司个别面试官，一般都是要考查（考查？考察？这两个词有什么区别？考察是调研、研究、分析的意思）算法的 
-。你研一的时候准备，看书做题，总比研三的时候抱佛脚来的好吧？</li>
-</ul>
-
-<p>况且，算法的学习，也不仅仅是为了面试吧？可能是受益终身的。或者，吹牛皮装逼作为谈资，也是可以的。</p>
-
-<ul>
-  <li>别轻易说我就要去某某公司。到时候，你会发现，选择比你想象的多。</li>
-</ul>
-
-<p>也有可能比你想象的还少，为什么？</p>
-
-<p>就看你有没有做到我上面说的这些了。</p>
 ]]></content>
   </entry>
   

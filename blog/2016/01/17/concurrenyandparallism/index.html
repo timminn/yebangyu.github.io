@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Concurrent and Parallel - Yebangyu's Blog</title>
+  <meta name="author" content="Yebangyu">
+
+  
+  <meta name="description" content="本文介绍了并发和并行（Concurrent and Parallel）的区别，谈到了很多人的观点哦。">
+  <meta name="keywords" content="Concurrent and Parallel Concurrency">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://www.yebangyu.org/blog/2016/01/17/concurrenyandparallism/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Yebangyu's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Yebangyu's Blog</a></h1>
+  
+    <h2>Specialized in Concurrency Programming and C++.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.baidu.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="www.yebangyu.org">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About Me</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Concurrent and Parallel</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-17T09:49:00+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:49 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>什么是并发(<strong>Concurrency，Concurrent</strong>)，什么是并行(<strong>parallism，Parallel</strong>)？这两者有什么区别？本文收录一下我听过的、我见过的、我看过的一些人的看法。仅供参考：</p>
+
+<p><strong>Paul Butcher</strong> 
+<strong>Paul Butcher</strong>在他的《<strong>Seven Concurrency Models in Seven Weeks</strong>
+》里开篇就谈到：</p>
+
+<!--more-->
+
+<p>An alternative way of thinking about this is that concurrency is an aspect of
+the problem domain—your program needs to handle multiple simultaneous
+(or near-simultaneous) events. Parallelism, by contrast, is an aspect of the
+solution domain—you want to make your program faster by processing different
+portions of the problem in parallel</p>
+
+<p>也就是说，并发是<strong>问题域</strong>，并行是<strong>解决域</strong>。问题是并发的，解决方法是并行的。</p>
+
+<p>** Rob Pike**</p>
+
+<p><strong>Rob</strong>是<strong>Go</strong>语言之父，《<strong>The Unix Programming Environment</strong>》 和 《<strong>The Practice of Programming</strong>》（最近正在重读这本小册子）的作者。他有一个经典的解释：</p>
+
+<p>Concurrency is about dealing with lots of things at once.
+Parallelism is about doing lots of things at once.</p>
+
+<p>嘿嘿，这个有点意思，不过只能自己慢慢意会了。</p>
+
+<p><strong>Paul E. McKenney</strong></p>
+
+<p>又是一个<strong>Paul</strong>。不过这个<strong>Paul</strong>大叔是<strong>IBM</strong>的研究人员，写了一本非常幽默并且有深度书：《<strong>Is Parallel Programming Hard, And, If So, What Can You Do About It?</strong>》（最近一直在细读，并且做读书笔记，感兴趣的读者可以看我的相关<a href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/">博客</a>。） 在这本书（<strong>v2015.01.31a</strong>版本）的第<strong>319</strong>页，有一个附录，介绍 <strong>What is the Difference Between</strong>
+“<strong>Concurrent</strong>” <strong>and</strong> “<strong>Parallel</strong>”?时说：</p>
+
+<p>From a classic computing perspective, “concurrent” and
+“parallel” are clearly synonyms. However, this has not
+stopped many people from drawing distinctions between
+the two</p>
+
+<p>说明<strong>Paul</strong>大叔认为，其实这两者是一回事，有些人非得区分。好吧，那就区分吧。这些人是如何区分呢？有两个<strong>perspective</strong>：</p>
+
+<p>The first perspective treats “parallel” as an abbreviation
+for “data parallel,” and treats “concurrent” as pretty
+much everything else</p>
+
+<p>也就是说，<strong>concurrency</strong>有很强的<strong>interdependencies</strong>，它们之间可能要做各种通信，基于比如说<strong>locks</strong>啊，<strong>transactions</strong>啊，等等同步机制。相比，<strong>parallel</strong>中组件的相互依赖就很少。新浪微博网友 <a href="http://weibo.com/u/1085583241">@小恶魔提利昂</a>就持这种观点，他说：“发任务处理的时候，会在并发处理时候可以交换信息，有CSP式的，也可以内存共享式的，但是在外部看到的效果是若干核或若干线程/协程同时对应这些并发任务。并行处理的话，同时处理的任务要做到上下文环境都是隔离的。”</p>
+
+<p>Now, this second perspective can be thought of as making
+the workload match the available scheduler, with parallel
+workloads able to operate on a simple scheduler
+and concurrent workloads requiring more sophisticated
+schedulers.</p>
+
+<p>恩，第二个角度就是需不需要一个复杂的<strong>scheduler</strong>。</p>
+
+<p>但是<strong>Paul</strong>大叔说，这两个视角很可能是不可兼得或者说矛盾滴。此话怎讲？</p>
+
+<p>考虑每个<strong>CPU</strong>一个线程的基于<strong>lock</strong>通信的程序。是<strong>Concurrency</strong>吗？从第一个角度讲，是的，用<strong>lock</strong>啊，各种同步各种通信啊。从第二个角度看，又不是。</p>
+
+<p>以上就是<strong>Paul McKenney</strong>大致的观点。</p>
+
+<p><strong>yebangyu</strong></p>
+
+<p>个人的观点是：</p>
+
+<p>1，没必要区分这两个词。</p>
+
+<p>2，写书的时候，在书名的定义上需要区分。如果你是讲<strong>MPI、Open MP</strong>这类技术，建议用并行或者说<strong>parallel</strong>。如果是讲<strong>lock free、multi-thread</strong>这些共享内存编程的，建议用<strong>Concurrency</strong>。</p>
+
+<p>那么，<strong>Go</strong>语言这种<strong>CSP</strong>类型的<strong>Channel</strong>的呢？个人认为，都可以吧。</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Yebangyu</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-01-17T09:49:00+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:49 am</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/bing-xing-bian-cheng/'>并行编程</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/01/09/memoryconsistencyandcachecoherence/" title="Previous Post: Memory Consistency和Cache Coherence">&laquo; Memory Consistency和Cache Coherence</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/01/17/concurrenyandparallism/">Concurrent and Parallel</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/09/memoryconsistencyandcachecoherence/">Memory Consistency和Cache Coherence</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/01/07/timingcprograminlinux/">Linux下C++程序计时方法</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/30/falsesharing/">诡异的程序性能问题</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2015/12/26/aprogrammersclock/">程序员时钟解读</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>友情链接</h1>
+  <ul>
+    <li>
+	  <li><a href="http://www.chongh.wiki/">wangchonghua</a></li>
+      <li><a href="http://www.armsword.com">armsword</a></li>
+    </li>
+  </ul>
+</section><section>
+  <h1>Yebangyu</h1>
+  <p>福建人。热爱历史、K歌、NBA</p>
+  <p>帝都码农</p>
+  <p>历史学家，专治三国史</p>
+</section>
+<section>
+ <h1>Categories</h1>
+ <ul id="categories">
+  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (5)</a></li>
+<li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
+<li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
+<li class='category'><a href='/blog/categories/li-shi/'>历史 (1)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (8)</a></li>
+<li class='category'><a href='/blog/categories/suan-fa/'>算法 (1)</a></li>
+<li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>
+
+ </ul>
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+<p>
+  Copyright &copy; 2016 - Yebangyu -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
