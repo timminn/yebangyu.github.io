@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-17T10:07:08+08:00</updated>
+  <updated>2016-01-17T10:07:52+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -69,7 +69,7 @@ workloads able to operate on a simple scheduler
 and concurrent workloads requiring more sophisticated
 schedulers.</p>
 
-<p>恩，第二个角度就是需不需要一个复杂的<strong>scheduler</strong>。</p>
+<p>恩，第二个角度就是需不需要复杂的<strong>scheduler</strong>。</p>
 
 <p>但是<strong>Paul</strong>大叔说，这两个视角很可能是不可兼得或者说矛盾滴。此话怎讲？</p>
 
