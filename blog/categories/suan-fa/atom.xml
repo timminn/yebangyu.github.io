@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-20T23:37:43+08:00</updated>
+  <updated>2016-01-23T14:00:32+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,149 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[深入解析Bloom Filter(上)]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/01/23/insidethebloomfilter/"/>
+    <updated>2016-01-23T13:24:49+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/01/23/insidethebloomfilter</id>
+    <content type="html"><![CDATA[<p>本文将介绍：</p>
+
+<blockquote>
+  <ul>
+    <li>Bloom Filter和它的变形与拓展</li>
+    <li>Bloom Filter的使用场景</li>
+    <li>Bloom Filter的详细数学分析</li>
+  </ul>
+</blockquote>
+
+<h2 id="section">提出问题</h2>
+
+<p>Google的爬虫每天需要抓取大量的网页。于是就有一个问题：每当爬虫分析出一个url的时候，是抓呢，还是不抓呢？如何知道这个url已经爬过了？</p>
+
+<!--more-->
+
+<p>这个问题，归纳抽象后可以定义为：</p>
+
+<p>给定一个集合S（注意，这里的集合是传统意义上的集合：元素彼此不同。本文不考虑multiset），给定一个元素e，需要判断$e\in S$ 是否成立。（学术界一般称为membership问题）</p>
+
+<h2 id="section-1">分析问题</h2>
+
+<p>都有哪些方案可以解决这个问题？</p>
+
+<p>一种简单的想法是把url存储在一个哈希表中，每次去表里look up下判断是否存在。假如每个url占用40B，那么10亿条url将占用大概30多GB的内存！Can this be more space efficient ?</p>
+
+<h2 id="section-2">解决问题</h2>
+
+<p>我们可不可以不存url本身？这样子所需空间就会大大减少了。于是我们想到一个很经典的做法：bitmap（位图）。将集合S中的url哈希到bitmap上，给定一个url，只需要将它hash，得到它在bitmap的下标，检查该位置是否为1即可。</p>
+
+<p>这样做空间是省了，可是也产生了一个问题：由于冲突（碰撞），不是集合S中的元素也可能被哈希到值为1的位置上，导致误报。</p>
+
+<p>给定一个元素e，如果实际上$e\notin S$ 而被判为 $e\in S$，那么我们称e是false positive（伪正例。顺便说一句，false positive等的分析在machine learning的classification任务里评价model时非常重要）。</p>
+
+<p>如何降低false positive的概率呢？Bloom Filter的想法是使用多个独立的哈希函数。</p>
+
+<h3 id="standard-bloom-filter">Standard Bloom Filter</h3>
+
+<p>在传统的Bloom Filter中，我们有：</p>
+
+<p>集合S：其大小为m。也就是说，集合中有m个不同元素。</p>
+
+<p>可用内存B：B被当成位数组bitmap来使用，大小为n。（有n个bit）。</p>
+
+<p>哈希函数：有k个独立的、均匀分布的哈希函数。</p>
+
+<p>Bloom Filter的做法是：初始时，所有比特位都初始化为0。对于集合中的每个元素，利用k个哈希函数，对它哈希得到k个位置，将bitmap中的对应的k个位置置为1。</p>
+
+<p>给定一个元素e，为了判断它是否是集合中的元素，也利用该k个函数得到k个位置，检查该k个位置是否都为1，如果是，认为$e\in S$，否则认为$e\notin S$。</p>
+
+<p>不难看出，如果$e\in S$，那么Bloom Filter肯定会正确判断出$e\in S$，但是它还是可能产生false positive。那么，如何分析false positive的概率呢？</p>
+
+<p>false positive发生时，表示哈希该元素后得到的k个位置都为1。这个概率大概为：</p>
+
+<p>$P\approx p_1^k$</p>
+
+<p>其中$p_1$代表某位为1的概率，它等于：</p>
+
+<p>$p_1 = 1 - p_0$</p>
+
+<p>对于$p_0$，表示某个特定的比特位为0。什么时候该位才为0呢？也就是说m个元素各自经过k次哈希得到km个对象，没有一个对象定位到了该位置。某个对象定位到该位置的概率为$\frac{1}{n}$，因此我们可以得到：</p>
+
+<p>$p_0 = (1 - \frac{1}{n})^{mk}$</p>
+
+<p>分析$p_0$。在实际应用中，n一般很大，根据重要极限公式，我们不难得到：</p>
+
+<p>$p_0 = (1 - \frac{1}{n})^{mk} = (1-\frac{1}{n})^{-n{\frac{mk}{-n}}} \approx e^{-\frac{mk}{n}} $</p>
+
+<p>代入到最上面的那个式子，我们不难得到：</p>
+
+<p>$P \approx ({1 - e^{-\frac{mk}{n}}})^{k}$</p>
+
+<p>当k为何值时，P取得最小，false positive possibility最低呢？</p>
+
+<p>令 $f(k) = ({1 - e^{-\frac{mk}{n}}})^{k}$</p>
+
+<p>$ln(f(k)) = kln({1 - e^{-\frac{mk}{n}}})$</p>
+
+<p>$\frac{f\prime(k)}{f(k)} = ln({1 - e^{-\frac{mk}{n}}}) + k(\frac{1}{1 - e^{- \frac{mk}{n}}})(- e^{-\frac{mk}{n}})(\frac{-m}{n})$</p>
+
+<p>$f\prime(k) = f(k)(ln({1 - e^{-\frac{mk}{n}}}) + k(\frac{1}{1 - e^{- \frac{mk}{n}}})(- e^{-\frac{mk}{n}})(\frac{-m}{n}))$</p>
+
+<p>看起来够复杂了，然而别怕！！！</p>
+
+<p>令$f\prime(k) = 0$ ， 我们有(注意到$f(k) &gt; 0$ 恒成立)：</p>
+
+<p>$ln({1 - e^{-\frac{mk}{n}}}) + k(\frac{1}{1 - e^{- \frac{mk}{n}}})(- e^{- \frac{mk}{n}})(\frac{-m}{n}) = 0$</p>
+
+<p>作代换，令$\lambda = e^{-\frac{mk}{n}}$ 则 $k = \frac{-nln\lambda}{m}$，代入上式，得到</p>
+
+<p>$(1-\lambda)ln(1-\lambda) = \lambda ln\lambda$</p>
+
+<p>因此$\lambda = \frac{1}{2}$ ， $k = \frac{n}{m}ln2$</p>
+
+<p>也就是说，当n和m固定时，选择$k = \frac{n}{m}ln2$ 附近的一个整数，将使false positive possibility最小。</p>
+
+<p>工程实现时，我们需要k个哈希函数或者哈希函数值。如何构造和获得k个独立的哈希函数呢？这篇<a href="https://www.eecs.harvard.edu/~michaelm/postscripts/rsa2008.pdf">论文</a> 提出，只需要两个独立的哈希函数hf1和hf2即可。那么可以通过如下方式获得k个哈希函数值：</p>
+
+<p>hash value = hf1(key) + i*hf2(key)</p>
+
+<p>其中i=0、1、2…k-1</p>
+
+<h3 id="counting-bloom-filter">Counting Bloom Filter</h3>
+
+<p>除了存在false positive这个问题之外，传统的Bloom Filter还有一个不足：无法支持删除操作（想想看，是不是这样的）。而Counting Bloom Filter(CBF)就是用来解决这个问题的。</p>
+
+<p>在CBF中，维护的不是单纯的标示0或者1的比特位，而是若干计数器counter。对于集合中的每个元素，利用k个哈希函数，对它哈希得到k个位置，将对应的k个位置上的k个counter都加1。删除时，只需要把k个counter都减1即可。</p>
+
+<p>那么，这个counter应该占用几位呢？分配太多，浪费空间；分配太少，容易溢出。通过下面的分析，我们可以知道，实际使用时，4位足矣。</p>
+
+<p>考察（是考察，不是考查。这两个词有什么区别？）某个位置，该位置的计数器counter的值$\xi$</p>
+
+<p>$P(\xi = c) \approx \binom{mk}{c} {(\frac{1}{n})}^{c}({1-\frac{1}{n}})^{mk-c} = B(km,\frac{1}{n})$</p>
+
+<p>这个式子有点点复杂（当然，可以用斯特林公式近似一下），然而回忆下概率论里的知识：若二项分布B(n,p)里n很大，p很小时，二项分布的极限近似分布是泊松分布$P(\lambda=k) = \frac{\lambda^k}{k!}{e}^{-\lambda}$，其中$\lambda=np$，因此：</p>
+
+<p>$P(\xi = c) \approx \binom{mk}{c} {(\frac{1}{n})}^{c}({1-\frac{1}{n}})^{mk-c} \approx \frac{({\frac{km}{n}})^{c}}{c!}{e}^{-{\frac{km}{n}}}$</p>
+
+<p>令$k = \frac{n}{m}ln2$，代入，我们得到</p>
+
+<p>$P(\xi &gt;16) \approx \frac{(ln2)^{16}}{16!} * \frac{1}{2} &lt; \frac{1}{16!} = \frac{1}{20922789888000}$</p>
+
+<p>也就是说，选择4位来存counter在实际情况中已经足矣，发生溢出的概率极小。</p>
+
+<h2 id="section-3">本文小结</h2>
+
+<p>总结下，Bloom Filter可以用在什么地方，或者说，在什么场景下，你应该想到这种技术：</p>
+
+<p>1，回答是或者不是的问题。你需要判断一个元素是否属于某个集合，仅仅这样。你不应该要求更多。如果你想获得该元素对应的value或者还有其他payload，那么bloom filter不适合你，你需要哈希表。</p>
+
+<p>2，允许false positive。也就是说，发生false positive不应该是致命的。比如说，搜索引擎的爬虫里，如果url不是set的元素，却被bloom filter过滤了，那么顶多就是不抓它而已，没啥特别大的损失。</p>
+
+<p>3，空间敏感。作为一种概率数据结构，Bloom Filter不存储原始数据（比如说url），这也是它为什么space efficient的本质原因。</p>
+
+<p>有了Standard Bloom Filter和Couting Bloom Filter，似乎可以满足绝大多数需求了，然而，这里面还是有问题。什么问题？请看下集。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Introduction To Cuckoo Hashing]]></title>
