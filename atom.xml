@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-23T18:05:39+08:00</updated>
+  <updated>2016-01-23T18:08:42+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -124,7 +124,7 @@
 
 <p>除了存在false positive这个问题之外，传统的Bloom Filter还有一个不足：无法支持删除操作（想想看，是不是这样的）。而Counting Bloom Filter(CBF)就是用来解决这个问题的。</p>
 
-<p>在CBF中，维护的不是单纯的标示0或者1的比特位，而是若干计数器counter。对于集合中的每个元素，利用k个哈希函数，对它哈希得到k个位置，将对应的k个位置上的k个counter都加1。删除时，只需要把k个counter都减1即可。</p>
+<p>在CBF中，维护的不是单纯的标示0或者1的比特位，而是计数器counter。对于集合中的每个元素，利用k个哈希函数，对它哈希得到k个位置，将对应的k个位置上的k个counter都加1。删除时，只需要把k个counter都减1即可。</p>
 
 <p>那么，这个counter应该占用几位呢？分配太多，浪费空间；分配太少，容易溢出。通过下面的分析，我们可以知道，实际使用时，4位足矣。</p>
 
