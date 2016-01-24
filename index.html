@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="本文将介绍： Bloom Filter和它的变形与拓展 Bloom Filter的使用场景 Bloom Filter的详细数学分析 提出问题 Google的爬虫每天需要抓取大量的网页。于是就有一个问题：每当爬虫分析出一个url的时候，是抓呢，还是不抓呢？如何知道这个url已经爬过了？ ">
+  <meta name="description" content="Spinlock（自旋锁）和mutex作为两种互斥锁，在并行编程中都得到了广泛应用。那么，这两种锁有什么区别吗？ 当一个线程对Spinlock加锁时，如果该锁被其他线程占用，那么该线程会通过一个loop不断地重试（ try again and again）；而使用mutex的线程没有得到锁时， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,44 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/24/spinlock-and-mutex/">Spinlock and mutex</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-24T15:50:31+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>24</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:50 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Spinlock（自旋锁）和mutex作为两种互斥锁，在并行编程中都得到了广泛应用。那么，这两种锁有什么区别吗？</p>
+
+<p>当一个线程对Spinlock加锁时，如果该锁被其他线程占用，那么该线程会通过一个loop不断地重试（ try again and again）；而使用mutex的线程没有得到锁时，会sleep。</p>
+
+<p>因为，当临界区较短时，Spinlock因为没有上下文切换，可能性能更优；当临界区较长时，不断的spin将浪费大量的cpu资源。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/24/spinlock-and-mutex/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -438,44 +476,6 @@ MathJax.Hub.Config({
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/12/10/introduction-to-hazard-pointer/">Lock Free中的Hazard Pointer(上)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-12-10T23:00:20+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:00 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>废话不多说了，直接开始讨论。</p>
-
-<h2 id="section">险象环生</h2>
-
-<p>首先看以下的程序，有问题吗？</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/12/10/introduction-to-hazard-pointer/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -491,6 +491,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/01/24/spinlock-and-mutex/">Spinlock and mutex</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/01/23/insidethebloomfilter/">深入解析Bloom Filter(上)</a>
       </li>
     
@@ -504,10 +508,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/01/07/timingcprograminlinux/">Linux下C++程序计时方法</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2015/12/30/falsesharing/">诡异的程序性能问题</a>
       </li>
     
   </ul>
@@ -534,7 +534,7 @@ MathJax.Hub.Config({
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (1)</a></li>
-<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (8)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (9)</a></li>
 <li class='category'><a href='/blog/categories/suan-fa/'>算法 (2)</a></li>
 <li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>
 

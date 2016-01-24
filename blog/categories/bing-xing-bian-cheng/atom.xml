@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-23T18:08:42+08:00</updated>
+  <updated>2016-01-24T15:56:35+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,86 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Spinlock and mutex]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/01/24/spinlock-and-mutex/"/>
+    <updated>2016-01-24T15:50:31+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/01/24/spinlock-and-mutex</id>
+    <content type="html"><![CDATA[<p>Spinlock（自旋锁）和mutex作为两种互斥锁，在并行编程中都得到了广泛应用。那么，这两种锁有什么区别吗？</p>
+
+<p>当一个线程对Spinlock加锁时，如果该锁被其他线程占用，那么该线程会通过一个loop不断地重试（ try again and again）；而使用mutex的线程没有得到锁时，会sleep。</p>
+
+<p>因为，当临界区较短时，Spinlock因为没有上下文切换，可能性能更优；当临界区较长时，不断的spin将浪费大量的cpu资源。</p>
+
+<!--more-->
+
+<p>如何实现一个Spinlock呢？下面简单封装了一下，并在Ubuntu 14.04 32bit系统，X86体系结构，Intel I5双核处理器环境下，测试相应的性能：</p>
+
+<p><code>c++
+#include&lt;thread&gt;
+using namespace std;
+int counter = 0;
+int lock = 0;
+void spin_lock()
+{
+  while(__sync_lock_test_and_set(&amp;lock, 1));
+}
+void spin_unlock()
+{
+  __sync_lock_release(&amp;lock);
+}
+void f()
+{
+  for (int i = 0; i &lt;  10000000; i++) {
+    spin_lock();
+    counter = counter + 2;//tiny critical section
+    spin_unlock();
+  }
+}
+int main() 
+{
+  thread t1(f);
+  thread t2(f);
+  t1.join();
+  t2.join();
+  return 0;
+}
+</code></p>
+
+<p>2个线程时，这个程序的运行时间为：</p>
+
+<pre><code>real	0m1.082s
+user	0m2.060s
+sys	0m0.000s
+</code></pre>
+
+<p>4个线程时：</p>
+
+<pre><code>real	0m5.701s
+user	0m19.400s
+sys	0m0.000s
+</code></pre>
+
+<p>如果改为std::mutex呢？对比一下：</p>
+
+<p>2个线程：</p>
+
+<pre><code>real	0m3.081s
+user	0m2.796s
+sys	0m3.344s
+</code></pre>
+
+<p>4个线程：</p>
+
+<pre><code>real	0m5.860s
+user	0m6.004s
+sys	0m14.936s
+</code></pre>
+
+<p>不难发现，由于大量的上下文切换，使用mutex时，花在sys上的时间要远比使用Spinlock的要多。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Concurrent and Parallel]]></title>
@@ -433,154 +513,6 @@ int main()
 <p>每个写线程维护自己的<strong>retire list</strong>，该<strong>retire list</strong>只由该写线程进行读写。由于写线程可以读其他所有读线程的<strong>HP list</strong>，这样，差集（在自己的<strong>retire list</strong>，但是不在所有读线程的<strong>HP list</strong>里的指针），就是可以安全释放的指针。</p>
 
 <p>而<strong>SP</strong>，则被多个线程读写，<strong>18、19</strong>两行也无法做成原子操作，因此，<strong>SP</strong>和<strong>HP</strong>有本质的区别，使用<strong>SP</strong>的程序往往需要搭配使用锁等设施来保证线程安全。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Lock Free中的Hazard Pointer(上)]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/"/>
-    <updated>2015-12-10T23:00:20+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer</id>
-    <content type="html"><![CDATA[<p>废话不多说了，直接开始讨论。</p>
-
-<h2 id="section">险象环生</h2>
-
-<p>首先看以下的程序，有问题吗？</p>
-
-<!--more-->
-
-<p><code>c++
-#include&lt;iostream&gt;
-#include&lt;thread&gt; //C++11中的多线程基础设施
-using namespace std;
-int *p = new int(2);
-void reader()
-{
-  if (nullptr != p) { //nullptr是C++11中引入的
-    cout &lt;&lt; *p &lt;&lt; endl;
-  }
-}
-void writer()
-{
-  delete p;
-  p = nullptr;
-}
-int main()
-{
-  thread t1(reader);
-  thread t2(writer);
-  t1.join();
-  t2.join();
-  return 0;
-}
-</code>
-答案当然是有问题。这个程序存在如下的<strong>race</strong> <strong>condition</strong>：如果当线程<strong>reader</strong>判断完<strong>p</strong>发现它不是<strong>nullptr</strong>后，还未执行第<strong>8</strong>行就被调度出去，轮到线程<strong>writer</strong>执行，它执行完<strong>13</strong>、<strong>14</strong>行后，又继续调度线程<strong>reader</strong>，此时执行第<strong>8</strong>行导致程序崩溃。</p>
-
-<p>这里的问题，可以不精确地表述为：多线程程序中，某线程通过一个指针访问一段内存时，如何保证指针所指向的那块内存是有效的？</p>
-
-<h2 id="hazard-pointer">Hazard Pointer</h2>
-
-<p>这当然有多种方法，加一把互斥锁就万事大吉了(当然，得注意锁本身的生命周期)。不过本文讨论的是<strong>lock</strong> <strong>free</strong>情况下的内存管理，这里要介绍的是<strong>2004</strong>年左右提出的<strong>Hazard</strong> <strong>Pointer</strong>方法。</p>
-
-<p>接着看以下代码：</p>
-
-<p>```c++
-#include<thread>
-#include<iostream>
-#define Strong_Memory_Barrier __sync_synchronize
-#define ACCESS_ONCE(x) (* (volatile typeof(x) *) &amp;(x))
-using namespace std;
-struct HazardPointer
-{
-  HazardPointer() :p_(nullptr){}
-  int *p_; //Hazard Pointer封装了原始指针
-};</iostream></thread></p>
-
-<p>int *p = new int(2); //原始指针</p>
-
-<p>HazardPointer *hp = new HazardPointer(); //只有一个线程可以写</p>
-
-<p>class Writer
-{
-public:
-  void retire(int *tmp) {
-    retire_list = tmp;//设置要释放的指针
-  }
-  void gc() {
-    if (retire_list == hp-&gt;p_) {
-      //说明有读者正在使用它，不能释放
-    } else {
-      //可以安全地释放
-      delete retire_list;
-    }
-  }
-  void write() {
-    int *tmp = ACCESS_ONCE(p);
-    p = nullptr;
-    retire(tmp);
-    gc();
-  }
-private:
-  int *retire_list;//记录待释放的指针
-};
-class Reader
-{
-public:
-  void acquire(int *tmp) {
-    hp-&gt;p_ = tmp;
-  }
-  void release() {
-    hp-&gt;p_ = nullptr;
-  }
-  void read() {
-    int *tmp = nullptr;
-    do
-    {
-      tmp = ACCESS_ONCE(p);
-      Strong_Memory_Barrier();
-      acquire(tmp); //封装。这是告诉Writer：我要读，别释放！
-    } while (tmp != ACCESS_ONCE(p));//仔细想想，为什么这里还要判断？
-    if (nullptr != tmp) { //不妨想想，这里为什么也要判断？
-      //it is safe to access *tmp from now on
-      cout « *tmp « endl;//没问题~
-    }
-    //when you finish reading it, just release it .
-    release();//其实就是告诉Writer：用完了，可以释放了。
-  }
-};
-int main()
-{
-  thread t1(&amp;Reader::read, Reader());
-  thread t2(&amp;Writer::write, Writer());
-  t1.join();
-  t2.join();
-  return 0;
-}
-```</p>
-
-<p>总结：</p>
-
-<p>1，对于读线程，每次访问指针前，都通过<strong>acquire</strong>动作，用<strong>Hazard</strong> <strong>Pointer</strong>封装一下待读取指针，此举保护了原始指针，向其他线程宣告，我正在读取它指向的内存，请别释放它。用完就<strong>release</strong>一下。</p>
-
-<p>2，对于写线程，真正释放前，需要检查是否有读线程正在操作它。如何知道？看看自己待释放的指针，有没有存在在读线程的<strong>Hazard</strong> <strong>Pointer</strong>里即可。</p>
-
-<p>至于<strong>52</strong>行，考虑如下情形：读线程刚刚设置了<strong>tmp</strong>指针，还没对它进行保护，就被调度出去；写线程执行<strong>gc</strong>时，发现没有读线程的<strong>Hazard</strong> <strong>Pointer</strong>封装了<strong>tmp</strong>指针，于是将它释放；等读线程重新被调度执行时通过<strong>tmp</strong>进行内存访问，就会导致问题。</p>
-
-<p>至于<strong>53</strong>行，请读者自行分析。</p>
-
-<h2 id="section-1">最后思考</h2>
-
-<p>那么，<strong>Hazard</strong> <strong>Pointer</strong>的内存空间，谁来负责管理？</p>
-
-<p>在实际程序里，一般所需<strong>Hazard</strong> <strong>Pointer</strong>的数量不会太多且较为固定，因此基本上只申请，不释放了。</p>
-
-<h2 id="section-2">参考文献</h2>
-
-<p>https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf</p>
-
-<h2 id="section-3">致谢</h2>
-
-<p>感谢<a href="http://weibo.com/hanfooo">韩富晟</a>先生对我的指点，让我加深了对<strong>Hazard</strong> <strong>Pointer</strong>的认识。</p>
 ]]></content>
   </entry>
   
