@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-24T15:56:35+08:00</updated>
+  <updated>2016-01-24T16:03:42+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -73,7 +73,7 @@ user	0m19.400s
 sys	0m0.000s
 </code></pre>
 
-<p>如果改为std::mutex呢？对比一下：</p>
+<p>如果改为std::mutex(lock和unlock成员函数)呢？对比一下：</p>
 
 <p>2个线程：</p>
 
