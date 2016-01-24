@@ -164,7 +164,7 @@ MathJax.Hub.Config({
 
 <p>$p_0 = (1 - \frac{1}{n})^{mk}$</p>
 
-<p>分析$p_0$。在实际应用中，n一般很大，根据重要极限公式，我们不难得到：</p>
+<p>分析$p_0$。在实际应用中，n一般很大，根据重要极限公式，我们有：</p>
 
 <p>$p_0 = (1 - \frac{1}{n})^{mk} = (1-\frac{1}{n})^{-n{\frac{mk}{-n}}} \approx e^{-\frac{mk}{n}} $</p>
 
@@ -214,7 +214,7 @@ MathJax.Hub.Config({
 
 <p>$P(\xi = c) \approx \binom{mk}{c} {(\frac{1}{n})}^{c}({1-\frac{1}{n}})^{mk-c} = B(km,\frac{1}{n})$</p>
 
-<p>这个式子有点点复杂（当然，可以用斯特林公式近似一下），然而回忆下概率论里的知识：若二项分布B(n,p)里n很大，p很小时，二项分布的极限近似分布是泊松分布$P(\lambda=k) = \frac{\lambda^k}{k!}{e}^{-\lambda}$，其中$\lambda=np$，因此：</p>
+<p>这个式子有点点复杂，然而回忆下概率论里的知识：若二项分布B(n,p)里n很大，p很小时，二项分布的极限近似分布是泊松分布$P(\lambda=k) = \frac{\lambda^k}{k!}{e}^{-\lambda}$，其中$\lambda=np$，因此：</p>
 
 <p>$P(\xi = c) \approx \binom{mk}{c} {(\frac{1}{n})}^{c}({1-\frac{1}{n}})^{mk-c} \approx \frac{({\frac{km}{n}})^{c}}{c!}{e}^{-{\frac{km}{n}}}$</p>
 
