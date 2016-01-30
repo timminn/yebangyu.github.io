@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-30T14:31:35+08:00</updated>
+  <updated>2016-01-30T14:39:04+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -115,7 +115,7 @@
 
 <p>I 引入d轮随机置换。</p>
 
-<p>置换，即一一映射。假设置换为P，输入为x和y，那么将满足：</p>
+<p>置换，即一一映射。假设置换为P，输入为a和b，那么将满足：</p>
 
 <p>如果a = b，那么P(a) = P(b)</p>
 
