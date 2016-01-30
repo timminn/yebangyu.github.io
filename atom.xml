@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-30T15:54:42+08:00</updated>
+  <updated>2016-01-30T15:58:05+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -119,11 +119,11 @@
 
 <p>如果a = b，那么P(a) = P(b)</p>
 
-<p>如果a != b ，那么P(a) != P(b)</p>
+<p>如果$a \neq b$ ，那么$P(a) \neq P(b)$</p>
 
 <p>以及它们的逆否命题</p>
 
-<p>如果P(a) ！= P(b)，那么a ！= b</p>
+<p>如果$P(a) \neq P(b)，那么$a \neq b$</p>
 
 <p>如果P(a) = P(b)，那么a = b</p>
 
@@ -167,9 +167,9 @@
 
 <p>因此：</p>
 
-<p>如果hf(x) = hf(y)，那么$P_i(hf(x)) \eq P_i(hf(y))$ (i=1,2,3…d)，假如先插入x后插入y。插入y的时候，会更新counter。后续删除x或者y都不存在上述问题。</p>
+<p>如果$hf(x) = hf(y)$，那么$P_i(hf(x)) = P_i(hf(y))$ (i=1,2,3…d)，假如先插入x后插入y。插入y的时候，会更新counter。后续删除x或者y都不存在上述问题。</p>
 
-<p>如果hf(x) != hf(y)，那么那么$P_i(hf(x)) \neq P_i(hf(y))$ (i=1,2,3…d)，那么x和y没有公共的位置向量。后续删除x或者y都不存在上述问题。</p>
+<p>如果$hf(x) \neq hf(y)$，那么那么$P_i(hf(x)) \neq P_i(hf(y))$ (i=1,2,3…d)，那么x和y没有公共的位置向量。后续删除x或者y都不存在上述问题。</p>
 
 <h2 id="section">附录</h2>
 
