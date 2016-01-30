@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-30T15:33:23+08:00</updated>
+  <updated>2016-01-30T15:42:12+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -151,13 +151,13 @@
 
 <p>综合运用这两点，我们知道上面所说的删除时的问题已经不存在了。</p>
 
-<p>假如对x和y进行d轮（这里d=2）随机置换，得到它们的位置向量：</p>
+<p>假如欲插入x和y，分别对它们的hash value进行d轮（这里d=2）随机置换后，有没有可能得到如下的位置向量？</p>
 
 <p>x: (1, 1, 010100)和(2, 2, 010101)</p>
 
-<p>y: (1, 1, 010100)和(2, 4, 010101)</p>
+<p>y: (1, 1, 010100)和(2, 4, 010111)</p>
 
-<p>问题是，这可能吗？不可能。</p>
+<p>不可能。</p>
 
 <p>注意到，x和y的第一个位置向量（对应第一张子表）完全相同（bucket index相同，fp也相同），也就是</p>
 
