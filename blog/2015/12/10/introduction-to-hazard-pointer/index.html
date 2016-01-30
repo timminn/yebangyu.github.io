@@ -315,9 +315,9 @@ MathJax.Hub.Config({
 
 <p>2，对于写线程，真正释放前，需要检查是否有读线程正在操作它。如何知道？看看自己待释放的指针，有没有存在在读线程的<strong>Hazard</strong> <strong>Pointer</strong>里即可。</p>
 
-<p>至于<strong>52</strong>行，考虑如下情形：读线程刚刚设置了<strong>tmp</strong>指针，还没对它进行保护，就被调度出去；写线程执行<strong>gc</strong>时，发现没有读线程的<strong>Hazard</strong> <strong>Pointer</strong>封装了<strong>tmp</strong>指针，于是将它释放；等读线程重新被调度执行时通过<strong>tmp</strong>进行内存访问，就会导致问题。</p>
+<p>至于<strong>55</strong>行，考虑如下情形：读线程刚刚设置了<strong>tmp</strong>指针，还没对它进行保护，就被调度出去；写线程执行<strong>gc</strong>时，发现没有读线程的<strong>Hazard</strong> <strong>Pointer</strong>封装了<strong>tmp</strong>指针，于是将它释放；等读线程重新被调度执行时通过<strong>tmp</strong>进行内存访问，就会导致问题。</p>
 
-<p>至于<strong>53</strong>行，请读者自行分析。</p>
+<p>至于<strong>56</strong>行，请读者自行分析。</p>
 
 <h2 id="section-1">最后思考</h2>
 
@@ -387,6 +387,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/01/29/insidethebloomfilter/">深入解析Bloom Filter(中)</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/01/24/spinlock-and-mutex/">Spinlock and mutex</a>
       </li>
     
@@ -400,10 +404,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/01/09/memoryconsistencyandcachecoherence/">Memory Consistency和Cache Coherence</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/07/timingcprograminlinux/">Linux下C++程序计时方法</a>
       </li>
     
   </ul>
@@ -431,7 +431,7 @@ MathJax.Hub.Config({
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (1)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (9)</a></li>
-<li class='category'><a href='/blog/categories/suan-fa/'>算法 (2)</a></li>
+<li class='category'><a href='/blog/categories/suan-fa/'>算法 (3)</a></li>
 <li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>
 
  </ul>
