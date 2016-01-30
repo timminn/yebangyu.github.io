@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-30T14:28:34+08:00</updated>
+  <updated>2016-01-30T14:31:35+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -209,7 +209,7 @@
 
 <p>$4 * \frac{m}{24} * 8  * (2+r) = \frac{4m(r+2)}{3}$</p>
 
-<p>而false positive possibility的大概为 $\frac{m}{B<em>2^r} = 24</em>\frac{1}{2^r}$（别忘了，B=$\frac{m}{24}$）</p>
+<p>而false positive possibility的大概为 $\frac{m}{B*2^r} = 24 * \frac{1}{2^r}$ (别忘了，B=$\frac{m}{24}$ )</p>
 
 <p>通过计算不难发现，当空间占用相等时，d-left CBF的false positive possibility是CBF的百分之一；当false positive possibility相等时，d-left CBF所需空间是CBF的一半。</p>
 
