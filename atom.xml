@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-31T21:51:34+08:00</updated>
+  <updated>2016-02-01T22:26:53+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,294 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[多线程内存问题分析之mprotect方法]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/02/01/detectmemoryghostinmultithread/"/>
+    <updated>2016-02-01T22:24:25+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/02/01/detectmemoryghostinmultithread</id>
+    <content type="html"><![CDATA[<p>多线程中的内存问题，一直被认为是噩梦般的存在，几乎只有高手、大仙才能解决。除了大量的打log、gdb调试、code review以及依靠多年的经验和直觉之外，有没有一些分析的手段和工具呢？答案是肯定的。本文首先介绍其中的一种：mprotect大法。通过mprotect，保护特定的感兴趣的区域，当有线程改写该内存时，会产生一个中断，我们在中断处理函数中把调用栈等信息打印出来。这是大概的思路，不过其中的问题很多，我们慢慢道来。</p>
+
+<!--more-->
+
+<h2 id="section">原理</h2>
+
+<h3 id="mprotect">mprotect函数</h3>
+
+<p>mprotect函数的原型如下：</p>
+
+<p>int mprotect(const void *addr, size_t len, int prot);</p>
+
+<p>其中addr是待保护的内存首地址，必须按页对齐；len是待保护内存的大小，必须是页的整数倍，prot代表模式，可能的取值有PROT_READ（表示可读）、PROT_WRITE（可写）等。</p>
+
+<p>不同体系结构和操作系统，一页的大小不尽相同。如何获得页大小呢？通过PAGE_SIZE宏或者getpagesize()系统调用即可。</p>
+
+<h3 id="section-1">定制中断处理函数</h3>
+
+<p>当线程试图对我们已保护（成只读）的内存进行篡改时，默认情况下程序会收到SIGSEGV错误而退出。能不能不退出并且把相应的调用栈打印出来分析？当然可以。通过如下代码注册你定制的中断处理函数即可：</p>
+
+<p>struct sigaction act;
+act.sa_sigaction = your_handler;
+sigemptyset(&amp;act.sa_mask);
+act.sa_flags = SA_SIGINFO;
+if(sigaction(SIGSEGV, &amp;act, NULL) == -1){
+  perror(“Register hanlder failed”);
+  exit(EXIT_FAILURE);
+}
+这样，控制流就会到达你编写的your_handler函数上。而your_handler的函数原型是：</p>
+
+<p>void your_handler(int sig, siginfo_t *si, void *unused)；</p>
+
+<p>编写your_handler函数即可？是的，不过这里面有两个注意事项：</p>
+
+<p>1，中断处理函数里不应该调用内存分配函数，否则可能会引起double fault。因此，不适合调用backtrace_symbols（内部会动态分配内存），而是通过backtrace_symbols_fd直接将调用栈信息直接刷到文件中。</p>
+
+<p>2，中断处理函数中应该恢复被保护内存为可写，否则会引起死循环。（再次中断并进入咱们编写的函数）</p>
+
+<h3 id="section-2">封装</h3>
+
+<p>为了方便使用，我封装了一个类，供参考：</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+<span class="line-number">29</span>
+<span class="line-number">30</span>
+<span class="line-number">31</span>
+<span class="line-number">32</span>
+<span class="line-number">33</span>
+<span class="line-number">34</span>
+<span class="line-number">35</span>
+<span class="line-number">36</span>
+<span class="line-number">37</span>
+<span class="line-number">38</span>
+<span class="line-number">39</span>
+<span class="line-number">40</span>
+<span class="line-number">41</span>
+<span class="line-number">42</span>
+<span class="line-number">43</span>
+<span class="line-number">44</span>
+<span class="line-number">45</span>
+<span class="line-number">46</span>
+<span class="line-number">47</span>
+<span class="line-number">48</span>
+<span class="line-number">49</span>
+<span class="line-number">50</span>
+<span class="line-number">51</span>
+<span class="line-number">52</span>
+<span class="line-number">53</span>
+<span class="line-number">54</span>
+<span class="line-number">55</span>
+<span class="line-number">56</span>
+<span class="line-number">57</span>
+<span class="line-number">58</span>
+<span class="line-number">59</span>
+<span class="line-number">60</span>
+<span class="line-number">61</span>
+<span class="line-number">62</span>
+<span class="line-number">63</span>
+<span class="line-number">64</span>
+<span class="line-number">65</span>
+<span class="line-number">66</span>
+<span class="line-number">67</span>
+<span class="line-number">68</span>
+<span class="line-number">69</span>
+<span class="line-number">70</span>
+<span class="line-number">71</span>
+<span class="line-number">72</span>
+<span class="line-number">73</span>
+<span class="line-number">74</span>
+<span class="line-number">75</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include &lt;fcntl.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;signal.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;stdio.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;stdlib.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;string.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;stdint.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;sys/mman.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;sys/stat.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;unistd.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;sys/user.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;execinfo.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;thread&gt;</span>
+</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">MemoryDetector</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="k">typedef</span> <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">segv_handler</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">,</span> <span class="kt">siginfo_t</span> <span class="o">*</span><span class="n">si</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">unused</span><span class="p">);</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="nf">init</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">)</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">register_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">);</span>
+</span><span class="line">    <span class="n">fd_</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">O_RDWR</span><span class="o">|</span><span class="n">O_CREAT</span><span class="p">,</span> <span class="mi">777</span><span class="p">);</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">int</span> <span class="nf">protect</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">address_</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+</span><span class="line">    <span class="n">len_</span> <span class="o">=</span> <span class="n">len</span><span class="p">;</span>
+</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">start_address</span> <span class="o">=</span> <span class="p">(</span><span class="n">address_</span> <span class="o">&gt;&gt;</span> <span class="n">PAGE_SHIFT</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">PAGE_SHIFT</span><span class="p">;</span>
+</span><span class="line">    <span class="k">return</span> <span class="n">mprotect</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">void</span> <span class="o">*&gt;</span><span class="p">(</span><span class="n">start_address</span><span class="p">),</span> <span class="n">PAGE_SIZE</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="p">);</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">int</span> <span class="nf">umprotect</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">tmp_address_</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">start_address</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp_address_</span> <span class="o">&gt;&gt;</span> <span class="n">PAGE_SHIFT</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">PAGE_SHIFT</span><span class="p">;</span>
+</span><span class="line">    <span class="k">return</span> <span class="n">mprotect</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">void</span> <span class="o">*&gt;</span><span class="p">(</span><span class="n">start_address</span><span class="p">),</span> <span class="n">PAGE_SIZE</span><span class="p">,</span> <span class="n">PROT_READ</span> <span class="o">|</span> <span class="n">PROT_WRITE</span><span class="p">);</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">int</span> <span class="nf">umprotect</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">start_address</span> <span class="o">=</span> <span class="p">(</span><span class="n">address_</span> <span class="o">&gt;&gt;</span> <span class="n">PAGE_SHIFT</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">PAGE_SHIFT</span><span class="p">;</span>
+</span><span class="line">    <span class="k">return</span> <span class="n">mprotect</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">void</span> <span class="o">*&gt;</span><span class="p">(</span><span class="n">start_address</span><span class="p">),</span> <span class="n">PAGE_SIZE</span><span class="p">,</span> <span class="n">PROT_READ</span> <span class="o">|</span> <span class="n">PROT_WRITE</span><span class="p">);</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="nf">finish</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">close</span><span class="p">(</span><span class="n">fd_</span><span class="p">);</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="k">private</span><span class="o">:</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="n">register_handler</span><span class="p">(</span><span class="n">segv_handler</span> <span class="n">sh</span><span class="p">)</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="k">struct</span> <span class="n">sigaction</span> <span class="n">act</span><span class="p">;</span>
+</span><span class="line">    <span class="n">act</span><span class="p">.</span><span class="n">sa_sigaction</span> <span class="o">=</span> <span class="n">sh</span><span class="p">;</span>
+</span><span class="line">    <span class="n">sigemptyset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">act</span><span class="p">.</span><span class="n">sa_mask</span><span class="p">);</span>
+</span><span class="line">    <span class="n">act</span><span class="p">.</span><span class="n">sa_flags</span> <span class="o">=</span> <span class="n">SA_SIGINFO</span><span class="p">;</span>
+</span><span class="line">    <span class="k">if</span><span class="p">(</span><span class="n">sigaction</span><span class="p">(</span><span class="n">SIGSEGV</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">act</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">){</span>
+</span><span class="line">      <span class="n">perror</span><span class="p">(</span><span class="s">&quot;Register hanlder failed&quot;</span><span class="p">);</span>
+</span><span class="line">      <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="n">handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">,</span> <span class="kt">siginfo_t</span> <span class="o">*</span><span class="n">si</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">unused</span><span class="p">)</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">address</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">si</span><span class="o">-&gt;</span><span class="n">si_addr</span><span class="p">);</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">address</span> <span class="o">&gt;=</span> <span class="n">address_</span> <span class="o">&amp;&amp;</span> <span class="n">address</span> <span class="o">&lt;</span> <span class="n">address_</span> <span class="o">+</span> <span class="n">len_</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="n">umprotect</span><span class="p">(</span><span class="n">si</span><span class="o">-&gt;</span><span class="n">si_addr</span><span class="p">,</span> <span class="n">PAGE_SIZE</span><span class="p">);</span>
+</span><span class="line">      <span class="n">my_backtrace</span><span class="p">();</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="n">my_backtrace</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="k">const</span> <span class="kt">int</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+</span><span class="line">    <span class="kt">void</span><span class="o">*</span> <span class="n">array</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span>
+</span><span class="line">    <span class="kt">size_t</span> <span class="n">size</span> <span class="o">=</span> <span class="n">backtrace</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">N</span><span class="p">);</span>
+</span><span class="line">    <span class="n">backtrace_symbols_fd</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">fd_</span><span class="p">);</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">uint64_t</span> <span class="n">address_</span><span class="p">;</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">int</span> <span class="n">len_</span><span class="p">;</span>
+</span><span class="line">  <span class="k">static</span> <span class="kt">int</span> <span class="n">fd_</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h2 id="section-3">实战</h2>
+
+<p>来个例子,实战一下吧</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include &quot;test.h&quot; </span><span class="c1">//就是上面封装的MemoryDetector类</span>
+</span><span class="line"><span class="kt">uint64_t</span> <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">address_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="kt">int</span> <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">len_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="kt">int</span> <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">fd_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="c1">///////////////////////////////////////</span>
+</span><span class="line"><span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">g</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">usleep</span><span class="p">(</span><span class="mi">2000000</span><span class="p">);</span>
+</span><span class="line">  <span class="kt">char</span> <span class="o">*</span><span class="n">q</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span> <span class="o">*&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+</span><span class="line">  <span class="o">*</span><span class="p">(</span><span class="n">q</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="mi">111</span><span class="p">;</span><span class="c1">//非法篡改！！！</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+</span><span class="line">  <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">protect</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span> <span class="o">=</span> <span class="s">&quot;result.tmp&quot;</span><span class="p">;</span><span class="c1">//调用栈信息存放路径</span>
+</span><span class="line">  <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">init</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
+</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t1</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
+</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t2</span><span class="p">(</span><span class="n">g</span><span class="p">);</span>
+</span><span class="line">  <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+</span><span class="line">  <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
+</span><span class="line">  <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">finish</span><span class="p">();</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>用如下方式编译链接以上程序：</p>
+
+<pre><code>g++ -g -rdynamic -std=c++0x -pthread  test.cpp -o test
+</code></pre>
+
+<p>程序运行结束后，打开result.tmp文件，看到如下内容：</p>
+
+<pre><code>./test(_ZN14MemoryDetector12my_backtraceEv+0x26)[0x405ce8]
+./test(_ZN14MemoryDetector7handlerEiP7siginfoPv+0x60)[0x405cc0]
+/lib64/libpthread.so.0[0x339a80f500]
+./test(_Z1gv+0x25)[0x405909]
+./test(_ZNSt6thread5_ImplIPFvvEE6_M_runEv+0x16)[0x406e2c]
+/usr/lib64/libstdc++.so.6[0x3a6f6b6490]
+/lib64/libpthread.so.0[0x339a807851]
+/lib64/libc.so.6(clone+0x6d)[0x339a4e767d]
+</code></pre>
+
+<p>注意其中的第四行：./test(_Z1gv+0x25)[0x405909]。使用addr2line命令：</p>
+
+<pre><code>addr2line -e test 0x405909
+</code></pre>
+
+<p>获得非法篡改的代码位置：</p>
+
+<p>/home/yebangyu/test.cpp:11</p>
+
+<p>真相大白了。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[深入解析Bloom Filter(中)]]></title>
@@ -2835,106 +3123,6 @@ int b = i;//强制从内存中读取实时的i的值
 <h2 id="syncsynchronize">__sync_synchronize</h2>
 
 <p><code>__sync_synchronize</code>就是一种<strong>full barrier</strong>。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Tools of the trade]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/10/25/tools-of-the-trade/"/>
-    <updated>2015-10-25T22:09:08+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/10/25/tools-of-the-trade</id>
-    <content type="html"><![CDATA[<p>本篇是对《<strong>Is parallel programming hard</strong>》第四章《<strong>Tools of the trade</strong>》的总结，不是单纯的翻译，算是读书笔记，并且略有补充。</p>
-
-<p>本章介绍了并行编程的工具和途径，具体包括</p>
-
-<blockquote>
-  <ul>
-    <li>Shell Script Languages</li>
-    <li>POSIX 多进程</li>
-    <li>POSIX 多线程</li>
-    <li>原子操作</li>
-  </ul>
-</blockquote>
-
-<h2 id="shell-script-language">Shell Script Language</h2>
-
-<!--more-->
-
-<p>如果不同的执行单元之间没有过多的数据交互，待执行的任务分区性较好，那么我们可以考虑通过<strong>Shell</strong>创建多个进程来完成任务。例如，我们需要计算每连续的<strong>100</strong>个元素的和，需要计算3组，好吧，比如说我们需要计算<strong>1+2+3+…+100</strong>；<strong>101+102+…200</strong>；<strong>201+201+…+300</strong>，那么我们可以编写一个程序，然后通过<strong>Shell</strong>创建<strong>3</strong>个进程，通过命令行传入参数（比如这里的待求和的元素的起点）。</p>
-
-<pre><code>compute 1 &gt; compute_1.out &amp;
-compute 101 &gt; compute_2.out &amp;
-compute 201 &gt; compute_3.out &amp;
-wait
-</code></pre>
-
-<p>其中<strong>compute</strong>是可执行程序名，<strong>1</strong>、<strong>101</strong>、<strong>201</strong>是命令行参数，<strong>&gt; x.out</strong>代表将输出结果重定向到文件<strong>x.out</strong>中，<strong>&amp;</strong>表示程序后台运行。<strong>wait</strong>表示等待运行程序结束。</p>
-
-<p>那么多进程的并行设计有什么缺点呢？</p>
-
-<p>1，创建进程的时间略长。在<strong>Intel Core Duo Laptop</strong>上创建一个最小<strong>C</strong>程序需要大概<strong>480ms</strong>。当你的任务执行时间和进程启动时间相比反而不值一提时，这时候创建进程所需的时间就显得很尴尬。多线程<strong>VS</strong>多进程也是<strong>Spark</strong>和<strong>Hadoop</strong>相比的一个不同。</p>
-
-<p>2，进程间不共享内存，不利于通信和数据交互。</p>
-
-<p>3，多进程间的同步相对费事复杂。</p>
-
-<h2 id="posix-">POSIX 多进程</h2>
-
-<p>可以通过<strong>fork</strong>、<strong>kill</strong>、<strong>wait</strong>等原语来创建、管理进程。书里简单介绍了这几个原语的使用，小结一下就是：</p>
-
-<p>1，<strong>fork</strong>会有两次返回，一次对<strong>child process</strong>，一次对<strong>parent process</strong>。<strong>fork</strong>的返回值为<strong>0</strong>代表在<strong>child process</strong>的上下文中，负数代表错误，正数代表<strong>parent process</strong>上下文中，并且返回值就是<strong>child process</strong>的<strong>pid</strong>。</p>
-
-<p>2，<strong>parent process</strong>和<strong>child process</strong>并不<strong>share memory</strong>。</p>
-
-<h2 id="posix--1">POSIX 多线程</h2>
-
-<p>可以通过<strong>pthread_mutex_lock</strong>以及<strong>pthread_mutex_unlock</strong>等原语，以加锁和释放锁的方式，使用多线程来并行设计。</p>
-
-<p>锁有多种，除了互斥锁，读写锁也是常见的一种。读写锁的特点是：</p>
-
-<p>1，同一个时刻，允许多个读线程。当然，此时不能有写线程。</p>
-
-<p>2，同一个时刻，最多只能有一个写线程进行更新操作。</p>
-
-<p>也就是说写写互斥，写读互斥，读读不互斥。换句话说，要么多个读线程，要么一个写线程。</p>
-
-<p>那么读写锁的<strong>scalability</strong>如何呢？作者写了一个程序来分析，程序运行在<strong>64</strong>个<strong>cores</strong>，一共<strong>n</strong>个读线程，每个读线程的流程大概是：</p>
-
-<pre><code>while(not terminated)
-{
-  acquire the lock;
-  do something;//t1
-  release the lock;
-  wait some time;//t2
-  ++count of acquisitions;
-}
-</code></pre>
-
-<p>把其中<strong>t2</strong>的时间设置为<strong>0</strong>，<strong>t1</strong>的控制则是通过更改调整执行循环次数（图上所谓的<strong>100K</strong>、<strong>100M</strong>神马的）。图上的横坐标为线程数目，纵坐标代表 $\frac {C}{nc}$ ，其中<strong>C</strong>是<strong>n</strong>个线程总共的<strong>acquisition</strong>数目，<strong>c</strong>是单个线程<strong>acquisition</strong>数目。</p>
-
-<p>理想情况下，这个值应该是<strong>1.0</strong>。</p>
-
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/figure4.10.jpg" alt="expriments for rwl" /></p>
-
-<p>实验表明，当读线程的数目增多，每次<strong>acquire lock</strong>时，花在修改数据结构（锁也是一种数据结构实现，当一个读线程<strong>acquire</strong>或者<strong>release</strong>成功显然需要对数据结构进行修改，加加减减神马的）的时间将显著影响<strong>scalability</strong>。极端情况下，当<strong>n</strong>个读线程同时<strong>acquire</strong>时，第<strong>n</strong>个线程需要等前面的<strong>n-1</strong>个线程都修改完毕，它才能修改。</p>
-
-<p>同时，注意到线程有<strong>n</strong>个，而<strong>CPU</strong> <strong>cores</strong>只有<strong>64</strong>个，因此当<strong>n&lt;=64</strong>时，每个<strong>thread</strong>可以独享一个<strong>core</strong>，当<strong>n&gt;64</strong>后，根据鸽巢原理，至少有一个<strong>core</strong>上有多个<strong>thread</strong>在运行，这也会带来性能下降。</p>
-
-<p>因此，读写锁比较适合临界区比较大的情形（有文件<strong>IO</strong>或者网络访问等）。</p>
-
-<p>如果临界区比较短呢？比如我仅仅是加加一个变量呢？哦，那么原子操作可能是一个很好的选择。</p>
-
-<h2 id="section">原子操作</h2>
-
-<p><strong>gcc</strong>内置提供了一系列的原子操作。很多操作有两个版本，比如说：</p>
-
-<p><code>__sync_fetch_and_sub()</code>与 <code>__sync_sub_and_fetch()</code>，如名字所说，一个是先减，然后获得减之后的新值；一个是减，返回的是减之前的<strong>old value</strong>。</p>
-
-<p>此外，非常有名的<strong>CAS</strong>操作：</p>
-
-<p><code>__sync_bool_compare_and_swap()</code>和<code>__sync_val_compare_and_swap()</code>，前者返回是否操作成功（待修改变量被替换为新值），而后者返回的是老值。</p>
-
-<p>由于原子操作是让多个步骤看起来是一次的行为，因此往往包含<strong>Memory Barrier</strong>以保证语句的执行顺序。</p>
 ]]></content>
   </entry>
   

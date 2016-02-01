@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-01-31T21:51:34+08:00</updated>
+  <updated>2016-02-01T22:26:53+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,193 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[多线程内存问题分析之mprotect方法]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/02/01/detectmemoryghostinmultithread/"/>
+    <updated>2016-02-01T22:24:25+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/02/01/detectmemoryghostinmultithread</id>
+    <content type="html"><![CDATA[<p>多线程中的内存问题，一直被认为是噩梦般的存在，几乎只有高手、大仙才能解决。除了大量的打log、gdb调试、code review以及依靠多年的经验和直觉之外，有没有一些分析的手段和工具呢？答案是肯定的。本文首先介绍其中的一种：mprotect大法。通过mprotect，保护特定的感兴趣的区域，当有线程改写该内存时，会产生一个中断，我们在中断处理函数中把调用栈等信息打印出来。这是大概的思路，不过其中的问题很多，我们慢慢道来。</p>
+
+<!--more-->
+
+<h2 id="section">原理</h2>
+
+<h3 id="mprotect">mprotect函数</h3>
+
+<p>mprotect函数的原型如下：</p>
+
+<p>int mprotect(const void *addr, size_t len, int prot);</p>
+
+<p>其中addr是待保护的内存首地址，必须按页对齐；len是待保护内存的大小，必须是页的整数倍，prot代表模式，可能的取值有PROT_READ（表示可读）、PROT_WRITE（可写）等。</p>
+
+<p>不同体系结构和操作系统，一页的大小不尽相同。如何获得页大小呢？通过PAGE_SIZE宏或者getpagesize()系统调用即可。</p>
+
+<h3 id="section-1">定制中断处理函数</h3>
+
+<p>当线程试图对我们已保护（成只读）的内存进行篡改时，默认情况下程序会收到SIGSEGV错误而退出。能不能不退出并且把相应的调用栈打印出来分析？当然可以。通过如下代码注册你定制的中断处理函数即可：</p>
+
+<p>struct sigaction act;
+act.sa_sigaction = your_handler;
+sigemptyset(&amp;act.sa_mask);
+act.sa_flags = SA_SIGINFO;
+if(sigaction(SIGSEGV, &amp;act, NULL) == -1){
+  perror(“Register hanlder failed”);
+  exit(EXIT_FAILURE);
+}
+这样，控制流就会到达你编写的your_handler函数上。而your_handler的函数原型是：</p>
+
+<p>void your_handler(int sig, siginfo_t *si, void *unused)；</p>
+
+<p>编写your_handler函数即可？是的，不过这里面有两个注意事项：</p>
+
+<p>1，中断处理函数里不应该调用内存分配函数，否则可能会引起double fault。因此，不适合调用backtrace_symbols（内部会动态分配内存），而是通过backtrace_symbols_fd直接将调用栈信息直接刷到文件中。</p>
+
+<p>2，中断处理函数中应该恢复被保护内存为可写，否则会引起死循环。（再次中断并进入咱们编写的函数）</p>
+
+<h3 id="section-2">封装</h3>
+
+<p>为了方便使用，我封装了一个类，供参考：
+<code>c++
+#include &lt;fcntl.h&gt;
+#include &lt;signal.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+#include &lt;stdint.h&gt;
+#include &lt;sys/mman.h&gt;
+#include &lt;sys/stat.h&gt;
+#include &lt;unistd.h&gt;
+#include &lt;sys/user.h&gt;
+#include &lt;execinfo.h&gt;
+#include &lt;thread&gt;
+using namespace std;
+class MemoryDetector
+{
+public:
+  typedef void (*segv_handler) (int sig, siginfo_t *si, void *unused);
+  static void init(const char *path)
+  {
+    register_handler(handler);
+    fd_ = open(path, O_RDWR|O_CREAT, 777);
+  }
+  static int protect(void *p, int len)
+  {
+    address_ = reinterpret_cast&lt;uint64_t&gt;(p);
+    len_ = len;
+    uint64_t start_address = (address_ &gt;&gt; PAGE_SHIFT) &lt;&lt; PAGE_SHIFT;
+    return mprotect(reinterpret_cast&lt;void *&gt;(start_address), PAGE_SIZE, PROT_READ);
+  }
+  static int umprotect(void *p, int len)
+  {
+    uint64_t tmp_address_ = reinterpret_cast&lt;uint64_t&gt;(p);
+    uint64_t start_address = (tmp_address_ &gt;&gt; PAGE_SHIFT) &lt;&lt; PAGE_SHIFT;
+    return mprotect(reinterpret_cast&lt;void *&gt;(start_address), PAGE_SIZE, PROT_READ | PROT_WRITE);
+  }
+  static int umprotect()
+  {
+    uint64_t start_address = (address_ &gt;&gt; PAGE_SHIFT) &lt;&lt; PAGE_SHIFT;
+    return mprotect(reinterpret_cast&lt;void *&gt;(start_address), PAGE_SIZE, PROT_READ | PROT_WRITE);
+  }
+  static void finish()
+  {
+    close(fd_);
+  }
+private:
+  static void register_handler(segv_handler sh)
+  {
+    struct sigaction act;
+    act.sa_sigaction = sh;
+    sigemptyset(&amp;act.sa_mask);
+    act.sa_flags = SA_SIGINFO;
+    if(sigaction(SIGSEGV, &amp;act, NULL) == -1){
+      perror("Register hanlder failed");
+      exit(EXIT_FAILURE);
+    }
+  }
+  static void handler(int sig, siginfo_t *si, void *unused)
+  {
+    uint64_t address = reinterpret_cast&lt;uint64_t&gt;(si-&gt;si_addr);
+    if (address &gt;= address_ &amp;&amp; address &lt; address_ + len_) {
+      umprotect(si-&gt;si_addr, PAGE_SIZE);
+      my_backtrace();
+    }
+  }
+  static void my_backtrace()
+  {
+    const int N = 100;
+    void* array[100];
+    size_t size = backtrace(array, N);
+    backtrace_symbols_fd(array, size, fd_);
+  }
+  static uint64_t address_;
+  static int len_;
+  static int fd_;
+};
+</code></p>
+
+<h2 id="section-3">实战</h2>
+
+<p>来个例子,实战一下吧
+<code>c++
+#include "test.h" //就是上面封装的MemoryDetector类
+uint64_t MemoryDetector::address_ = 0;
+int MemoryDetector::len_ = 0;
+int MemoryDetector::fd_ = 0;
+///////////////////////////////////////
+int *p = NULL;
+void g()
+{
+  usleep(2000000);
+  char *q = reinterpret_cast&lt;char *&gt;(p);
+  *(q+2) = 111;//非法篡改！！！
+}
+void f()
+{
+  p = new int(1);
+  MemoryDetector::protect(p, 4);
+}
+int main()
+{
+  const char *path = "result.tmp";//调用栈信息存放路径
+  MemoryDetector::init(path);
+  std::thread t1(f);
+  std::thread t2(g);
+  t1.join();
+  t2.join();
+  MemoryDetector::finish();
+  return 0;
+}
+</code>
+用如下方式编译链接以上程序：</p>
+
+<pre><code>g++ -g -rdynamic -std=c++0x -pthread  test.cpp -o test
+</code></pre>
+
+<p>程序运行结束后，打开result.tmp文件，看到如下内容：</p>
+
+<pre><code>./test(_ZN14MemoryDetector12my_backtraceEv+0x26)[0x405ce8]
+./test(_ZN14MemoryDetector7handlerEiP7siginfoPv+0x60)[0x405cc0]
+/lib64/libpthread.so.0[0x339a80f500]
+./test(_Z1gv+0x25)[0x405909]
+./test(_ZNSt6thread5_ImplIPFvvEE6_M_runEv+0x16)[0x406e2c]
+/usr/lib64/libstdc++.so.6[0x3a6f6b6490]
+/lib64/libpthread.so.0[0x339a807851]
+/lib64/libc.so.6(clone+0x6d)[0x339a4e767d]
+</code></pre>
+
+<p>注意其中的第四行：./test(_Z1gv+0x25)[0x405909]。使用addr2line命令：</p>
+
+<pre><code>addr2line -e test 0x405909
+</code></pre>
+
+<p>获得非法篡改的代码位置：</p>
+
+<p>/home/yebangyu/test.cpp:11</p>
+
+<p>真相大白了。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Spinlock and mutex]]></title>
@@ -464,67 +651,6 @@ sys     0m0.000s
 <h2 id="section-4">致谢</h2>
 
 <p>本文发出后，微博网友@Debin_IIE指出了一个笔误。非常感谢。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Lock Free中的Hazard Pointer(中)]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/12/14/introduction-to-hazard-pointer/"/>
-    <updated>2015-12-14T22:33:01+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/12/14/introduction-to-hazard-pointer</id>
-    <content type="html"><![CDATA[<p>看过<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">上篇</a>的朋友，可能会认为：这不就是<strong>Smart Pointer</strong>么？于是可能写出这样的代码：</p>
-
-<!--more-->
-
-<p><code>c++
-#include&lt;iostream&gt;
-#include&lt;thread&gt;
-using namespace std;
-class SmartPointer
-{
-public:
-  SmartPointer(int *p)
-  {
-    pointee_ = p;
-    ref_counts_ = 0;
-  }
-  int *pointee_;
-  int ref_counts_;
-};
-SmartPointer sp(new int(1));
-void Reader()
-{
-  ++sp.ref_counts_;
-  cout&lt;&lt;*(sp.pointee_)&lt;&lt;endl;
-  --sp.ref_counts_;
-}
-void Writer()
-{
-  if (sp.ref_counts_ == 0)
-    delete sp.pointee_;
-}
-int main()
-{
-  thread t1(Reader);
-  thread t2(Reader);
-  thread t3(Reader);
-  thread t4(Writer);
-  t1.join();
-  t2.join();
-  t3.join();
-  t4.join();
-  return 0;
-}
-</code>
-然而事实上，这样做是错的。其中的<strong>race condition</strong>请读者自行分析。</p>
-
-<p>那么，<strong>Hazard Pointer</strong>(<strong>HP</strong>)和<strong>Smart Pointer</strong>(<strong>SP</strong>)有什么区别呢？它们的共同点就是管理对应对象的生命周期，然而这两者有本质的区别，<strong>HP</strong>是线程安全的，而<strong>SP</strong>不是。</p>
-
-<p>在<strong>HP</strong>中，每个读线程维护着自己的<strong>HP</strong> <strong>list</strong>，这个<strong>list</strong>，只由该线程写。因此，它是线程安全的。该<strong>list</strong>会（可以）被其他线程读。</p>
-
-<p>每个写线程维护自己的<strong>retire list</strong>，该<strong>retire list</strong>只由该写线程进行读写。由于写线程可以读其他所有读线程的<strong>HP list</strong>，这样，差集（在自己的<strong>retire list</strong>，但是不在所有读线程的<strong>HP list</strong>里的指针），就是可以安全释放的指针。</p>
-
-<p>而<strong>SP</strong>，则被多个线程读写，<strong>18、19</strong>两行也无法做成原子操作，因此，<strong>SP</strong>和<strong>HP</strong>有本质的区别，使用<strong>SP</strong>的程序往往需要搭配使用锁等设施来保证线程安全。</p>
 ]]></content>
   </entry>
   
