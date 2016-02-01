@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-01T22:26:53+08:00</updated>
+  <updated>2016-02-01T22:32:29+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -38,15 +38,17 @@
 
 <p>当线程试图对我们已保护（成只读）的内存进行篡改时，默认情况下程序会收到SIGSEGV错误而退出。能不能不退出并且把相应的调用栈打印出来分析？当然可以。通过如下代码注册你定制的中断处理函数即可：</p>
 
-<p>struct sigaction act;
+<pre><code>struct sigaction act;
 act.sa_sigaction = your_handler;
 sigemptyset(&amp;act.sa_mask);
 act.sa_flags = SA_SIGINFO;
-if(sigaction(SIGSEGV, &amp;act, NULL) == -1){
-  perror(“Register hanlder failed”);
+if(sigaction(SIGSEGV, &amp;act, NULL) == -1) {
+  perror("Register hanlder failed");
   exit(EXIT_FAILURE);
 }
-这样，控制流就会到达你编写的your_handler函数上。而your_handler的函数原型是：</p>
+</code></pre>
+
+<p>这样，控制流就会到达你编写的your_handler函数上。而your_handler的函数原型是：</p>
 
 <p>void your_handler(int sig, siginfo_t *si, void *unused)；</p>
 
