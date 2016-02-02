@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-01T22:32:29+08:00</updated>
+  <updated>2016-02-02T08:49:22+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,7 +18,7 @@
     <link href="http://www.yebangyu.org/blog/2016/02/01/detectmemoryghostinmultithread/"/>
     <updated>2016-02-01T22:24:25+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/02/01/detectmemoryghostinmultithread</id>
-    <content type="html"><![CDATA[<p>多线程中的内存问题，一直被认为是噩梦般的存在，几乎只有高手、大仙才能解决。除了大量的打log、gdb调试、code review以及依靠多年的经验和直觉之外，有没有一些分析的手段和工具呢？答案是肯定的。本文首先介绍其中的一种：mprotect大法。通过mprotect，保护特定的感兴趣的区域，当有线程改写该内存时，会产生一个中断，我们在中断处理函数中把调用栈等信息打印出来。这是大概的思路，不过其中的问题很多，我们慢慢道来。</p>
+    <content type="html"><![CDATA[<p>多线程中的内存问题，一直被认为是噩梦般的存在，几乎只有高手、大仙才能解决。除了大量的打log、gdb调试、code review以及依靠多年的经验和直觉之外，有没有一些分析的手段和工具呢？答案是肯定的。本文首先介绍其中的一种：mprotect大法。通过mprotect，保护特定的感兴趣的内存，当有线程改写该区域时，会产生一个中断，我们在中断处理函数中把调用栈等信息打印出来。这是大概的思路，不过其中的问题很多，我们慢慢道来。</p>
 
 <!--more-->
 
@@ -73,8 +73,6 @@ if(sigaction(SIGSEGV, &amp;act, NULL) == -1) {
 #include &lt;unistd.h&gt;
 #include &lt;sys/user.h&gt;
 #include &lt;execinfo.h&gt;
-#include &lt;thread&gt;
-using namespace std;
 class MemoryDetector
 {
 public:
@@ -139,11 +137,15 @@ private:
 };
 </code></p>
 
+<p>这个封装还存在一些问题,比如错误处理,拓展到一页大小.读者诸君可以做些修改.</p>
+
 <h2 id="section-3">实战</h2>
 
 <p>来个例子,实战一下吧
 <code>c++
 #include "test.h" //就是上面封装的MemoryDetector类
+#include &lt;thread&gt;
+using namespace std;
 uint64_t MemoryDetector::address_ = 0;
 int MemoryDetector::len_ = 0;
 int MemoryDetector::fd_ = 0;
@@ -199,6 +201,10 @@ int main()
 <p>/home/yebangyu/test.cpp:11</p>
 
 <p>真相大白了。</p>
+
+<h2 id="section-4">感谢</h2>
+
+<p>我最早知道这个方法,是从我主管杨志丰先生那儿以及他的<a href="http://blog.csdn.net/killmice/article/details/38443343">这篇</a>文章.</p>
 ]]></content>
   </entry>
   

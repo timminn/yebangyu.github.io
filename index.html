@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="多线程中的内存问题，一直被认为是噩梦般的存在，几乎只有高手、大仙才能解决。除了大量的打log、gdb调试、code review以及依靠多年的经验和直觉之外，有没有一些分析的手段和工具呢？答案是肯定的。本文首先介绍其中的一种：mprotect大法。通过mprotect，保护特定的感兴趣的区域， &hellip;">
+  <meta name="description" content="多线程中的内存问题，一直被认为是噩梦般的存在，几乎只有高手、大仙才能解决。除了大量的打log、gdb调试、code review以及依靠多年的经验和直觉之外，有没有一些分析的手段和工具呢？答案是肯定的。本文首先介绍其中的一种：mprotect大法。通过mprotect，保护特定的感兴趣的内存， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -103,7 +103,7 @@ MathJax.Hub.Config({
   </header>
 
 
-  <div class="entry-content"><p>多线程中的内存问题，一直被认为是噩梦般的存在，几乎只有高手、大仙才能解决。除了大量的打log、gdb调试、code review以及依靠多年的经验和直觉之外，有没有一些分析的手段和工具呢？答案是肯定的。本文首先介绍其中的一种：mprotect大法。通过mprotect，保护特定的感兴趣的区域，当有线程改写该内存时，会产生一个中断，我们在中断处理函数中把调用栈等信息打印出来。这是大概的思路，不过其中的问题很多，我们慢慢道来。</p>
+  <div class="entry-content"><p>多线程中的内存问题，一直被认为是噩梦般的存在，几乎只有高手、大仙才能解决。除了大量的打log、gdb调试、code review以及依靠多年的经验和直觉之外，有没有一些分析的手段和工具呢？答案是肯定的。本文首先介绍其中的一种：mprotect大法。通过mprotect，保护特定的感兴趣的内存，当有线程改写该区域时，会产生一个中断，我们在中断处理函数中把调用栈等信息打印出来。这是大概的思路，不过其中的问题很多，我们慢慢道来。</p>
 
 </div>
   
