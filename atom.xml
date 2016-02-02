@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-02T08:49:22+08:00</updated>
+  <updated>2016-02-02T22:45:52+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -209,7 +209,7 @@ if(sigaction(SIGSEGV, &amp;act, NULL) == -1) {
 </span><span class="line"><span class="p">};</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>这个封装还存在一些问题,比如错误处理,拓展到一页大小.读者诸君可以做些修改.</p>
+<p>这个封装还存在一些问题，比如缺少错误处理，待保护内存必须在一页内等。读者诸君可以根据需要自行完善。</p>
 
 <h2 id="section-3">实战</h2>
 
@@ -277,7 +277,7 @@ if(sigaction(SIGSEGV, &amp;act, NULL) == -1) {
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 <p>用如下方式编译链接以上程序：</p>
 
-<pre><code>g++ -g -rdynamic -std=c++0x -pthread  test.cpp -o test
+<pre><code>g++ -g -rdynamic -std=c++11 -pthread  test.cpp -o test
 </code></pre>
 
 <p>程序运行结束后，打开result.tmp文件，看到如下内容：</p>
@@ -299,13 +299,13 @@ if(sigaction(SIGSEGV, &amp;act, NULL) == -1) {
 
 <p>获得非法篡改的代码位置：</p>
 
-<p>/home/yebangyu/test.cpp:11</p>
+<p>/home/yebangyu/test.cpp:13</p>
 
 <p>真相大白了。</p>
 
 <h2 id="section-4">感谢</h2>
 
-<p>我最早知道这个方法,是从我主管杨志丰先生那儿以及他的<a href="http://blog.csdn.net/killmice/article/details/38443343">这篇</a>文章.</p>
+<p>我最早知道这个方法，是从我主管<a href="http://weibo.com/yangzhifeng83">杨志丰</a>先生那儿以及他的<a href="http://blog.csdn.net/killmice/article/details/38443343">这篇</a>文章。</p>
 ]]></content>
   </entry>
   
@@ -395,9 +395,9 @@ if(sigaction(SIGSEGV, &amp;act, NULL) == -1) {
 
 <p>看起来很完美，但是这种方案在删除时会有问题。比如说，还是刚才的例子，我们欲插入x和y。分别得到x和y的位置向量们：</p>
 
-<p>x: (1, 1, 010100)和(2, 2, 010101)</p>
+<p>x: (1, 1, 010100)和(2, 2, 010100)</p>
 
-<p>y: (1, 1, 010100)和(2, 4, 111111)</p>
+<p>y: (1, 1, 010100)和(2, 4, 010100)</p>
 
 <p>根据d-left hashing，x被插入到$d_1$中index为1的bucket中；y被插入到$d_2$中index为4的bucket中。好，这没问题。如果现在要删除y呢？我们需要检查两个位置，$d_1$中的index为1的bucket，以及$d_2$中index为4的bucket，要删哪个？fp都是010100啊。这就出现问题。</p>
 

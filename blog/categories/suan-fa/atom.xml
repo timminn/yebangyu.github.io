@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-02T08:49:22+08:00</updated>
+  <updated>2016-02-02T22:45:52+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -99,9 +99,9 @@
 
 <p>看起来很完美，但是这种方案在删除时会有问题。比如说，还是刚才的例子，我们欲插入x和y。分别得到x和y的位置向量们：</p>
 
-<p>x: (1, 1, 010100)和(2, 2, 010101)</p>
+<p>x: (1, 1, 010100)和(2, 2, 010100)</p>
 
-<p>y: (1, 1, 010100)和(2, 4, 111111)</p>
+<p>y: (1, 1, 010100)和(2, 4, 010100)</p>
 
 <p>根据d-left hashing，x被插入到$d_1$中index为1的bucket中；y被插入到$d_2$中index为4的bucket中。好，这没问题。如果现在要删除y呢？我们需要检查两个位置，$d_1$中的index为1的bucket，以及$d_2$中index为4的bucket，要删哪个？fp都是010100啊。这就出现问题。</p>
 
