@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-16T23:39:13+08:00</updated>
+  <updated>2016-02-16T23:56:42+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Materials in concurrency programming]]></title>
+    <title type="html"><![CDATA[Materials In Concurrency Programming]]></title>
     <link href="http://www.yebangyu.org/blog/2016/02/16/materials-in-concurrency-programming/"/>
     <updated>2016-02-16T23:36:28+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/02/16/materials-in-concurrency-programming</id>
@@ -38,9 +38,9 @@
 
 <p>1，很全面，除了介绍lock的实现、RCU、Transaction Memory等等之外，还包括一些并行程序设计的其他知识，比如如何验证、如何调试等。</p>
 
-<p>个人非常喜欢其中介绍什么是memory barrier以及为什么需要memory barrier的两章。强烈推荐！</p>
+<p>个人非常喜欢第14章和附录C，分别详细介绍了什么是memory barrier以及为什么需要memory barrier。强烈推荐！</p>
 
-<p>2，很正派。这里面介绍的技术都非常通用，普遍适用，没有太多都黑科技。比如书中重点强调的partition，就是一种非常重要非常scientific的思想。</p>
+<p>2，很正派。这里面介绍的技术都非常通用，普遍适用，没有太多的黑科技。比如书中重点强调的partition，就是一种非常重要、非常scientific的思想。</p>
 
 <p>3，很幽默。真的，很幽默。</p>
 
@@ -56,11 +56,11 @@
 
 <p>缺点：</p>
 
-<p>1，java语言实现。其实我固执认为应该用C或者C++</p>
+<p>1，java语言实现。我固执认为应该用C或者C++</p>
 
-<p>2，没有介绍RCU等重要内容。</p>
+<p>2，没有介绍RCU等重要内容</p>
 
-<p>3，不详细。可能是我个人实力不行，我感觉这本书讲的并不好，看完我还是得看论文才懂。</p>
+<p>3，不详细。可能是我个人实力不行，感觉这本书讲的并不好，看完还是得看论文才懂。</p>
 
 <p>个人喜爱程度：3颗星</p>
 
@@ -80,7 +80,7 @@
 
 <p>是作者表述能力不行吗？恐怕不是。他写有一本非常著名和畅销的书籍：《Programming Language Pragmatics》（我没读过）</p>
 
-<p>这本书偏综述＋lecture notes性质，我估计和这套、这系列丛书的定位有关。</p>
+<p>这本书偏综述＋lecture notes性质，估计和这套、这系列丛书的定位有关。</p>
 
 <p>2，没有中文版，没有英文影印版，很难下到pdf。苦逼穷学生想阅读的话基本上只能去amazon.com购买原版</p>
 
