@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="推荐几本近期阅读的好书。 Recommender Systems Handbook ">
+  <meta name="description" content="Motivation &amp; Intuition 为什么引入Cuckoo Hashing？ 常见的hashing处理冲突方法一般包括两种：Separate Chaining和Open Addressing（Linear Probing）。Separate &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,46 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2015/12/19/cuckoo-hashing/">Introduction To Cuckoo Hashing</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2015-12-19T00:41:37+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:41 am</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2 id="motivation--intuition">Motivation &amp; Intuition</h2>
+
+<p>为什么引入<strong>Cuckoo Hashing</strong>？</p>
+
+<p>常见的<strong>hashing</strong>处理冲突方法一般包括两种：<strong>Separate Chaining</strong>和<strong>Open Addressing</strong>（<strong>Linear Probing</strong>）。<strong>Separate Chaining</strong>是将冲突的元素组织成一个链表（其实组织成一个二叉搜索树也是完全没问题的，甚至跳表也行），<strong>Open Addressing</strong>将冲突的元素还是放在哈希表<strong>slot</strong>中，使用线性探测等方法进行处理。</p>
+
+<p>那么，这两种方法，都有啥优缺点呢？</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2015/12/19/cuckoo-hashing/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -422,55 +462,6 @@ bool is_valid_int64(const Double &amp;value);
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/10/31/linux-parallen-programmming-infrastructure/">Linux环境多线程编程基础设施</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-10-31T18:43:00+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2015</span></span> <span class='time'>6:43 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>本文介绍多线程环境下并行编程的基础设施。主要包括：</p>
-
-<blockquote>
-  <ul>
-    <li>volatile</li>
-    <li>__thread</li>
-    <li>Memory Barrier</li>
-    <li>__sync_synchronize</li>
-  </ul>
-</blockquote>
-
-<h2 id="volatile">volatile</h2>
-
-<p>编译器有时候为了优化性能，会将一些变量的值缓存到寄存器中，因此如果编译器发现该变量的值没有改变的话，将从寄存器里读出该值，这样可以避免内存访问。</p>
-
-<p>但是这种做法有时候会有问题。如果该变量确实（以某种很难检测的方式）被修改呢？那岂不是读到错的值？是的。在多线程情况下，问题更为突出：当某个线程对一个内存单元进行修改后，其他线程如果从寄存器里读取该变量可能读到老值，未更新的值，错误的值，不新鲜的值。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/10/31/linux-parallen-programmming-infrastructure/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/3">&larr; Older</a>
@@ -488,6 +479,10 @@ bool is_valid_int64(const Double &amp;value);
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/02/16/materials-in-concurrency-programming/">Materials in concurrency programming</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/02/01/detectmemoryghostinmultithread/">多线程内存问题分析之mprotect方法</a>
       </li>
     
@@ -501,10 +496,6 @@ bool is_valid_int64(const Double &amp;value);
     
       <li class="post">
         <a href="/blog/2016/01/23/insidethebloomfilter/">深入解析Bloom Filter(上)</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/01/17/concurrenyandparallism/">Concurrent and Parallel</a>
       </li>
     
   </ul>
@@ -531,7 +522,7 @@ bool is_valid_int64(const Double &amp;value);
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (1)</a></li>
-<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (10)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (11)</a></li>
 <li class='category'><a href='/blog/categories/suan-fa/'>算法 (3)</a></li>
 <li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>
 

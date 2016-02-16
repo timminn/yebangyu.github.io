@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Windows下OctoPress环境搭建 - Yebangyu's Blog</title>
+  <title>Materials in concurrency programming - Yebangyu's Blog</title>
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="Windows下Octopress博客搭建">
-  <meta name="keywords" content="octopress, Windows, 搭建, 博客">
+  <meta name="description" content="本文详细总结了并行编程相关的学习资料，包括图书、教科书、教材、博客、论文等">
+  <meta name="keywords" content="并行编程 图书 资料 论文 博客">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://www.yebangyu.org/blog/2015/10/17/howtoinstalloctopress/">
+  <link rel="canonical" href="http://www.yebangyu.org/blog/2016/02/16/materials-in-concurrency-programming/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Yebangyu's Blog" type="application/atom+xml">
@@ -84,7 +84,7 @@ MathJax.Hub.Config({
   
   <header>
     
-      <h1 class="entry-title">Windows下OctoPress环境搭建</h1>
+      <h1 class="entry-title">Materials in concurrency programming</h1>
     
     
       <p class="meta">
@@ -93,139 +93,84 @@ MathJax.Hub.Config({
 
 
 
-<time class='entry-date' datetime='2015-10-17T11:28:19+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:28 am</span></time>
+<time class='entry-date' datetime='2016-02-16T23:36:28+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:36 pm</span></time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><hr />
+<div class="entry-content"><h2 id="prerequisite">Prerequisite</h2>
 
-<p>近期学习了如何搭建个人博客的方法，这里备忘一下，如果能帮助到别人，那就更好了。</p>
+<p>对CPU、内存、CacheLine有一个很好的认识，对学习并发编程有很大的帮助。</p>
 
-<p>需要安装的组件主要包括OctoPress、Github、Ruby、Python等，在配置的过程中，主要参考了本文末尾的参考链接，在此表示衷心的感谢。</p>
+<p><a href="https://people.freebsd.org/~lstewart/articles/cpumemory.pdf">What Every Programmer Should Know About Memory</a></p>
 
-<h3 id="github">Github</h3>
-
-<p>首先，得有一个Github的账号，便于托管。在申请了Github账号之后，建立一个个人仓库，仓库的命名必须是<code>yourusername.Github.io</code>这样的形式。如果您有购买个人域名，还可以通过CNAME来完成绑定。这一步可以google一下</p>
-
-<h3 id="ruby">Ruby</h3>
-
-<p>安装Ruby的时候需要特别注意勾选“Add Ruby executables to your PATH”</p>
+<p><a href="http://www.amazon.com/Consistency-Coherence-Synthesis-Lectures-Architecture/dp/1608455645">A Primer on Memory Consistency and Cache Coherence</a></p>
 
 <!--more-->
 
-<h3 id="devkit">DevKit</h3>
+<h2 id="textbook">Textbook</h2>
 
-<p>下载解压到某个目录（例如DevKit），打开cmd，执行如下口令</p>
+<p><a href="https://www.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html">Is Parallel Programming Hard, And, If So, What Can You Do About It?</a></p>
 
-<pre><code>cd DevKit
-ruby dk.rb init 
-ruby dk.rb install
-</code></pre>
+<p>Paul大叔的神作。</p>
 
-<h3 id="python">Python</h3>
+<p>优点：</p>
 
-<p>安装python2.7并添加系统变量。切记，一定不能用python3，否则很多功能没法正常使用，例如代码高亮。</p>
+<p>1，很全面，除了介绍lock的实现、RCU、Transaction Memory等等之外，还包括一些并行程序设计的其他知识，比如如何验证、如何调试等。</p>
 
-<p>安装easy_install，然后在cmd中执行如下命令安装pygments</p>
+<p>个人非常喜欢其中介绍什么是memory barrier以及为什么需要memory barrier的两章。强烈推荐！</p>
 
-<pre><code>easy_install pygments
-</code></pre>
+<p>2，很正派。这里面介绍的技术都非常通用，普遍适用，没有太多都黑科技。比如书中重点强调的partition，就是一种非常重要非常scientific的思想。</p>
 
-<h3 id="octopress">OctoPress</h3>
+<p>3，很幽默。真的，很幽默。</p>
 
-<p>首先，通过git命令将OctoPress下载到本地</p>
+<p>缺点：因为正派，所以就没有介绍lock free这种很tricky的黑科技，算是不足吧。</p>
 
-<pre><code>git clone git://Github.com/imathis/octopress.git octopress
-</code></pre>
+<p>个人喜爱程度：5颗星</p>
 
-<p>切换到目录，然后执行</p>
+<p><a href="http://www.amazon.com/The-Multiprocessor-Programming-Revised-Reprint/dp/0123973376">The Art of Multiprocessor Programming</a></p>
 
-<pre><code>gem sources -a https://ruby.taobao.org/
-gem sources -r http://rubygems.org/
-gem sources -l
-</code></pre>
+<p>被很多人推崇。第一版有很多错误，作者随后推出了revised版本。</p>
 
-<p>请特别注意，第一行里，是https，而不是http。</p>
+<p>优点：市面上目前能见到的唯一一本包括大量lock free data structure实现的书籍。</p>
 
-<p>修改Gemfile下的文件，把将第一行的http://rubygems.org/ 改为https://ruby.taobao.org/</p>
+<p>缺点：</p>
 
-<p>然后，依次执行如下命令</p>
+<p>1，java语言实现。其实我固执认为应该用C或者C++</p>
 
-<pre><code>gem install bundler
-bundle install
-</code></pre>
+<p>2，没有介绍RCU等重要内容。</p>
 
-<p>并安装Octopress的默认主题</p>
+<p>3，不详细。可能是我个人实力不行，我感觉这本书讲的并不好，看完我还是得看论文才懂。</p>
 
-<pre><code>rake install
-</code></pre>
+<p>个人喜爱程度：3颗星</p>
 
-<p>环境基本上就配置好了，运行<code>rake preview</code>，然后打开http://127.0.0.1:4000/ 看看效果吧，恩，本地的效果。接下去就要写文章，继而发布到Github上了。</p>
+<p><a href="http://www.morganclaypool.com/doi/abs/10.2200/S00499ED1V01Y201304CAC023">Shared Memory Synchronization</a></p>
 
-<h3 id="section">编写文章</h3>
+<p>优点：</p>
 
-<p>运行<code>rake new_post['helloworld']</code></p>
+<p>1，很新。2013年的书</p>
 
-<p>这样就可以在octopress/source/_posts 下生成一个markdown文件，然后就可以开始通过编辑该文件来写文章了。我一般使用Cmd Markdown 编辑阅读器来写文章，很适合我这样的新手</p>
+<p>2，选题不错。综合了上面两本</p>
 
-<p>写完文章，就可以生成了，命令是<code>rake generate</code> ，然后再通过前面的<code>rake preview</code>来预览下</p>
+<p>缺点：</p>
 
-<h3 id="section-1">发布</h3>
+<p>1，鸡肋。初学者看了云里雾里，高手没必要看。</p>
 
-<p>运行命令，<code>rake setup_Github_pages</code> 来设置您的Github账号。注意，这一步得在git bash下完成，而不是Windows命令提示符下。</p>
+<p>是作者实力不够吗？恐怕不是。作者Michael L. Scott是程序语言设计和并行编程的大拿。</p>
 
-<p>运行命令，<code>rake deploy</code> ，将文章发布到Github上。</p>
+<p>是作者表述能力不行吗？恐怕不是。他写有一本非常著名和畅销的书籍：《Programming Language Pragmatics》（我没读过）</p>
 
-<p>这样一篇文章就发布出去了。以后写新文章或者更改文章后，只需要<code>rake generate</code> 然后 <code>rake deploy</code> 就可以啦</p>
+<p>这本书偏综述＋lecture notes性质，我估计和这套、这系列丛书的定位有关。</p>
 
-<h3 id="section-2">参考资料：</h3>
+<p>2，没有中文版，没有英文影印版，很难下到pdf。苦逼穷学生想阅读的话基本上只能去amazon.com购买原版</p>
 
-<p>Octopress在MAC下的安装、配置</p>
+<p>个人喜爱程度：1颗星</p>
 
-<p>http://www.chongh.wiki/blog/2015/12/16/octopress-tutorial/</p>
+<h2 id="blog">Blog</h2>
 
-<p>Ocotpress在Windows下的安装、配置：</p>
-
-<p>http://www.cnblogs.com/oec2003/archive/2013/05/27/3100896.html</p>
-
-<p>Octopress的个性化配置：</p>
-
-<p>http://www.tuicool.com/articles/miaUR3</p>
-
-<p>http://www.tuicool.com/articles/VbqYNjn</p>
-
-<p>http://foggry.com/blog/2014/04/28/custom-your-octopress-blog/</p>
-
-<p>Octopress添加多说评论功能：</p>
-
-<p>http://droidyue.com/blog/2014/07/29/integrate-duoshuo-in-octopress/</p>
-
-<p>http://dev.duoshuo.com/threads/5364eb968df62dd658bc77af</p>
-
-<p>其他：</p>
-
-<p>http://blog.txx.im/blog/2013/09/04/liquid-exception-about-braces/</p>
-
-<p>http://khaos.Github.io/blog/2012/12/06/using-chinese-category-tags-in-octopress/</p>
-
-<p>https://Github.com/imathis/octopress/issues/1683</p>
-
-<p>http://stackoverflow.com/questions/14932141/octopress-capitalization-in-new-posts</p>
-
-<p>字体：</p>
-
-<p>http://blog.depressedmarvin.com/2014/07/08/new-google-fonts-cdn/</p>
-
-<p>数学公式：</p>
-
-<p>http://dreamrunner.org/blog/2014/03/09/octopresszhong-shi-yong-latexxie-shu-xue-gong-shi/</p>
-
-<p>表格：</p>
-
-<p>http://codemany.com/blog/tricks-and-tips-for-octopress/</p>
+<h2 id="paper">Paper</h2>
 </div>
 
 
@@ -241,12 +186,12 @@ bundle install
 
 
 
-<time class='entry-date' datetime='2015-10-17T11:28:19+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>17</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:28 am</span></time>
+<time class='entry-date' datetime='2016-02-16T23:36:28+08:00'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:36 pm</span></time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/web/'>web</a>
+    <a class='category' href='/blog/categories/bing-xing-bian-cheng/'>并行编程</a>
   
 </span>
 
@@ -262,8 +207,8 @@ bundle install
     
     <p class="meta">
       
+        <a class="basic-alignment left" href="/blog/2016/02/01/detectmemoryghostinmultithread/" title="Previous Post: 多线程内存问题分析之mprotect方法">&laquo; 多线程内存问题分析之mprotect方法</a>
       
-        <a class="basic-alignment right" href="/blog/2015/10/17/whattodoinmaster/" title="Next Post: 深谈读研如何提高技术">深谈读研如何提高技术 &raquo;</a>
       
     </p>
   </footer>
