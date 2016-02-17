@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-17T22:10:47+08:00</updated>
+  <updated>2016-02-17T22:13:48+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -20,7 +20,7 @@
     <id>http://www.yebangyu.org/blog/2016/02/16/materials-in-concurrency-programming</id>
     <content type="html"><![CDATA[<h2 id="prerequisite">Prerequisite</h2>
 
-<p>对CPU、内存、CacheLine有一个很好的认识，对学习并发编程有很大的帮助。</p>
+<p>对CPU、内存、Cache有一个很好的认识，对学习并发编程有很大的帮助。</p>
 
 <p><a href="https://people.freebsd.org/~lstewart/articles/cpumemory.pdf">What Every Programmer Should Know About Memory</a></p>
 
@@ -38,7 +38,7 @@
 
 <p>1，很全面，除了介绍lock的实现、RCU、Transaction Memory等等之外，还包括一些并发程序设计的其他知识，比如如何验证、如何调试等。</p>
 
-<p>个人非常喜欢第14章和附录C，分别详细介绍了什么是memory barrier以及为什么需要memory barrier。强烈推荐！</p>
+<p>个人非常喜欢第14章和附录C，分别详细介绍了什么是Memory Barrier以及为什么需要Memory Barrier。强烈推荐！</p>
 
 <p>2，很正派。这里面介绍的技术都非常通用，普遍适用，没有太多的黑科技。比如书中重点强调的partition，就是一种非常重要、非常scientific的思想。</p>
 
@@ -78,9 +78,9 @@
 
 <p>是作者实力不够吗？恐怕不是。作者Michael L. Scott是程序语言设计和并发编程的大拿。</p>
 
-<p>是作者表述能力不行吗？恐怕不是。他写有一本非常著名和畅销的书籍：《Programming Language Pragmatics》（我没读过）</p>
+<p>是作者表述能力不行吗？恐怕不是。他写有一本非常著名和畅销的书籍：《Programming Language Pragmatics》</p>
 
-<p>这本书偏综述＋lecture notes性质，估计和这套、这系列丛书的定位有关。</p>
+<p>这本书偏综述＋lecture notes性质，估计和这系列丛书的定位有关。</p>
 
 <p>2，没有中文版，没有英文影印版，很难下到pdf。苦逼穷学生想阅读的话基本上只能去amazon.com购买原版</p>
 
