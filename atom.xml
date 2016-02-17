@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-17T22:29:11+08:00</updated>
+  <updated>2016-02-17T22:34:36+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -94,6 +94,10 @@
 
 <p><a href="http://www.yebangyu.org">Yebangyu’s Blog</a></p>
 
+<h2 id="course">Course</h2>
+
+<p><a href="http://www.cs.rice.edu/~johnmc/comp522/lecture-notes/">Multicore Computing</a></p>
+
 <h2 id="paper">Paper</h2>
 
 <h3 id="linked-list--skip-list">Linked List &amp; Skip List</h3>
@@ -157,6 +161,10 @@
 <p><a href="https://www.research.ibm.com/people/m/michael/pldi-2004.pdf">Scalable Lock-Free Dynamic Memory Allocation</a></p>
 
 <p><a href="http://research.microsoft.com/pubs/209106/paper.pdf">Are Lock-Free Concurrent Algorithms Practically Wait-Free</a></p>
+
+<h2 id="pages">Pages</h2>
+
+<p><a href="https://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync">Memory model synchronization modes</a></p>
 ]]></content>
   </entry>
   
