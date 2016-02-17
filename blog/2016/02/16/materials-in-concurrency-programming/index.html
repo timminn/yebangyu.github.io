@@ -9,8 +9,8 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="本文详细总结了并行编程相关的学习资料，包括图书、教科书、教材、博客、论文等">
-  <meta name="keywords" content="并行编程 图书 资料 论文 博客">
+  <meta name="description" content="本文详细总结了并发编程（Concurrency Programming）相关的学习资料，包括图书、教科书、教材、博客、论文等">
+  <meta name="keywords" content="并发编程 图书 资料 论文 博客 并行编程">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -118,7 +118,7 @@ MathJax.Hub.Config({
 
 <p>优点：</p>
 
-<p>1，很全面，除了介绍lock的实现、RCU、Transaction Memory等等之外，还包括一些并行程序设计的其他知识，比如如何验证、如何调试等。</p>
+<p>1，很全面，除了介绍lock的实现、RCU、Transaction Memory等等之外，还包括一些并发程序设计的其他知识，比如如何验证、如何调试等。</p>
 
 <p>个人非常喜欢第14章和附录C，分别详细介绍了什么是memory barrier以及为什么需要memory barrier。强烈推荐！</p>
 
@@ -158,7 +158,7 @@ MathJax.Hub.Config({
 
 <p>1，鸡肋。初学者看了云里雾里，高手没必要看。</p>
 
-<p>是作者实力不够吗？恐怕不是。作者Michael L. Scott是程序语言设计和并行编程的大拿。</p>
+<p>是作者实力不够吗？恐怕不是。作者Michael L. Scott是程序语言设计和并发编程的大拿。</p>
 
 <p>是作者表述能力不行吗？恐怕不是。他写有一本非常著名和畅销的书籍：《Programming Language Pragmatics》（我没读过）</p>
 
@@ -170,7 +170,75 @@ MathJax.Hub.Config({
 
 <h2 id="blog">Blog</h2>
 
+<p><a href="http://preshingcom/">Jeff Preshing’s Blog</a></p>
+
+<p><a href="http://www.cliffc.org/blog/">Cliff Click’s Blog</a></p>
+
+<p><a href="http://www.yebangyu.org">Yebangyu’s Blog</a></p>
+
 <h2 id="paper">Paper</h2>
+
+<h3 id="linked-list--skip-list">Linked List &amp; Skip List</h3>
+
+<p><a href="https://timharris.uk/papers/2001-disc.pdf">A Pragmatic Implementation of Non-Blocking Linked-Lists</a></p>
+
+<p><a href="http://www.cse.yorku.ca/~ruppert/papers/lfll.pdf">Lock Free Linked Lists and Skip Lists</a></p>
+
+<p><a href="http://www.cse.yorku.ca/~ruppert/Mikhail.pdf">Lock Free Linked Lists and Skip Lists</a></p>
+
+<p><a href="http://cs.ucf.edu/~dcm/Teaching/COT4810-Spring2011/Literature/SplitOrderedLists.pdf">Split-Ordered Lists: Lockfree Extensible Hash Tables</a></p>
+
+<p><a href="http://cs.brown.edu/~mph/LevHLS06/OPODIS2006-BA.pdf">A Provably Correct Scalable Concurrent Skip List</a></p>
+
+<h3 id="stack">Stack</h3>
+
+<p><a href="http://www.cs.bgu.ac.il/~hendlerd/papers/scalable-stack.pdf">A Scalable Lock Free Stack Algorithm</a></p>
+
+<h3 id="queue">Queue</h3>
+
+<p><a href="http://www.non-blocking.com/download/SunT03_PQueue_TR.pdf">Fast and Lock Free Concurrent Priority Queues for Multi-Thread Systems</a></p>
+
+<p><a href="http://people.csail.mit.edu/edya/publications/OptimisticFIFOQueue-DISC2004.pdf">An Optimistic Approach to Lock Free FIFO Queues</a></p>
+
+<h3 id="hash-map">Hash Map</h3>
+
+<p><a href="http://www.win.tue.nl/~jfg/articles/CS-Report03-03.pdf">Efficient Almost Wait Free Parallel Accessible Dynamic Hash-tables</a></p>
+
+<p><a href="http://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-639.pdf">Non-Blocking Hash-Tables With Open Addressing</a></p>
+
+<p><a href="http://cs.brown.edu/~mph/HellerHLMSS05/2005-OPODIS-Lazy.pdf">A Lazy Concurrent List-Based Set Algorithm</a></p>
+
+<p><a href="http://www.research.ibm.com/people/m/michael/spaa-2002.pdf">High Performance Dynamic Lock-Free Hash Tables and List-Based Sets</a></p>
+
+<h3 id="cuckoo-hash-map">Cuckoo Hash Map</h3>
+
+<p><a href="http://excess-project.eu/publications/published/CuckooHashing_ICDCS.pdf">Lock-free Cuckoo Hashing</a></p>
+
+<h3 id="b-tree">B+ Tree</h3>
+
+<p><a href="http://www.cs.technion.ac.il/~erez/Papers/lfbtree-full.pdf">A Lock-Free B+ Tree</a></p>
+
+<p><a href="http://www.cs.technion.ac.il/~anastas/lfbtree-spaa.pdf">A Lock-Free B+ Tree</a></p>
+
+<h3 id="others">Others</h3>
+
+<p><a href="https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf">Hazard Pointers: Safe Memory Reclamation For Lock-Free Objects</a></p>
+
+<p><a href="http://www.grame.fr/ressources/publications/fober-JIM2002.pdf">Lock Free Techniques for Concurrent Access to Shared Objects</a></p>
+
+<p><a href="http://www.cs.rochester.edu/~scott/papers/1998_JPDC_nonblocking.pdf">Non-Blocking Algorithms and Preemption-Safe Locking on Multiprogrammed Shared Memory Multiprocessors</a></p>
+
+<p><a href="http://cs.brown.edu/people/mph/HerlihyLM03/main.pdf">Obstruction-Free Synchronization: Double-Ended Queues as an Example</a></p>
+
+<p><a href="http://www.research.ibm.com/people/m/michael/podc-2002.pdf">Safe Memory Reclamation for Dynamic Lock Free Objects Using Atomic Reads and Writes</a></p>
+
+<p><a href="http://www.ece.uc.edu/~paw/classes/ece975/sp2010/papers/herlihy-05.pdf">Non-blocking Memory Management Support for Dynamic-Sized Data Structures</a></p>
+
+<p><a href="http://cs.brown.edu/~mph/DohertyHLM04/ft_gateway.cfm.pdf">Bringing Practical Lock Free Synchronization to 64Bit Applications</a></p>
+
+<p><a href="https://www.research.ibm.com/people/m/michael/pldi-2004.pdf">Scalable Lock-Free Dynamic Memory Allocation</a></p>
+
+<p><a href="http://research.microsoft.com/pubs/209106/paper.pdf">Are Lock-Free Concurrent Algorithms Practically Wait-Free</a></p>
 </div>
 
 

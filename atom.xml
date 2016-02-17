@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-16T23:56:42+08:00</updated>
+  <updated>2016-02-17T22:07:58+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -36,7 +36,7 @@
 
 <p>优点：</p>
 
-<p>1，很全面，除了介绍lock的实现、RCU、Transaction Memory等等之外，还包括一些并行程序设计的其他知识，比如如何验证、如何调试等。</p>
+<p>1，很全面，除了介绍lock的实现、RCU、Transaction Memory等等之外，还包括一些并发程序设计的其他知识，比如如何验证、如何调试等。</p>
 
 <p>个人非常喜欢第14章和附录C，分别详细介绍了什么是memory barrier以及为什么需要memory barrier。强烈推荐！</p>
 
@@ -76,7 +76,7 @@
 
 <p>1，鸡肋。初学者看了云里雾里，高手没必要看。</p>
 
-<p>是作者实力不够吗？恐怕不是。作者Michael L. Scott是程序语言设计和并行编程的大拿。</p>
+<p>是作者实力不够吗？恐怕不是。作者Michael L. Scott是程序语言设计和并发编程的大拿。</p>
 
 <p>是作者表述能力不行吗？恐怕不是。他写有一本非常著名和畅销的书籍：《Programming Language Pragmatics》（我没读过）</p>
 
@@ -88,7 +88,75 @@
 
 <h2 id="blog">Blog</h2>
 
+<p><a href="http://preshingcom/">Jeff Preshing’s Blog</a></p>
+
+<p><a href="http://www.cliffc.org/blog/">Cliff Click’s Blog</a></p>
+
+<p><a href="http://www.yebangyu.org">Yebangyu’s Blog</a></p>
+
 <h2 id="paper">Paper</h2>
+
+<h3 id="linked-list--skip-list">Linked List &amp; Skip List</h3>
+
+<p><a href="https://timharris.uk/papers/2001-disc.pdf">A Pragmatic Implementation of Non-Blocking Linked-Lists</a></p>
+
+<p><a href="http://www.cse.yorku.ca/~ruppert/papers/lfll.pdf">Lock Free Linked Lists and Skip Lists</a></p>
+
+<p><a href="http://www.cse.yorku.ca/~ruppert/Mikhail.pdf">Lock Free Linked Lists and Skip Lists</a></p>
+
+<p><a href="http://cs.ucf.edu/~dcm/Teaching/COT4810-Spring2011/Literature/SplitOrderedLists.pdf">Split-Ordered Lists: Lockfree Extensible Hash Tables</a></p>
+
+<p><a href="http://cs.brown.edu/~mph/LevHLS06/OPODIS2006-BA.pdf">A Provably Correct Scalable Concurrent Skip List</a></p>
+
+<h3 id="stack">Stack</h3>
+
+<p><a href="http://www.cs.bgu.ac.il/~hendlerd/papers/scalable-stack.pdf">A Scalable Lock Free Stack Algorithm</a></p>
+
+<h3 id="queue">Queue</h3>
+
+<p><a href="http://www.non-blocking.com/download/SunT03_PQueue_TR.pdf">Fast and Lock Free Concurrent Priority Queues for Multi-Thread Systems</a></p>
+
+<p><a href="http://people.csail.mit.edu/edya/publications/OptimisticFIFOQueue-DISC2004.pdf">An Optimistic Approach to Lock Free FIFO Queues</a></p>
+
+<h3 id="hash-map">Hash Map</h3>
+
+<p><a href="http://www.win.tue.nl/~jfg/articles/CS-Report03-03.pdf">Efficient Almost Wait Free Parallel Accessible Dynamic Hash-tables</a></p>
+
+<p><a href="http://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-639.pdf">Non-Blocking Hash-Tables With Open Addressing</a></p>
+
+<p><a href="http://cs.brown.edu/~mph/HellerHLMSS05/2005-OPODIS-Lazy.pdf">A Lazy Concurrent List-Based Set Algorithm</a></p>
+
+<p><a href="http://www.research.ibm.com/people/m/michael/spaa-2002.pdf">High Performance Dynamic Lock-Free Hash Tables and List-Based Sets</a></p>
+
+<h3 id="cuckoo-hash-map">Cuckoo Hash Map</h3>
+
+<p><a href="http://excess-project.eu/publications/published/CuckooHashing_ICDCS.pdf">Lock-free Cuckoo Hashing</a></p>
+
+<h3 id="b-tree">B+ Tree</h3>
+
+<p><a href="http://www.cs.technion.ac.il/~erez/Papers/lfbtree-full.pdf">A Lock-Free B+ Tree</a></p>
+
+<p><a href="http://www.cs.technion.ac.il/~anastas/lfbtree-spaa.pdf">A Lock-Free B+ Tree</a></p>
+
+<h3 id="others">Others</h3>
+
+<p><a href="https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf">Hazard Pointers: Safe Memory Reclamation For Lock-Free Objects</a></p>
+
+<p><a href="http://www.grame.fr/ressources/publications/fober-JIM2002.pdf">Lock Free Techniques for Concurrent Access to Shared Objects</a></p>
+
+<p><a href="http://www.cs.rochester.edu/~scott/papers/1998_JPDC_nonblocking.pdf">Non-Blocking Algorithms and Preemption-Safe Locking on Multiprogrammed Shared Memory Multiprocessors</a></p>
+
+<p><a href="http://cs.brown.edu/people/mph/HerlihyLM03/main.pdf">Obstruction-Free Synchronization: Double-Ended Queues as an Example</a></p>
+
+<p><a href="http://www.research.ibm.com/people/m/michael/podc-2002.pdf">Safe Memory Reclamation for Dynamic Lock Free Objects Using Atomic Reads and Writes</a></p>
+
+<p><a href="http://www.ece.uc.edu/~paw/classes/ece975/sp2010/papers/herlihy-05.pdf">Non-blocking Memory Management Support for Dynamic-Sized Data Structures</a></p>
+
+<p><a href="http://cs.brown.edu/~mph/DohertyHLM04/ft_gateway.cfm.pdf">Bringing Practical Lock Free Synchronization to 64Bit Applications</a></p>
+
+<p><a href="https://www.research.ibm.com/people/m/michael/pldi-2004.pdf">Scalable Lock-Free Dynamic Memory Allocation</a></p>
+
+<p><a href="http://research.microsoft.com/pubs/209106/paper.pdf">Are Lock-Free Concurrent Algorithms Practically Wait-Free</a></p>
 ]]></content>
   </entry>
   
@@ -3006,6 +3074,324 @@ bool is_valid_int64(const Double &amp;value);
 <p>因此，毫无疑问，这是烂代码，不合格的代码，需要重写的代码。</p>
 
 <hr />
+
+<p>以下是我个人认为比较好的设计和实现，仅供参考。</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+<span class="line-number">29</span>
+<span class="line-number">30</span>
+<span class="line-number">31</span>
+<span class="line-number">32</span>
+<span class="line-number">33</span>
+<span class="line-number">34</span>
+<span class="line-number">35</span>
+<span class="line-number">36</span>
+<span class="line-number">37</span>
+<span class="line-number">38</span>
+<span class="line-number">39</span>
+<span class="line-number">40</span>
+<span class="line-number">41</span>
+<span class="line-number">42</span>
+<span class="line-number">43</span>
+<span class="line-number">44</span>
+<span class="line-number">45</span>
+<span class="line-number">46</span>
+<span class="line-number">47</span>
+<span class="line-number">48</span>
+<span class="line-number">49</span>
+<span class="line-number">50</span>
+<span class="line-number">51</span>
+<span class="line-number">52</span>
+<span class="line-number">53</span>
+<span class="line-number">54</span>
+<span class="line-number">55</span>
+<span class="line-number">56</span>
+<span class="line-number">57</span>
+<span class="line-number">58</span>
+<span class="line-number">59</span>
+<span class="line-number">60</span>
+<span class="line-number">61</span>
+<span class="line-number">62</span>
+<span class="line-number">63</span>
+<span class="line-number">64</span>
+<span class="line-number">65</span>
+<span class="line-number">66</span>
+<span class="line-number">67</span>
+<span class="line-number">68</span>
+<span class="line-number">69</span>
+<span class="line-number">70</span>
+<span class="line-number">71</span>
+<span class="line-number">72</span>
+<span class="line-number">73</span>
+<span class="line-number">74</span>
+<span class="line-number">75</span>
+<span class="line-number">76</span>
+<span class="line-number">77</span>
+<span class="line-number">78</span>
+<span class="line-number">79</span>
+<span class="line-number">80</span>
+<span class="line-number">81</span>
+<span class="line-number">82</span>
+<span class="line-number">83</span>
+<span class="line-number">84</span>
+<span class="line-number">85</span>
+<span class="line-number">86</span>
+<span class="line-number">87</span>
+<span class="line-number">88</span>
+<span class="line-number">89</span>
+<span class="line-number">90</span>
+<span class="line-number">91</span>
+<span class="line-number">92</span>
+<span class="line-number">93</span>
+<span class="line-number">94</span>
+<span class="line-number">95</span>
+<span class="line-number">96</span>
+<span class="line-number">97</span>
+<span class="line-number">98</span>
+<span class="line-number">99</span>
+<span class="line-number">100</span>
+<span class="line-number">101</span>
+<span class="line-number">102</span>
+<span class="line-number">103</span>
+<span class="line-number">104</span>
+<span class="line-number">105</span>
+<span class="line-number">106</span>
+<span class="line-number">107</span>
+<span class="line-number">108</span>
+<span class="line-number">109</span>
+<span class="line-number">110</span>
+<span class="line-number">111</span>
+<span class="line-number">112</span>
+<span class="line-number">113</span>
+<span class="line-number">114</span>
+<span class="line-number">115</span>
+<span class="line-number">116</span>
+<span class="line-number">117</span>
+<span class="line-number">118</span>
+<span class="line-number">119</span>
+<span class="line-number">120</span>
+<span class="line-number">121</span>
+<span class="line-number">122</span>
+<span class="line-number">123</span>
+<span class="line-number">124</span>
+<span class="line-number">125</span>
+<span class="line-number">126</span>
+<span class="line-number">127</span>
+<span class="line-number">128</span>
+<span class="line-number">129</span>
+<span class="line-number">130</span>
+<span class="line-number">131</span>
+<span class="line-number">132</span>
+<span class="line-number">133</span>
+<span class="line-number">134</span>
+<span class="line-number">135</span>
+<span class="line-number">136</span>
+<span class="line-number">137</span>
+<span class="line-number">138</span>
+<span class="line-number">139</span>
+<span class="line-number">140</span>
+<span class="line-number">141</span>
+<span class="line-number">142</span>
+<span class="line-number">143</span>
+<span class="line-number">144</span>
+<span class="line-number">145</span>
+<span class="line-number">146</span>
+<span class="line-number">147</span>
+<span class="line-number">148</span>
+<span class="line-number">149</span>
+<span class="line-number">150</span>
+<span class="line-number">151</span>
+<span class="line-number">152</span>
+<span class="line-number">153</span>
+<span class="line-number">154</span>
+<span class="line-number">155</span>
+<span class="line-number">156</span>
+<span class="line-number">157</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">bool</span> <span class="nf">is_valid_uint64</span><span class="p">(</span><span class="k">const</span> <span class="n">Double</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">)</span>
+</span><span class="line">
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">
+</span><span class="line">  <span class="kt">bool</span> <span class="n">ret</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="n">check_range</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ret</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">value</span><span class="p">);</span>
+</span><span class="line">
+</span><span class="line">  <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line"><span class="p">}</span>
+</span><span class="line">
+</span><span class="line">
+</span><span class="line">
+</span><span class="line"><span class="kt">bool</span> <span class="nf">is_valid_int64</span><span class="p">(</span><span class="k">const</span> <span class="n">Double</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">)</span>
+</span><span class="line">
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">
+</span><span class="line">  <span class="kt">bool</span> <span class="n">ret</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="n">check_range</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ret</span><span class="p">,</span> <span class="n">value</span><span class="p">);</span>
+</span><span class="line">
+</span><span class="line">  <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line"><span class="p">}</span>
+</span><span class="line">
+</span><span class="line">
+</span><span class="line">
+</span><span class="line"><span class="kt">void</span> <span class="n">check_range</span><span class="p">(</span><span class="k">const</span> <span class="n">Double</span> <span class="o">&amp;</span><span class="n">value</span><span class="p">,</span>
+</span><span class="line">
+</span><span class="line">                 <span class="kt">bool</span> <span class="o">*</span><span class="n">is_valid_uint64</span><span class="p">,</span>
+</span><span class="line">
+</span><span class="line">                 <span class="kt">bool</span> <span class="o">*</span><span class="n">is_valid_int64</span><span class="p">)</span> <span class="k">const</span>
+</span><span class="line">
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">
+</span><span class="line">  <span class="cm">/*</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * 对于一个负数的value，它不可能是一个合法的uint64.</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * 因此，只剩下三种可能：</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * I 输入的value是负数，判断是否是合法的int64</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * II 输入的value是正数，判断是否是合法的uint64</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * III 输入的value是正数，判断是否是合法的int64</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * 对于第II、III这两种情况：只要判断value的值是否超过uint64、int64的上界即可</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * 对于第I种情况，我们利用-A &gt; -B 等价于 A &lt; B （其中A、B是正数）</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * 因此，在第I种情况里，可以判断value的绝对值，是否超过int64的最小值的绝对值即可。</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * （int64的最小值的绝对值？那不就是int64的最大值？哦，不！）</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * 因此，不管哪种情况，判断绝对值是否超过某个上界即可。</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">   * 这三种情况，上界不一样。把三个上界存到了一个二维数组THRESHOLD里</span>
+</span><span class="line">
+</span><span class="line"><span class="cm">  */</span>
+</span><span class="line">
+</span><span class="line">
+</span><span class="line">
+</span><span class="line">  <span class="kt">bool</span> <span class="o">*</span><span class="n">is_valid</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">FLAG_INT64</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">FLAG_UINT64</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">SIGN_NEG</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">SIGN_POS</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="kt">int</span> <span class="n">flag</span> <span class="o">=</span> <span class="n">FLAG_INT64</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="nb">NULL</span> <span class="o">!=</span> <span class="n">is_valid_uint64</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">    <span class="n">is_valid</span> <span class="o">=</span> <span class="n">is_valid_uint64</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">    <span class="n">flag</span> <span class="o">=</span> <span class="n">FLAG_UINT64</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">    <span class="n">is_valid</span> <span class="o">=</span> <span class="n">is_valid_int64</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">
+</span><span class="line">  <span class="o">*</span><span class="n">is_valid</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">value</span><span class="p">.</span><span class="n">is_zero</span><span class="p">())</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">    <span class="c1">//do nothing。0是合法的uint64，也是合法的int64</span>
+</span><span class="line">
+</span><span class="line">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">    <span class="kt">int</span> <span class="n">sign</span> <span class="o">=</span> <span class="n">value</span><span class="p">.</span><span class="n">is_neg</span><span class="p">()</span> <span class="o">?</span> <span class="nl">SIGN_NEG</span> <span class="p">:</span> <span class="n">SIGN_POS</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">    <span class="k">if</span> <span class="p">((</span><span class="n">SIGN_NEG</span> <span class="o">==</span> <span class="n">sign</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">FLAG_UINT64</span> <span class="o">==</span> <span class="n">flag</span><span class="p">))</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">      <span class="o">*</span><span class="n">is_valid</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span><span class="c1">//负数不可能是合法的uint64</span>
+</span><span class="line">
+</span><span class="line">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">      <span class="kt">uint64_t</span> <span class="n">valueUint</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">      <span class="k">static</span> <span class="kt">uint64_t</span> <span class="n">ABS_INT64_MIN</span> <span class="o">=</span> <span class="mi">9223372036854775808ULL</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">                                         <span class="c1">//int64        uint64</span>
+</span><span class="line">
+</span><span class="line">      <span class="k">static</span> <span class="kt">uint64_t</span> <span class="n">THRESHOLD</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="p">{</span><span class="n">ABS_INT64_MIN</span><span class="p">,</span> <span class="mi">0</span><span class="p">},</span> <span class="c1">//neg</span>
+</span><span class="line">
+</span><span class="line">                                         <span class="p">{</span><span class="n">INT64_MAX</span><span class="p">,</span>     <span class="n">UINT64_MAX</span><span class="p">}</span> <span class="p">};</span> <span class="c1">//pos</span>
+</span><span class="line">
+</span><span class="line">      <span class="kt">int</span> <span class="n">digit</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">      <span class="kt">bool</span> <span class="n">is_decimal</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">      <span class="k">while</span> <span class="p">((</span><span class="n">digit</span> <span class="o">=</span> <span class="n">value</span><span class="p">.</span><span class="n">get_next_digit</span><span class="p">(</span><span class="n">is_decimal</span><span class="p">))</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">is_decimal</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">          <span class="c1">//为了防止溢出，我们不能这么写:</span>
+</span><span class="line">
+</span><span class="line">          <span class="c1">//&quot;value * 10 + digit &gt; THRESHOLD[index]&quot;</span>
+</span><span class="line">
+</span><span class="line">          <span class="k">if</span> <span class="p">(</span><span class="n">valueUint</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">THRESHOLD</span><span class="p">[</span><span class="n">sign</span><span class="p">][</span><span class="n">flag</span><span class="p">]</span> <span class="o">-</span> <span class="n">digit</span><span class="p">)</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">            <span class="o">*</span><span class="n">is_valid</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">            <span class="k">break</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">            <span class="n">valueUint</span> <span class="o">=</span> <span class="n">valueUint</span> <span class="o">*</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">digit</span><span class="p">;</span><span class="c1">//霍纳法则（也叫秦九韶算法）</span>
+</span><span class="line">
+</span><span class="line">          <span class="p">}</span>
+</span><span class="line">
+</span><span class="line">        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">digit</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">
+</span><span class="line">            <span class="o">*</span><span class="n">is_valid</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span> <span class="c1">//小数部分必须是0；否则不可能是合法的uint64、int64</span>
+</span><span class="line">
+</span><span class="line">            <span class="k">break</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line">          <span class="p">}</span>
+</span><span class="line">
+</span><span class="line">        <span class="p">}</span>
+</span><span class="line">
+</span><span class="line">      <span class="p">}</span>
+</span><span class="line">
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
 
 ]]></content>
   </entry>
