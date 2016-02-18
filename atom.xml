@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-17T22:34:36+08:00</updated>
+  <updated>2016-02-18T22:44:44+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -52,11 +52,11 @@
 
 <p>被很多人推崇。第一版有很多错误，作者随后推出了revised版本。</p>
 
-<p>优点：市面上目前能见到的唯一一本包括大量lock free data structure实现的书籍。</p>
+<p>优点：市面上目前能见到的唯一一本包括大量Lock Free Data Structure实现的书籍。</p>
 
 <p>缺点：</p>
 
-<p>1，Java语言实现。我固执认为应该用C或者C++</p>
+<p>1，Java语言实现。个人固执认为应该用C或者C++</p>
 
 <p>2，没有介绍RCU等重要内容</p>
 
@@ -118,6 +118,8 @@
 
 <h3 id="queue">Queue</h3>
 
+<p><a href="http://www.cs.rochester.edu/~scott/papers/1996_PODC_queues.pdf">Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms</a></p>
+
 <p><a href="http://www.non-blocking.com/download/SunT03_PQueue_TR.pdf">Fast and Lock Free Concurrent Priority Queues for Multi-Thread Systems</a></p>
 
 <p><a href="http://people.csail.mit.edu/edya/publications/OptimisticFIFOQueue-DISC2004.pdf">An Optimistic Approach to Lock Free FIFO Queues</a></p>
@@ -162,9 +164,13 @@
 
 <p><a href="http://research.microsoft.com/pubs/209106/paper.pdf">Are Lock-Free Concurrent Algorithms Practically Wait-Free</a></p>
 
+<p><a href="http://www.cl.cam.ac.uk/~pes20/cpp/popl085ap-sewell.pdf">Mathematizing C++ Concurrency</a></p>
+
 <h2 id="pages">Pages</h2>
 
 <p><a href="https://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync">Memory model synchronization modes</a></p>
+
+<p><a href="http://jakob.engbloms.se/archives/65">Dekker’s Algorithm Does not Work, as Expected</a></p>
 ]]></content>
   </entry>
   
