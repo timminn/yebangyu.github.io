@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-20T23:43:07+08:00</updated>
+  <updated>2016-02-20T23:47:39+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -66,7 +66,7 @@
 
 <p>解决方法是让用户将正确的、对应的、适配的资源释放例程传递进来，然而delete是expression，free是函数，更悲剧的是不同用户实现的资源回收函数原型不尽相同。如何做呢？</p>
 
-<p>对象函数是解决这个问题的利器。我们可以这样：</p>
+<p>函数对象是解决这个问题的利器。我们可以这样：</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -108,7 +108,7 @@
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>用户需要实现自己的CallBack类的operator ()。如下所示：</p>
+<p>用户需要实现自己的CallBack类的operator()成员函数。如下所示：</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
