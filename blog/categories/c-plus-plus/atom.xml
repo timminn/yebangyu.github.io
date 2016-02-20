@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-20T23:32:42+08:00</updated>
+  <updated>2016-02-20T23:43:07+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -75,19 +75,19 @@ void del(LinkedListNode *p)
   LinkedListNode *prev = get_prev(p);
   prev-&gt;next_ = p-&gt;next_;
   CallBack cb;
-  cb(p);
+  cb(p);//调用用户提供的资源回收例程
 }
 </code></p>
 
-<p>用户需要实现自己的CallBack类，尤其是operator ()。比如说：</p>
+<p>用户需要实现自己的CallBack类的operator ()。如下所示：</p>
 
 <p><code>c++
-class MyCallBack
+class MyReclaimRoutine
 {
   public:
     void operator() (LinkedListNode *p)
     {
-      delete p;//free(p) ? my_release_func(p) ? all up to you!
+      delete p; //free(p) ? my_release_func(p) ? all up to you!
     }
 };
 </code></p>
@@ -95,7 +95,7 @@ class MyCallBack
 <p>然后就万事大吉了：</p>
 
 <p><code>c++
-LinkedList&lt;MyCallBack&gt; list;
+LinkedList&lt;MyReclaimRoutine&gt; list;
 LinkedListNode *p = new LinkedListNode(2, NULL);
 list.insert(p);
 list.del(p);//ok! delete p will be called

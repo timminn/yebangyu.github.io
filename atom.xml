@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-20T23:32:42+08:00</updated>
+  <updated>2016-02-20T23:43:07+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -104,11 +104,11 @@
 </span><span class="line">  <span class="n">LinkedListNode</span> <span class="o">*</span><span class="n">prev</span> <span class="o">=</span> <span class="n">get_prev</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
 </span><span class="line">  <span class="n">prev</span><span class="o">-&gt;</span><span class="n">next_</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">next_</span><span class="p">;</span>
 </span><span class="line">  <span class="n">CallBack</span> <span class="n">cb</span><span class="p">;</span>
-</span><span class="line">  <span class="n">cb</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+</span><span class="line">  <span class="n">cb</span><span class="p">(</span><span class="n">p</span><span class="p">);</span><span class="c1">//调用用户提供的资源回收例程</span>
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>用户需要实现自己的CallBack类，尤其是operator ()。比如说：</p>
+<p>用户需要实现自己的CallBack类的operator ()。如下所示：</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -118,12 +118,12 @@
 <span class="line-number">6</span>
 <span class="line-number">7</span>
 <span class="line-number">8</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">MyCallBack</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">MyReclaimRoutine</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="k">public</span><span class="o">:</span>
 </span><span class="line">    <span class="kt">void</span> <span class="k">operator</span><span class="p">()</span> <span class="p">(</span><span class="n">LinkedListNode</span> <span class="o">*</span><span class="n">p</span><span class="p">)</span>
 </span><span class="line">    <span class="p">{</span>
-</span><span class="line">      <span class="k">delete</span> <span class="n">p</span><span class="p">;</span><span class="c1">//free(p) ? my_release_func(p) ? all up to you!</span>
+</span><span class="line">      <span class="k">delete</span> <span class="n">p</span><span class="p">;</span> <span class="c1">//free(p) ? my_release_func(p) ? all up to you!</span>
 </span><span class="line">    <span class="p">}</span>
 </span><span class="line"><span class="p">};</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
@@ -134,7 +134,7 @@
 <span class="line-number">2</span>
 <span class="line-number">3</span>
 <span class="line-number">4</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">LinkedList</span><span class="o">&lt;</span><span class="n">MyCallBack</span><span class="o">&gt;</span> <span class="n">list</span><span class="p">;</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">LinkedList</span><span class="o">&lt;</span><span class="n">MyReclaimRoutine</span><span class="o">&gt;</span> <span class="n">list</span><span class="p">;</span>
 </span><span class="line"><span class="n">LinkedListNode</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LinkedListNode</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 </span><span class="line"><span class="n">list</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
 </span><span class="line"><span class="n">list</span><span class="p">.</span><span class="n">del</span><span class="p">(</span><span class="n">p</span><span class="p">);</span><span class="c1">//ok! delete p will be called</span>
