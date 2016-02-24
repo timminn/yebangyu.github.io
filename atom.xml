@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-24T22:29:04+08:00</updated>
+  <updated>2016-02-24T22:43:47+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,7 +18,7 @@
     <link href="http://www.yebangyu.org/blog/2016/02/24/writeelegantcodes/"/>
     <updated>2016-02-24T22:26:44+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/02/24/writeelegantcodes</id>
-    <content type="html"><![CDATA[<p>上回从微观角度，以一个实际的例子，从正确、高效、易读等特性着手，介绍了如何编写高质量的代码。这次，我们从宏观出发，从软件开发流程入手，着重介绍其中的几个方面，包括代码规范、Code Review、测试等</p>
+    <content type="html"><![CDATA[<p><a href="http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes/">上回</a>我们从微观角度，以一个实际的例子，从正确、高效、易读等特性着手，介绍了如何编写高质量的代码。这次，我们从宏观出发，从软件开发流程入手，着重介绍其中的几个方面，包括代码规范、Code Review、测试等</p>
 
 <h2 id="section">代码规范</h2>
 
@@ -54,7 +54,7 @@
 </span><span class="line"><span class="kt">void</span> <span class="nf">g</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">p</span><span class="p">);</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>我们都知道，在g中，使用*p前需要对p是否为NULL进行判断，那么f呢？如果质量非常关键、代码安全非常重要对场景，那么实际上，也是需要的。因为调用者可能这样：</p>
+<p>我们都知道，在g中，使用*p前需要对p是否为NULL进行判断，那么f呢？如果质量非常关键、代码安全非常重要的场景，那么实际上，也是需要的。因为调用者可能这样：</p>
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
 <span class="line-number">3</span>
@@ -136,7 +136,7 @@
 
 <h3 id="code-review-1">什么是Code Review？</h3>
 
-<p>很多人把它翻译为代码审查，我觉得太政治味了。程序员尤其是新手写完代码后，可能会有风格问题（比如不符合团队的代码规范）、安全性问题(比如忘记指针判空)、优雅性问题(比如大量多余代码)、正确性问题（比如算法设计错误），那么在发布代码到公共库之前，提交给师兄或者mentor，让他帮你review一下代码，并提出可能的问题和建议，让你好好修改。这样的过程，就叫做Code Review。</p>
+<p>很多人把它翻译为代码审查，我觉得太政治味了。程序员尤其是新手写完代码后，可能会有风格问题（比如不符合团队的代码规范）、安全性问题(比如忘记指针判空)、优雅性问题(比如大量冗余代码)、正确性问题（比如算法设计错误），那么在发布代码到公共库之前，提交给师兄或者mentor，让他帮你review一下代码，并提出可能的问题和建议，让你好好修改。这样的过程，就叫做Code Review。</p>
 
 <h3 id="section-5">天纳，那这不是很占用时间？</h3>
 
@@ -158,7 +158,7 @@
 
 <p>2，作为Reviewer，看不懂代码就把作者拉过来，当面询问，不要不懂装懂，也不要爱面子不好意思问。</p>
 
-<p>3，作为Coder，心里要有感激之情。真的。不要得了便宜还卖乖，感恩reviewer，感激reviewer对自己对进步和成长所做出对贡献，所花费的心血。中国人里狼心狗肺、忘恩负义、不懂感恩的人还算少吗？</p>
+<p>3，作为Coder，心里要有感激之情。真的。不要得了便宜还卖乖，感恩reviewer，感激reviewer对自己的进步和成长所做出的贡献，所花费的心血。中国人里狼心狗肺、忘恩负义、不懂感恩的人还算少吗？</p>
 
 <p>4，作为Coder，给Reviewer Review之前，请先做单元测试并确保通过，并自己尝试先整体看一遍自己本次提交的代码。注意，不要给别人提还没调试通过的代码，这是非常不尊重别人的表现。</p>
 
@@ -172,22 +172,22 @@
 
 <p>int binary_search(int *p, int n, int target, int &amp;idx);</p>
 
-<p>binary_search函数返回值为0表示成功执行，输出参数idx返回target在有序数组p中位置，－1表示不存在。</p>
+<p>binary_search函数返回值为0表示成功执行，输出参数idx返回target在有序数组p中(第一次出现)的位置，－1表示不存在。</p>
 
 <p>那么测试用例至少应该涵盖：</p>
 
 <ul>
   <li>
-    <p>[x] p为NULL的情况</p>
+    <p>p为NULL的情况</p>
   </li>
   <li>
-    <p>[x] 数组大小n分别为负数、0、1、2时情况</p>
+    <p>数组大小n分别为负数、0、1、2时情况</p>
   </li>
   <li>
-    <p>[x] 数组p不是有序数组的情况</p>
+    <p>数组p不是有序数组的情况</p>
   </li>
   <li>
-    <p>[x] target在数组中出现0次、1次、n次的情况</p>
+    <p>target在数组中出现0次、1次、n次的情况</p>
   </li>
 </ul>
 
