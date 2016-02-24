@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-21T00:12:23+08:00</updated>
+  <updated>2016-02-24T22:29:04+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,190 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[编写高质量代码(下)]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/02/24/writeelegantcodes/"/>
+    <updated>2016-02-24T22:26:44+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/02/24/writeelegantcodes</id>
+    <content type="html"><![CDATA[<p>上回从微观角度，以一个实际的例子，从正确、高效、易读等特性着手，介绍了如何编写高质量的代码。这次，我们从宏观出发，从软件开发流程入手，着重介绍其中的几个方面，包括代码规范、Code Review、测试等</p>
+
+<h2 id="section">代码规范</h2>
+
+<p>团队的代码规范，一般由领导和大佬们制定后，大家统一实行。这里面有几个问题：</p>
+
+<h3 id="section-1">真的需要代码规范吗？</h3>
+
+<p>言下之意，制定和执行代码规范是否浪费时间？</p>
+
+<!--more-->
+
+<p>答案是：It depends。如果项目很庞大、代码质量要求很高，那么，制定和执行代码规范所花费的时间，将大大少于后期因为不规范开发带来的种种调试和维护成本。如果是小打小闹的代码，就无所谓了。</p>
+
+<h3 id="section-2">代码规范的制定为什么这么难？</h3>
+
+<p>原因众多，其中一个很重要的部分是大佬众多，大家的口味和风格不同。就代码风格而言，有人喜欢对内置类型变量i使用i++，有人坚持认为应该使用++i不管i是不是复杂类型。因此，制定代码规范需要在讨论之后最后拍板决定，这里面甚至需要独裁！是的，独裁！</p>
+
+<h3 id="section-3">代码规范制定需要注意什么事项？</h3>
+
+<p>如果代码规范限制太松，那么等于没有规范；如果太严，大大影响开发效率。这里面的尺度，需要根据项目需要、团队成员特点全面考量，进行取舍。</p>
+
+<p>需要注意的是，没有任何一种代码规范是完美的。例如，在C++中，如果启用异常，那么代码的流程将会被各种异常处理中断，各种try catch throw让代码很不美观；如果禁用异常，也就是在开发的过程中不能使用异常特性，那么团队成员可能因为长期没有接触这项语言feature而造成知识和技能短板。</p>
+
+<h3 id="section-4">代码风格举例</h3>
+
+<p>举两个我认为比较重要、比较新鲜、比较有趣的代码风格。</p>
+
+<p>1，使用引用需要判空吗？</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span> <span class="o">&amp;</span><span class="n">p</span><span class="p">);</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">g</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">p</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>我们都知道，在g中，使用*p前需要对p是否为NULL进行判断，那么f呢？如果质量非常关键、代码安全非常重要对场景，那么实际上，也是需要的。因为调用者可能这样：</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="o">*</span><span class="n">q</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class="line"><span class="c1">//......</span>
+</span><span class="line"><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">q</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>因此，需要在f里增加<code>if(NULL == &amp;p)</code>的判断。</p>
+
+<p>2，级联if else语句。</p>
+
+<p>首先看一个我个人认为不好的代码风格：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">b</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;=</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">        <span class="c1">//do sth</span>
+</span><span class="line">      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">        <span class="c1">//error1</span>
+</span><span class="line">      <span class="p">}</span>
+</span><span class="line">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">      <span class="c1">//error2</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">    <span class="c1">//error3</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>这个函数的核心在于do sth部分。其实我们可以改写为级联if－else形式，如下：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="c1">//error3</span>
+</span><span class="line">  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">b</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="c1">//error2</span>
+</span><span class="line">  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="c1">//error1</span>
+</span><span class="line">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">    <span class="c1">//so, a&gt;=1 &amp;&amp; b&gt;=1 &amp;&amp; a&gt;=b</span>
+</span><span class="line">    <span class="c1">//do sth</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>是不是优美多了？前面只做一些错误处理、前期准备、参数检查等，最后的else分支做实实在在的功能性事情。</p>
+
+<h2 id="code-review">Code Review</h2>
+
+<h3 id="code-review-1">什么是Code Review？</h3>
+
+<p>很多人把它翻译为代码审查，我觉得太政治味了。程序员尤其是新手写完代码后，可能会有风格问题（比如不符合团队的代码规范）、安全性问题(比如忘记指针判空)、优雅性问题(比如大量多余代码)、正确性问题（比如算法设计错误），那么在发布代码到公共库之前，提交给师兄或者mentor，让他帮你review一下代码，并提出可能的问题和建议，让你好好修改。这样的过程，就叫做Code Review。</p>
+
+<h3 id="section-5">天纳，那这不是很占用时间？</h3>
+
+<p>是的。一个写代码，一个看代码，看代码的时间可能并不比全新写一份代码少。那么，这又是何必呢？</p>
+
+<p>主要的原因有：</p>
+
+<p>0，review确实占用了开发时间，然而开发，或者说写代码，其实只占很少的时间比例。很多时间花在debug、调试、写文档、需求分析、设计算法、维护等等上。</p>
+
+<p>1，代码质量非常重要，这点时间投入是值得的。与其后期苦逼追bug，不如前期多投入点时间和人力。</p>
+
+<p>2，培养新人，让新手更快成长。</p>
+
+<h3 id="code-review-2">如何更好的执行Code Review</h3>
+
+<p>这里给几点建议：</p>
+
+<p>1，不走过场。走过场，还不如不要这个流程。</p>
+
+<p>2，作为Reviewer，看不懂代码就把作者拉过来，当面询问，不要不懂装懂，也不要爱面子不好意思问。</p>
+
+<p>3，作为Coder，心里要有感激之情。真的。不要得了便宜还卖乖，感恩reviewer，感激reviewer对自己对进步和成长所做出对贡献，所花费的心血。中国人里狼心狗肺、忘恩负义、不懂感恩的人还算少吗？</p>
+
+<p>4，作为Coder，给Reviewer Review之前，请先做单元测试并确保通过，并自己尝试先整体看一遍自己本次提交的代码。注意，不要给别人提还没调试通过的代码，这是非常不尊重别人的表现。</p>
+
+<h2 id="section-6">测试</h2>
+
+<p>1，测试不是专属QA的活儿，对自己写的代码提供质量保证，是程序员的职责。QA要负责的，是系统的质量，不是模块的质量。</p>
+
+<p>2，测试，需要意识，需要坚持。我发现C++程序员、前端程序员的测试意识或者说质量意识最强；数据科学家或者数据工程师的质量意识最差，很多人甚至不写测试用例。当然，这不怪他们，毕竟，有时候代码里有个bug，准确率和召回率会更高。</p>
+
+<p>3，测试用例的编写需要强调代码覆盖率。以非常经典的二分搜索为例：</p>
+
+<p>int binary_search(int *p, int n, int target, int &amp;idx);</p>
+
+<p>binary_search函数返回值为0表示成功执行，输出参数idx返回target在有序数组p中位置，－1表示不存在。</p>
+
+<p>那么测试用例至少应该涵盖：</p>
+
+<ul>
+  <li>
+    <p>[x] p为NULL的情况</p>
+  </li>
+  <li>
+    <p>[x] 数组大小n分别为负数、0、1、2时情况</p>
+  </li>
+  <li>
+    <p>[x] 数组p不是有序数组的情况</p>
+  </li>
+  <li>
+    <p>[x] target在数组中出现0次、1次、n次的情况</p>
+  </li>
+</ul>
+
+<p>你是否都考虑到了呢？</p>
+
+<p>4，有时候，自己书写测试用例显得刀耕火种，现在已经有很多辅助的工具，读者可以自行google一下。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[C++函数对象(function object)的应用]]></title>
@@ -2729,244 +2913,6 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 <p>因此，认为蜀国人比一定比魏国人更懂蜀国历史，是非常狭隘的观点，也是混账逻辑，也是不懂历史的表现。</p>
 
 <p>完。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[空指针(NULL)不能用吗？]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/11/06/null-pointer-can-be-accessed/"/>
-    <updated>2015-11-06T22:38:30+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/11/06/null-pointer-can-be-accessed</id>
-    <content type="html"><![CDATA[<p>我们常常被告知，使用指针前需要判断是否为<strong>NULL</strong>；如果是<strong>NULL</strong>而你去使用它就会出问题。真相果真是这样吗？</p>
-
-<p>同事颜廷帅（微博：@颜挺帅）给我看以下一个程序，问我，这段程序执行后，有问题吗？</p>
-
-<!--more-->
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-<span class="line-number">15</span>
-<span class="line-number">16</span>
-<span class="line-number">17</span>
-<span class="line-number">18</span>
-<span class="line-number">19</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;iostream&gt;</span>
-</span><span class="line"><span class="cp">#include&lt;cstdlib&gt;</span>
-</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
-</span><span class="line"><span class="k">class</span> <span class="nc">Test1</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line"><span class="k">private</span><span class="o">:</span>
-</span><span class="line">  <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
-</span><span class="line"><span class="k">public</span><span class="o">:</span>
-</span><span class="line">  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Test1: Core or not ? &quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">};</span>
-</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">Test1</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class="line">  <span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span><span class="p">();</span><span class="c1">//会core吗？会出大事吗？</span>
-</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<p>这里，<strong>p</strong>是一个空指针，通过这个空指针，我们访问了函数<strong>f</strong>。没<strong>core</strong>，没问题，成功输出了 <strong>Test1: Core or not ?</strong></p>
-
-<p>发生了什么事？空指针也能用？</p>
-
-<p>如果我们把<strong>f</strong>稍作修改，程序其他地方不做任何变动：</p>
-
-<pre><code>void f()
-{
-  cout&lt;&lt;"Test1: Core or not ? "&lt;&lt;a&lt;&lt;endl;//access a
-}
-</code></pre>
-
-<p>那么程序运行后分分钟<strong>core</strong>掉了。</p>
-
-<p>有没有感觉了？嗯，相信有了。我们继续往下看：</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-<span class="line-number">15</span>
-<span class="line-number">16</span>
-<span class="line-number">17</span>
-<span class="line-number">18</span>
-<span class="line-number">19</span>
-<span class="line-number">20</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;iostream&gt;</span>
-</span><span class="line"><span class="cp">#include&lt;cstdlib&gt;</span>
-</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
-</span><span class="line"><span class="k">static</span> <span class="kt">int</span> <span class="n">global</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-</span><span class="line"><span class="k">class</span> <span class="nc">Test2</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line"><span class="k">private</span><span class="o">:</span>
-</span><span class="line">  <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
-</span><span class="line"><span class="k">public</span><span class="o">:</span>
-</span><span class="line">  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Test1: Core or not ? &quot;</span><span class="o">&lt;&lt;</span><span class="n">global</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span><span class="c1">//access global</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">};</span>
-</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">Test2</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class="line">  <span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span><span class="p">();</span><span class="c1">//会core吗？会出大事吗？</span>
-</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<p>也没问题。</p>
-
-<p>嗯，你可能已经知道了真相。通过空指针访问东西，只要那个东西是确实存在的，就不会有问题。</p>
-
-<p>怎么理解“确实存在”？它是一个实体，看得见，摸得着。</p>
-
-<p>这得说到<strong>C++</strong>程序中对象的内存布局。</p>
-
-<p>在<strong>C++</strong>中，成员函数、静态变量是独立于对象存放的；而普通的数据成员是和对象相关的。</p>
-
-<pre><code>Test1 obj1;
-Test1 obj2;
-</code></pre>
-
-<p><strong>obj1</strong>和<strong>obj2</strong>是共用函数<strong>f</strong>的，函数<strong>f</strong>对<strong>obj1</strong>和<strong>obj2</strong>是相同的，内存中只有一份实体；而<strong>obj1</strong>和<strong>obj2</strong>有自己的实体<strong>a</strong>。</p>
-
-<p>然而，注意到<code>Test1 *p = NULL;</code>仅仅是声明式，而非定义式。这时候，没有定义任何的对象出来，通过<strong>p</strong>如何访问<strong>a</strong>呢？哪来的<strong>a</strong>呢？<strong>a</strong>在内存里并不存在。因此，访问<strong>a</strong>必定<strong>core</strong>。</p>
-
-<p>而函数<strong>f</strong>呢？它是独立于对象存放的，自然没问题。一般说来，<strong>f</strong>位于程序的代码段，而全局变量一般位于<strong>BSS</strong>段或者<strong>DATA</strong>段（这个比较复杂，和该全局变量是否初始化以及初始化为<strong>0</strong>还是非<strong>0</strong>有关）。而当我们定义对象时，才为该对象分配内存，才有数据成员<strong>a</strong>的存在：</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-<span class="line-number">15</span>
-<span class="line-number">16</span>
-<span class="line-number">17</span>
-<span class="line-number">18</span>
-<span class="line-number">19</span>
-<span class="line-number">20</span>
-<span class="line-number">21</span>
-<span class="line-number">22</span>
-<span class="line-number">23</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;iostream&gt;</span>
-</span><span class="line"><span class="cp">#include&lt;cstdlib&gt;</span>
-</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
-</span><span class="line"><span class="k">static</span> <span class="kt">int</span> <span class="n">global1</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">//DATA段</span>
-</span><span class="line"><span class="k">static</span> <span class="kt">int</span> <span class="n">global2</span><span class="p">;</span> <span class="c1">//BSS段</span>
-</span><span class="line"><span class="k">class</span> <span class="nc">Test3</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line"><span class="k">private</span><span class="o">:</span>
-</span><span class="line">  <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
-</span><span class="line"><span class="k">public</span><span class="o">:</span>
-</span><span class="line">  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Test1: Core or not ? &quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">};</span>
-</span><span class="line"><span class="n">Test3</span> <span class="n">obj3</span><span class="p">;</span> <span class="c1">//DATA段 (调用默认构造函数进行初始化)</span>
-</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">Test3</span> <span class="n">obj1</span><span class="p">;</span> <span class="c1">//stack段。定义obj1，这时候自然为a分配内存了</span>
-</span><span class="line">  <span class="n">Test3</span> <span class="o">*</span><span class="n">obj2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Test3</span><span class="p">();</span><span class="c1">//heap段，也为a分配内存了。</span>
-</span><span class="line">  <span class="n">Test3</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span><span class="c1">//只是声明，没有定义。没有对象，也没有a。</span>
-</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>受王杰兄（微博：@skyline09_）启发和提示，其实我们可以换一种形式来理解。</p>
-
-<p>我们知道，<strong>C++</strong>中，类的非静态成员函数会被编译器改写：</p>
-
-<p><code>void Test::f()</code>被改写为类似于<code>void Test__f(Test *const this)</code></p>
-
-<p>而</p>
-
-<pre><code>Test *p = NULL;
-
-p-&gt;f();
-</code></pre>
-
-<p>将被编译器改写为</p>
-
-<pre><code>Test *p = NULL;
-Test__f(p);
-</code></pre>
-
-<p>因此<code>Test::f</code>中带有一个值为<strong>NULL</strong>的<strong>this</strong>指针（<strong>p</strong>），如果通过这个空指针<strong>p</strong>读写数据，就会崩溃。否则，安然无事。</p>
-
-<p>那么，<strong>this</strong>指针可以操纵哪些东西呢？哦，类的非静态数据成员。而类的静态数据成员，全局变量等，是不会通过<strong>this</strong>指针访问的，因此，上例中，访问<strong>a</strong>崩溃，访问<strong>global</strong>则安全。</p>
-
-<p>最后，我们看一个问题。这个问题，最早我是从杜克伟兄（微博：@小伙伴-小伙伴儿）那里听到的。</p>
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">Test4</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line"><span class="k">public</span><span class="o">:</span>
-</span><span class="line">  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span> <span class="c1">// 有问题吗？</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">};</span>
-</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">Test4</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class="line">  <span class="n">p</span><span class="o">-&gt;</span><span class="n">f</span><span class="p">();</span>
-</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<p>没问题。<strong>&amp;(*this)</strong>就是<strong>this</strong>，值和<strong>p</strong>相等。因此上面会输出<strong>0</strong>。</p>
-
-<p>综上，使用空指针并不一定会发生问题，关键是怎么用。遇到问题得理性分析，不要想当然。</p>
-
-<p>纸上学来终觉浅，绝知此事要躬行。</p>
 ]]></content>
   </entry>
   

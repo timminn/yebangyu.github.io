@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-21T00:12:23+08:00</updated>
+  <updated>2016-02-24T22:29:04+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,160 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[编写高质量代码(下)]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/02/24/writeelegantcodes/"/>
+    <updated>2016-02-24T22:26:44+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/02/24/writeelegantcodes</id>
+    <content type="html"><![CDATA[<p>上回从微观角度，以一个实际的例子，从正确、高效、易读等特性着手，介绍了如何编写高质量的代码。这次，我们从宏观出发，从软件开发流程入手，着重介绍其中的几个方面，包括代码规范、Code Review、测试等</p>
+
+<h2 id="section">代码规范</h2>
+
+<p>团队的代码规范，一般由领导和大佬们制定后，大家统一实行。这里面有几个问题：</p>
+
+<h3 id="section-1">真的需要代码规范吗？</h3>
+
+<p>言下之意，制定和执行代码规范是否浪费时间？</p>
+
+<!--more-->
+
+<p>答案是：It depends。如果项目很庞大、代码质量要求很高，那么，制定和执行代码规范所花费的时间，将大大少于后期因为不规范开发带来的种种调试和维护成本。如果是小打小闹的代码，就无所谓了。</p>
+
+<h3 id="section-2">代码规范的制定为什么这么难？</h3>
+
+<p>原因众多，其中一个很重要的部分是大佬众多，大家的口味和风格不同。就代码风格而言，有人喜欢对内置类型变量i使用i++，有人坚持认为应该使用++i不管i是不是复杂类型。因此，制定代码规范需要在讨论之后最后拍板决定，这里面甚至需要独裁！是的，独裁！</p>
+
+<h3 id="section-3">代码规范制定需要注意什么事项？</h3>
+
+<p>如果代码规范限制太松，那么等于没有规范；如果太严，大大影响开发效率。这里面的尺度，需要根据项目需要、团队成员特点全面考量，进行取舍。</p>
+
+<p>需要注意的是，没有任何一种代码规范是完美的。例如，在C++中，如果启用异常，那么代码的流程将会被各种异常处理中断，各种try catch throw让代码很不美观；如果禁用异常，也就是在开发的过程中不能使用异常特性，那么团队成员可能因为长期没有接触这项语言feature而造成知识和技能短板。</p>
+
+<h3 id="section-4">代码风格举例</h3>
+
+<p>举两个我认为比较重要、比较新鲜、比较有趣的代码风格。</p>
+
+<p>1，使用引用需要判空吗？</p>
+
+<p><code>c++
+void f(int &amp;p);
+void g(int *p);
+</code></p>
+
+<p>我们都知道，在g中，使用*p前需要对p是否为NULL进行判断，那么f呢？如果质量非常关键、代码安全非常重要对场景，那么实际上，也是需要的。因为调用者可能这样：
+<code>c++
+int *q = NULL;
+//......
+f(*q);
+</code>
+因此，需要在f里增加<code>if(NULL == &amp;p)</code>的判断。</p>
+
+<p>2，级联if else语句。</p>
+
+<p>首先看一个我个人认为不好的代码风格：</p>
+
+<p><code>c++
+int f(int a, int b)
+{
+  if (a &gt;= 1) {
+    if (b &gt;= 1) {
+      if (a &gt;= b) {
+        //do sth
+      } else {
+        //error1
+      }
+    } else {
+      //error2
+    }
+  } else {
+    //error3
+  }
+}
+</code>
+这个函数的核心在于do sth部分。其实我们可以改写为级联if－else形式，如下：</p>
+
+<p><code>c++
+int f(int a, int b)
+{
+  if (a &lt; 1) {
+    //error3
+  } else if (b &lt; 1) {
+    //error2
+  } else if (a &lt; b) {
+    //error1
+  } else {
+    //so, a&gt;=1 &amp;&amp; b&gt;=1 &amp;&amp; a&gt;=b
+    //do sth
+  }
+}
+</code>
+是不是优美多了？前面只做一些错误处理、前期准备、参数检查等，最后的else分支做实实在在的功能性事情。</p>
+
+<h2 id="code-review">Code Review</h2>
+
+<h3 id="code-review-1">什么是Code Review？</h3>
+
+<p>很多人把它翻译为代码审查，我觉得太政治味了。程序员尤其是新手写完代码后，可能会有风格问题（比如不符合团队的代码规范）、安全性问题(比如忘记指针判空)、优雅性问题(比如大量多余代码)、正确性问题（比如算法设计错误），那么在发布代码到公共库之前，提交给师兄或者mentor，让他帮你review一下代码，并提出可能的问题和建议，让你好好修改。这样的过程，就叫做Code Review。</p>
+
+<h3 id="section-5">天纳，那这不是很占用时间？</h3>
+
+<p>是的。一个写代码，一个看代码，看代码的时间可能并不比全新写一份代码少。那么，这又是何必呢？</p>
+
+<p>主要的原因有：</p>
+
+<p>0，review确实占用了开发时间，然而开发，或者说写代码，其实只占很少的时间比例。很多时间花在debug、调试、写文档、需求分析、设计算法、维护等等上。</p>
+
+<p>1，代码质量非常重要，这点时间投入是值得的。与其后期苦逼追bug，不如前期多投入点时间和人力。</p>
+
+<p>2，培养新人，让新手更快成长。</p>
+
+<h3 id="code-review-2">如何更好的执行Code Review</h3>
+
+<p>这里给几点建议：</p>
+
+<p>1，不走过场。走过场，还不如不要这个流程。</p>
+
+<p>2，作为Reviewer，看不懂代码就把作者拉过来，当面询问，不要不懂装懂，也不要爱面子不好意思问。</p>
+
+<p>3，作为Coder，心里要有感激之情。真的。不要得了便宜还卖乖，感恩reviewer，感激reviewer对自己对进步和成长所做出对贡献，所花费的心血。中国人里狼心狗肺、忘恩负义、不懂感恩的人还算少吗？</p>
+
+<p>4，作为Coder，给Reviewer Review之前，请先做单元测试并确保通过，并自己尝试先整体看一遍自己本次提交的代码。注意，不要给别人提还没调试通过的代码，这是非常不尊重别人的表现。</p>
+
+<h2 id="section-6">测试</h2>
+
+<p>1，测试不是专属QA的活儿，对自己写的代码提供质量保证，是程序员的职责。QA要负责的，是系统的质量，不是模块的质量。</p>
+
+<p>2，测试，需要意识，需要坚持。我发现C++程序员、前端程序员的测试意识或者说质量意识最强；数据科学家或者数据工程师的质量意识最差，很多人甚至不写测试用例。当然，这不怪他们，毕竟，有时候代码里有个bug，准确率和召回率会更高。</p>
+
+<p>3，测试用例的编写需要强调代码覆盖率。以非常经典的二分搜索为例：</p>
+
+<p>int binary_search(int *p, int n, int target, int &amp;idx);</p>
+
+<p>binary_search函数返回值为0表示成功执行，输出参数idx返回target在有序数组p中位置，－1表示不存在。</p>
+
+<p>那么测试用例至少应该涵盖：</p>
+
+<ul>
+  <li>
+    <p>[x] p为NULL的情况</p>
+  </li>
+  <li>
+    <p>[x] 数组大小n分别为负数、0、1、2时情况</p>
+  </li>
+  <li>
+    <p>[x] 数组p不是有序数组的情况</p>
+  </li>
+  <li>
+    <p>[x] target在数组中出现0次、1次、n次的情况</p>
+  </li>
+</ul>
+
+<p>你是否都考虑到了呢？</p>
+
+<p>4，有时候，自己书写测试用例显得刀耕火种，现在已经有很多辅助的工具，读者可以自行google一下。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[C++函数对象(function object)的应用]]></title>
@@ -504,342 +658,6 @@ int main()
 <p>综上，使用空指针并不一定会发生问题，关键是怎么用。遇到问题得理性分析，不要想当然。</p>
 
 <p>纸上学来终觉浅，绝知此事要躬行。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[编写高质量代码(上)]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes/"/>
-    <updated>2015-11-06T00:24:56+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes</id>
-    <content type="html"><![CDATA[<p>我们知道，<strong>int</strong>和<strong>double</strong>能表示的数值的范围不同。其中，<strong>64</strong>位有符号整数的范围是[<strong>-9223372036854775808</strong>,<strong>9223372036854775807</strong>]，而<strong>64</strong>位无符号整数的范围是[<strong>0</strong>,<strong>18446744073709551615</strong>]。这两个区间有一定的<strong>overlap</strong>，而<strong>double</strong>可以表示的范围更大。</p>
-
-<p>现在，需要编写两个函数:给定一个<strong>double</strong>型的<strong>value</strong>，判断这个<strong>value</strong>是否是一个合法的<strong>int64_t</strong>或者<strong>uint64_t</strong>。本文说的“合法”，是指数值上落在了范围内。</p>
-
-<pre><code>bool is_valid_uint64(const Double &amp;value);
-
-bool is_valid_int64(const Double &amp;value);
-</code></pre>
-
-<p>这里我们用<strong>Double</strong>而不是<strong>double</strong>，原因是我们的<strong>double</strong>不是基础数据类型，而是通过一定方法实现的<strong>ADT</strong>，这个<strong>ADT</strong>的成员函数有：</p>
-
-<!--more-->
-
-<p><code>c++
-class Double
-{
-  public:
-    int get_next_digit(bool &amp;is_decimal);
-    bool is_zero();
-    bool is_neg();
-};
-</code>
-通过调用<code>get_next_digit</code>，可以返回一个数字，不断调用它，可以得到所有<strong>digits</strong>。举个例子，对于值为<strong>45.67</strong>的一个<strong>Double</strong>对象，调用它的<code>get_next_digit</code>成员函数将依次得到</p>
-
-<p>4 is_decimal = false //表示整数部分</p>
-
-<p>5 is_decimal = false //表示整数部分</p>
-
-<p>6 is_decimal = true //表示小数部分</p>
-
-<p>7 is_decimal = true //表示小数部分</p>
-
-<p>当<code>get_next_digit</code>返回<strong>-1</strong>时，表示读取完毕。</p>
-
-<p>如何利用<strong>Double</strong>类里的成员函数，来实现<code>is_valid_uint64</code>和<code>is_valid_int64</code>这两个函数呢？</p>
-
-<p>一些新手可能会写这样的代码：</p>
-
-<p><code>c++
-bool is_valid_uint64(const Double &amp;value)
-{
-  bool is_valid = true;
-  int digits[2000];
-  int counts = 0;
-  if (value.is_zero()) { 
-    is_valid = true;
-  } else if(value.is_neg()) { 
-    is_valid = false;
-  } else { 
-    bool is_decimal = false;
-    int digit = 0;
-    while((digit=value.get_next_digit(is_decimal)) != -1) {
-      if (is_decimal) { 
-        is_valid = false;
-        break;
-      } else {
-        digits[counts++] = digit;
-      }
-    }
-    uint64_t tmp = 0;
-    uint64_t base = 1;
-    for (int i = counts - 1; i &gt;= 0; i++) {
-      tmp += digits[i] * base;
-      if (tmp &gt; UINT64_MAX) {
-        is_valid = false;
-        break;
-      }
-      base *= 10;
-    }
-  }
-  return is_valid;
-}
-bool is_valid_int64(const Double &amp;value)
-{
-  bool is_valid = true;
-  int digits[2000];
-  int counts = 0;
-  if (value.is_zero()) { 
-    is_valid = true;
-  } else if(value.is_neg()) { 
-    bool is_decimal = false;
-    int digit = 0;
-    while((digit=value.get_next_digit(is_decimal)) != -1) {
-      if (is_decimal) { 
-        is_valid = false;
-        break;
-      } else {
-        digits[counts++] = digit;
-      }
-    }
-    uint64_t tmp = 0;
-    uint64_t base = 1;
-    for (int i = counts - 1; i &gt;= 0; i++) {
-      tmp += digits[i] * base;
-      tmp *= -1;
-      if (tmp &lt; INT64_MIN) {
-        is_valid = false;
-        break;
-      }
-      base *= 10;
-    }
-  } else { 
-    bool is_decimal = false;
-    int digit = 0;
-    while((digit=value.get_next_digit(is_decimal)) != -1) {
-      if (is_decimal) { 
-        is_valid = false;
-        break;
-      } else {
-        digits[counts++] = digit;
-      }
-    }
-    uint64_t tmp = 0;
-    uint64_t base = 1;
-    for (int i = counts - 1; i &gt;= 0; i++) {
-      tmp += digits[i] * base;
-      if (tmp &gt; INT64_MAX) {
-        is_valid = false;
-        break;
-      }
-      base *= 10;
-    }
-  }
-  return is_valid;
-}
-</code>
-这样的代码，存在诸多问题。</p>
-
-<h2 id="section">设计问题</h2>
-
-<p>不难发现，两个函数存在很多相似甚至相同的代码；而同一个函数内部，也有不少代码重复。重复的东西往往不是好的。重构？</p>
-
-<h2 id="section-1">性能问题</h2>
-
-<p>先获得所有digits，然后从最低位开始向最高位构造值，效率较低。难道没有可以从最高位开始，边获得边计算，不需要临时数组存储所有digits的方法吗？</p>
-
-<h2 id="section-2">正确性问题</h2>
-
-<p>随便举几个例子：</p>
-
-<p>第<strong>24</strong>行，<code>tmp += digits[i] * base</code>;有没有考虑到可能的溢出呢？</p>
-
-<p>第<strong>68</strong>行，难道有小数部分就一定不是合法的<strong>int64</strong>吗？那么，<strong>123.000</strong>？嗯？</p>
-
-<h2 id="section-3">规范问题</h2>
-
-<p>帅哥，这么多代码，一行注释都没有，这样真的好吗？</p>
-
-<p>因此，毫无疑问，这是烂代码，不合格的代码，需要重写的代码。</p>
-
-<hr />
-
-<p>以下是我个人认为比较好的设计和实现，仅供参考。</p>
-
-<p>```c++</p>
-
-<p>bool is_valid_uint64(const Double &amp;value)</p>
-
-<p>{</p>
-
-<p>bool ret = false;</p>
-
-<p>check_range(&amp;ret, NULL, value);</p>
-
-<p>return ret;</p>
-
-<p>}</p>
-
-<p>bool is_valid_int64(const Double &amp;value)</p>
-
-<p>{</p>
-
-<p>bool ret = false;</p>
-
-<p>check_range(NULL, &amp;ret, value);</p>
-
-<p>return ret;</p>
-
-<p>}</p>
-
-<p>void check_range(const Double &amp;value,</p>
-
-<pre><code>             bool *is_valid_uint64,
-
-             bool *is_valid_int64) const
-</code></pre>
-
-<p>{</p>
-
-<p>/*</p>
-
-<ul>
-  <li>
-    <p>对于一个负数的value，它不可能是一个合法的uint64.</p>
-  </li>
-  <li>
-    <p>因此，只剩下三种可能：</p>
-  </li>
-  <li>
-    <p>I 输入的value是负数，判断是否是合法的int64</p>
-  </li>
-  <li>
-    <p>II 输入的value是正数，判断是否是合法的uint64</p>
-  </li>
-  <li>
-    <p>III 输入的value是正数，判断是否是合法的int64</p>
-  </li>
-  <li>
-    <p>对于第II、III这两种情况：只要判断value的值是否超过uint64、int64的上界即可</p>
-  </li>
-  <li>
-    <p>对于第I种情况，我们利用-A &gt; -B 等价于 A &lt; B （其中A、B是正数）</p>
-  </li>
-  <li>
-    <p>因此，在第I种情况里，可以判断value的绝对值，是否超过int64的最小值的绝对值即可。</p>
-  </li>
-  <li>
-    <p>（int64的最小值的绝对值？那不就是int64的最大值？哦，不！）</p>
-  </li>
-  <li>
-    <p>因此，不管哪种情况，判断绝对值是否超过某个上界即可。</p>
-  </li>
-  <li>
-    <p>这三种情况，上界不一样。把三个上界存到了一个二维数组THRESHOLD里</p>
-  </li>
-</ul>
-
-<p>*/</p>
-
-<p>bool *is_valid = NULL;</p>
-
-<p>static const int FLAG_INT64 = 0;</p>
-
-<p>static const int FLAG_UINT64 = 1;</p>
-
-<p>static const int SIGN_NEG = 0;</p>
-
-<p>static const int SIGN_POS = 1;</p>
-
-<p>int flag = FLAG_INT64;</p>
-
-<p>if (NULL != is_valid_uint64) {</p>
-
-<pre><code>is_valid = is_valid_uint64;
-
-flag = FLAG_UINT64;
-</code></pre>
-
-<p>} else {</p>
-
-<pre><code>is_valid = is_valid_int64;
-</code></pre>
-
-<p>}</p>
-
-<p>*is_valid = true;</p>
-
-<p>if (value.is_zero()) {</p>
-
-<pre><code>//do nothing。0是合法的uint64，也是合法的int64
-</code></pre>
-
-<p>} else {</p>
-
-<pre><code>int sign = value.is_neg() ? SIGN_NEG : SIGN_POS;
-
-if ((SIGN_NEG == sign) &amp;&amp; (FLAG_UINT64 == flag)) {
-
-  *is_valid = false;//负数不可能是合法的uint64
-
-} else {
-
-  uint64_t valueUint = 0;
-
-  static uint64_t ABS_INT64_MIN = 9223372036854775808ULL;
-
-                                     //int64        uint64
-
-  static uint64_t THRESHOLD[2][2] = { {ABS_INT64_MIN, 0}, //neg
-
-                                     {INT64_MAX,     UINT64_MAX} }; //pos
-
-  int digit = 0;
-
-  bool is_decimal = false;
-
-  while ((digit = value.get_next_digit(is_decimal)) != -1) {
-
-    if (!is_decimal) {
-
-      //为了防止溢出，我们不能这么写:
-
-      //"value * 10 + digit &gt; THRESHOLD[index]"
-
-      if (valueUint &gt; (THRESHOLD[sign][flag] - digit) / 10) {
-
-        *is_valid = false;
-
-        break;
-
-      } else {
-
-        valueUint = valueUint * 10 + digit;//霍纳法则（也叫秦九韶算法）
-
-      }
-
-    } else {
-
-      if (!digit) {
-
-        *is_valid = false; //小数部分必须是0；否则不可能是合法的uint64、int64
-
-        break;
-
-      }
-
-    }
-
-  }
-
-}
-</code></pre>
-
-<p>}</p>
-
-<p>}
-```</p>
-
 ]]></content>
   </entry>
   
