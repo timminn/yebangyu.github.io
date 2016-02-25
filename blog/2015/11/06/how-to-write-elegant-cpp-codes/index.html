@@ -508,7 +508,7 @@ bool is_valid_int64(const Double &amp;value);
 </span><span class="line">
 </span><span class="line">  <span class="kt">bool</span> <span class="n">ret</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
 </span><span class="line">
-</span><span class="line">  <span class="n">check_range</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ret</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">value</span><span class="p">);</span>
+</span><span class="line">  <span class="n">check_range</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ret</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
 </span><span class="line">
 </span><span class="line">  <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
 </span><span class="line">
@@ -522,7 +522,7 @@ bool is_valid_int64(const Double &amp;value);
 </span><span class="line">
 </span><span class="line">  <span class="kt">bool</span> <span class="n">ret</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
 </span><span class="line">
-</span><span class="line">  <span class="n">check_range</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ret</span><span class="p">,</span> <span class="n">value</span><span class="p">);</span>
+</span><span class="line">  <span class="n">check_range</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">ret</span><span class="p">);</span>
 </span><span class="line">
 </span><span class="line">  <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
 </span><span class="line">
@@ -660,6 +660,10 @@ bool is_valid_int64(const Double &amp;value);
 </span><span class="line">
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h2 id="section-4">致谢</h2>
+
+<p>本文发出后，微博网友@随风巽命 指出了其中一个笔误。非常感谢。</p>
 
 </div>
 

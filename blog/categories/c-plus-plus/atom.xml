@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-25T08:45:28+08:00</updated>
+  <updated>2016-02-25T22:31:06+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -142,7 +142,7 @@ int f(int a, int b)
 
 <p>3，测试用例的编写和设计需要保证一定的代码覆盖率，力求让每个分支和流程的代码都走到，然后分析运行结果是否是符合期望的，不要只考虑正确路径上的那些分支。</p>
 
-<p>4，测试用例的编写和设计力求以全面，考虑到方方面面。非常经典的二分搜索为例：</p>
+<p>4，测试用例的编写和设计力求全面，考虑到方方面面。以非常经典的二分搜索为例：</p>
 
 <p>int binary_search(int *p, int n, int target, int &amp;idx);</p>
 
