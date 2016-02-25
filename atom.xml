@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-25T08:35:28+08:00</updated>
+  <updated>2016-02-25T08:40:06+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -164,7 +164,7 @@
 
 <p>4，作为Coder，给Reviewer Review之前，请先做单元测试并确保通过，并自己尝试先整体看一遍自己本次提交的代码。注意，不要给别人提还没调试通过的代码，这是非常不尊重别人的表现。</p>
 
-<h2 id="section-6">测试</h2>
+<h2 id="section-6">质量保证</h2>
 
 <p>1，测试不是专属QA的活儿，对自己写的代码提供质量保证，是程序员的职责。QA要负责的，是系统的质量，不是模块的质量。</p>
 
