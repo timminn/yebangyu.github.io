@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-02-24T22:43:47+08:00</updated>
+  <updated>2016-02-25T08:35:28+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,7 +18,9 @@
     <link href="http://www.yebangyu.org/blog/2016/02/24/writeelegantcodes/"/>
     <updated>2016-02-24T22:26:44+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/02/24/writeelegantcodes</id>
-    <content type="html"><![CDATA[<p><a href="http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes/">上回</a>我们从微观角度，以一个实际的例子，从正确、高效、易读等特性着手，介绍了如何编写高质量的代码。这次，我们从宏观出发，从软件开发流程入手，着重介绍其中的几个方面，包括代码规范、Code Review、测试等</p>
+    <content type="html"><![CDATA[<p><a href="http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes/">上回</a>我们从微观角度，以一个实际的例子，从正确、高效、易读等特性着手，介绍了如何编写高质量的代码。这次，我们从宏观出发，从软件开发流程入手，着重介绍其中的几个方面，包括代码规范、Code Review、测试等。</p>
+
+<p>如果说<a href="http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes/">上回</a>的内容注重个人编码，那么本文将偏向团队开发。</p>
 
 <h2 id="section">代码规范</h2>
 
@@ -34,7 +36,7 @@
 
 <h3 id="section-2">代码规范的制定为什么这么难？</h3>
 
-<p>原因众多，其中一个很重要的部分是大佬众多，大家的口味和风格不同。就代码风格而言，有人喜欢对内置类型变量i使用i++，有人坚持认为应该使用++i不管i是不是复杂类型。因此，制定代码规范需要在讨论之后最后拍板决定，这里面甚至需要独裁！是的，独裁！</p>
+<p>原因众多，其中一个很重要的部分是团队每个人的口味和观点不尽相同。就代码风格而言，有人喜欢对内置类型变量i使用i++，有人坚持认为应该使用++i不管i是不是复杂类型。因此，制定代码规范需要在讨论之后最后拍板决定，这里面甚至需要独裁！是的，独裁！</p>
 
 <h3 id="section-3">代码规范制定需要注意什么事项？</h3>
 
@@ -138,17 +140,17 @@
 
 <p>很多人把它翻译为代码审查，我觉得太政治味了。程序员尤其是新手写完代码后，可能会有风格问题（比如不符合团队的代码规范）、安全性问题(比如忘记指针判空)、优雅性问题(比如大量冗余代码)、正确性问题（比如算法设计错误），那么在发布代码到公共库之前，提交给师兄或者mentor，让他帮你review一下代码，并提出可能的问题和建议，让你好好修改。这样的过程，就叫做Code Review。</p>
 
-<h3 id="section-5">天纳，那这不是很占用时间？</h3>
+<h3 id="section-5">我的天呐，那这不是很占用时间？</h3>
 
 <p>是的。一个写代码，一个看代码，看代码的时间可能并不比全新写一份代码少。那么，这又是何必呢？</p>
 
 <p>主要的原因有：</p>
 
-<p>0，review确实占用了开发时间，然而开发，或者说写代码，其实只占很少的时间比例。很多时间花在debug、调试、写文档、需求分析、设计算法、维护等等上。</p>
+<p>1，review确实占用了开发时间，然而开发，或者说写代码，其实只占很少的时间比例。很多时间花在debug、调试、写文档、需求分析、设计算法、维护等等上。</p>
 
-<p>1，代码质量非常重要，这点时间投入是值得的。与其后期苦逼追bug，不如前期多投入点时间和人力。</p>
+<p>2，代码质量非常重要，这点时间投入是值得的。与其后期苦逼追bug，不如前期多投入点时间和人力。</p>
 
-<p>2，培养新人，让新手更快成长。</p>
+<p>3，培养新人，让新手更快成长。</p>
 
 <h3 id="code-review-2">如何更好的执行Code Review</h3>
 
@@ -168,7 +170,9 @@
 
 <p>2，测试，需要意识，需要坚持。我发现C++程序员、前端程序员的测试意识或者说质量意识最强；数据科学家或者数据工程师的质量意识最差，很多人甚至不写测试用例。当然，这不怪他们，毕竟，有时候代码里有个bug，准确率和召回率会更高。</p>
 
-<p>3，测试用例的编写需要强调代码覆盖率。以非常经典的二分搜索为例：</p>
+<p>3，测试用例的编写和设计需要保证一定的代码覆盖率，力求让每个分支和流程的代码都走到，然后分析运行结果是否是符合期望的，不要只考虑正确路径上的那些分支。</p>
+
+<p>4，测试用例的编写和设计力求以全面，考虑到方方面面。非常经典的二分搜索为例：</p>
 
 <p>int binary_search(int *p, int n, int target, int &amp;idx);</p>
 
@@ -2337,10 +2341,6 @@ sys     0m0.000s
 <h2 id="section-2">参考文献</h2>
 
 <p>https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf</p>
-
-<h2 id="section-3">致谢</h2>
-
-<p>感谢<a href="http://weibo.com/hanfooo">韩富晟</a>先生对我的指点，让我加深了对<strong>Hazard</strong> <strong>Pointer</strong>的认识。</p>
 ]]></content>
   </entry>
   
