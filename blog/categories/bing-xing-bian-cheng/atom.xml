@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-03T00:09:52+08:00</updated>
+  <updated>2016-03-04T22:46:39+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,157 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Peterson算法实现spin lock]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/"/>
+    <updated>2016-03-04T22:26:51+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm</id>
+    <content type="html"><![CDATA[<p>对spin lock和mutex不熟悉的朋友，可以看<a href="http://www.yebangyu.org/blog/2016/01/24/spinlock-and-mutex/">上篇</a>博客。</p>
+
+<h2 id="section">提出问题</h2>
+
+<p>如何仅仅通过load和store实现spin lock呢？</p>
+
+<p>本文只考虑、只针对只有两个线程的情形。假设这两个线程的id分别为0和1。编程环境为X86体系结构 + Intel CPU + gcc</p>
+
+<h2 id="section-1">分析问题</h2>
+
+<h3 id="section-2">尝试一：仅使用一个变量</h3>
+
+<p>仅使用一个bool类型变量flag，线程i申请锁时，查看flag是否为1-i，如果不是，说明另外一个线程没有在临界区，申请成功，并把flag的值设置为i。</p>
+
+<p>这种方法的问题在于，检查flag是否为1-i，以及设置flag为i这两部不是原子的，无法仅仅通过load和store来原子实现。（需要CAS等类似等原语）</p>
+
+<h3 id="section-3">尝试二：使用两个变量</h3>
+
+<p>根据前面的分析，我们可以使用两个bool变量flag[0]和flag[1]。线程i申请锁时，先把flag[i]设置为true，表示自己试图进入临界区，然后查看flag[1-i]是否为true，如果是，说明另一个线程在临界区，于是spin。</p>
+
+<p>这个方法的问题在于可能发生这样的问题：</p>
+
+<p>线程0把flag[0]设置为true，这时候还没开始检查flag[1]，此时线程1把flag[1]设置为true。</p>
+
+<p>接下去，每个线程都发现对方的flag为true，而实际上两个都没在临界区中，却谁都没法拿到锁，发生starvation现象。</p>
+
+<h3 id="section-4">尝试三：使用三个变量</h3>
+
+<p>在尝试二的基础上，再增加一个变量turn，表示谁先将自己的flag设置为true（仅仅通过那两个flag是没法区分的，想想看，是不是这样的）。因此这个变量可以用来裁决谁取得进入临界区的权利。</p>
+
+<h2 id="section-5">解决问题</h2>
+
+<p>以上尝试三所描述的方法，就是大名鼎鼎的peterson算法的雏形了。简单实现如下（注意，本文的平台是x86体系结构 + Intel CPU + gcc）：</p>
+
+<p><code>c++
+class PetersonSpinLock
+{
+  public:
+    PetersonSpinLock()
+    {
+      flags_[0] = false;
+      flags_[1] = false;
+      turn_ = false;//initial value does not matter
+    }
+    bool lock(int thread_id)
+    {
+      int other = !thread_id;
+      flags_[thread_id] = true; 
+      turn_ = thread_id;
+      CPU_BARRIER();// essential
+      while(flags_[other] &amp;&amp; turn_ == thread_id) {
+        CPU_RELAX();//spin
+      }
+      //get lock successfully
+      return true;
+    }
+    bool unlock(int thread_id)
+    {
+      flags_[thread_id] = false;
+      return true;
+    }
+  private:
+    bool flags_[2];
+    bool turn_;
+};
+</code></p>
+
+<p>以下是对peterson算法的思考和讨论</p>
+
+<h3 id="petersonstarvation">peterson算法如何防止starvation的发生？</h3>
+
+<p>假设某时刻两个线程都在spin，也就是17行中while的条件对两个线程都成立，也就是说：</p>
+
+<p>flag_[0] == true 并且 trun_ == 0 并且 flag_[1] == true 并且turn_ == 1</p>
+
+<p>但是turn_只能有一个值，矛盾。</p>
+
+<h3 id="peterson">peterson算法如何防止两个线程同时进入临界区？</h3>
+
+<p>如果两者同时进入临界区，说明17行中的while判断对两个线程都为false，也就是说</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>flag_[1] == false</td>
+      <td> </td>
+      <td>turn _ == 1</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>同时</p>
+
+<table>
+  <tbody>
+    <tr>
+      <td>flag_[0] == false</td>
+      <td> </td>
+      <td>turn_ == 0</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>因此只有四种情形：</p>
+
+<p>flag_[1] == false  &amp;&amp; flag_[0] == false  与14行矛盾</p>
+
+<p>flag_[1] == false  &amp;&amp; turn_ == 0  与14行矛盾</p>
+
+<p>turn_ == 1 &amp;&amp; flag_[0] == false 与14行矛盾</p>
+
+<p>turn _ == 1 &amp;&amp; turn _ == 0 不可能发生</p>
+
+<p>假设线程0进入临界区，进入临界区后由于<code>flag_[0] == true</code>，线程1将在while处spin。</p>
+
+<h3 id="section-6">代码14行和15行能否调换执行顺序？</h3>
+
+<p>调换顺序后无法保证先设置flag为true的线程先进入临界区。</p>
+
+<h3 id="turn--threadid">代码15行能否改为<code>turn_ = !thread_id</code></h3>
+
+<p>可以。只是如果15行改为<code>turn_ = !thread_id</code>，那么17行需要将<code>turn_ == thread_id</code>也改<code>为turn_ == !thread_id</code>。也就是说turn_的初始值是什么并不重要，turn_设置为什么值也不太重要，重要的通过turn_能区分出谁先尝试申请锁。</p>
+
+<h3 id="cpu-memory-barrier">16行的cpu 级别的memory barrier是否必要？</h3>
+
+<p>非常必要。否则17行对flags_[other]的读取（判断）操作可能和15行发生乱序（写读乱序。而14、15属于写写，是不会乱序的，不用加barrier），最后可能导致两个线程同时进入临界区。这点，请读者自行分析。非常重要！</p>
+
+<h3 id="peterson-1">实现（针对两个线程的）peterson算法所需最少空间为多少？</h3>
+
+<p>3个bit足矣。两个flag_两个bit，turn_也只需要1个bit。</p>
+
+<p>下次，我们将讨论peterson算法的拓展，用于n个线程的情形。</p>
+
+<h2 id="section-7">附录：</h2>
+
+<p>在X86下，<code>CPU_BARRIER</code>和<code>CPU_RELAX</code>可以用gcc内置的宏实现：</p>
+
+<p><code>c++
+#define CPU_BARRIER() __sync_synchronize()
+#define CPU_RELAX() __asm__ __volatile__("pause\n": : :"memory")
+</code></p>
+
+<p>18行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以节能减排，降低cpu的空耗。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Materials In Concurrency Programming]]></title>
@@ -538,106 +689,6 @@ schedulers.</p>
 <p>3，写书在取书名的时候需要区分。如果你是讲<strong>MPI、Open MP</strong>这类技术，建议用并行或者说<strong>Parallel Computing</strong>。如果是讲<strong>lock free、multi-thread</strong>这些共享内存编程的，建议用<strong>Concurrency</strong>或者<strong>Concurrency Programming</strong>。</p>
 
 <p>那么，<strong>Go</strong>语言这种<strong>CSP</strong>类型的<strong>Channel</strong>的呢？个人认为，都可以吧。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Memory Consistency和Cache Coherence]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/01/09/memoryconsistencyandcachecoherence/"/>
-    <updated>2016-01-09T22:52:52+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/01/09/memoryconsistencyandcachecoherence</id>
-    <content type="html"><![CDATA[<h2 id="memory-consistency">Memory Consistency</h2>
-
-<p><strong>Memory Consistency</strong>(<strong>MC</strong>)，有时候又叫做<strong>Memory Consistency Model</strong>或者<strong>Memory Model</strong>。为了理解为什么需要引入这种东西，我们首先看以下程序：</p>
-
-<!--more-->
-
-<pre><code>初始：x=0 y=0
-
-Thread1：
-
-S1：x=1
-
-L1：r1=y
-
-Thread2：
-
-S2：y=2
-
-L2：r2=x
-</code></pre>
-
-<p>其中，<strong>S1、S2、L1、L2</strong>是语句代号（<strong>BTW</strong>，<strong>S</strong>表示<strong>Store</strong>，<strong>L</strong>表示<strong>Load</strong>）；<strong>r1</strong>和<strong>r2</strong>是两个寄存器。<strong>x</strong>和<strong>y</strong>是两个不同的内存变量。</p>
-
-<p>两个线程执行完之后，<strong>r1</strong>和<strong>r2</strong>可能是什么值？</p>
-
-<p>注意到线程是并发、交替执行的，下面是可能的执行顺序和相应结果：</p>
-
-<p><strong>S1 L1 S2 L2</strong> 那么<strong>r1=0 r2=2</strong></p>
-
-<p><strong>S1 S2 L1 L2</strong> 那么<strong>r1=2 r2=1</strong></p>
-
-<p><strong>S2 L2 S1 L1</strong> 那么<strong>r1=2 r2=0</strong></p>
-
-<p>这些都是意料之内、情理之中的。但是在<strong>x86</strong>体系结构下，很可能得到<strong>r1=0 r2=0</strong>这样的结果。是不是大吃一惊？</p>
-
-<p>如果没有<strong>Memory Consistency</strong>，那么程序员对于自己编写的多线程程序会输出什么将一无所知：天知道会输出什么。</p>
-
-<p>因此，<strong>Memory Consistency</strong>就是程序员（编程语言）、编译器、CPU间的一种协议。这个协议保证了程序访问内存时可能得到什么值，会得到什么值。</p>
-
-<h2 id="sequential-consistency">Sequential Consistency</h2>
-
-<p>在<strong>Sequential Consistency</strong>这种<strong>Memory Model</strong>下，刚才讨论的那个程序不可能输出<strong>r1=0 r2=0</strong>这种结果。怎么说？这就牵涉到一个问题：什么是<strong>Sequential Consistency</strong>（<strong>SC</strong>）。</p>
-
-<p>根据<strong>Leslie Lamport</strong>在<strong>1979</strong>年<strong>9</strong>月发表的论文《<strong>How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs</strong>》里提出的<strong>SC</strong>的定义：</p>
-
-<p>the result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.</p>
-
-<p>根据这个定义，在<strong>SC</strong>模型下，任何<strong>execution</strong>的执行顺序（我们称为<strong>Memory Order</strong>）必须<strong>respect</strong>每个线程的<strong>Program Order</strong>。什么是<strong>Program Order</strong>？对于以上程序，在<strong>Thread1</strong>中，<strong>S1</strong>先于<strong>L1</strong>（不妨记为<strong>S1&lt;L1</strong>）；在<strong>Thread2</strong>中，<strong>S2</strong>先于<strong>L2</strong>（记为<strong>S2&lt;L2</strong>）。这就是<strong>Program Order</strong>。</p>
-
-<p>请时刻注意，<strong>Program Order</strong>只针对某个线程内的语句而言，不涉及到跨线程。比如<strong>Thread1</strong>中的<strong>S1</strong>和<strong>Thread2</strong>中的<strong>L2</strong>，就无所谓什么<strong>Program Order</strong>了。</p>
-
-<p>好了，现在知道为什么在<strong>SC</strong>下，有些结果可能出现，有些不可能了。</p>
-
-<p><strong>S1 L1 S2 L2 r1=0 r2=2</strong> 没问题，没有违背<strong>S1&lt;L1 S2&lt;L2</strong></p>
-
-<p><strong>S1 S2 L1 L2 r1=1 r2=2</strong> 没问题，没有违背<strong>S1&lt;L1 S2&lt;L2</strong></p>
-
-<p><strong>S2 L2 S1 L1 r1=2 r2=0</strong> 没问题，没有违背<strong>S1&lt;L1 S2&lt;L2</strong></p>
-
-<p>而对于<strong>r1=0 r2=0</strong>，在<strong>SC</strong>下，我们找不到一个能<strong>respect Program Order</strong>的<strong>Memory Order</strong>。因为<strong>r1=0</strong>，说明<strong>L1&lt;S2</strong>，<strong>r2=0</strong>说明<strong>L2&lt;S1</strong>；而<strong>S1&lt;L1，S2&lt;L2</strong>，不难看出这里形成了一个环。</p>
-
-<h2 id="cache-coherence">Cache Coherence</h2>
-
-<p>还是先搬出这张图吧:</p>
-
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/cpuand%20cache.png" alt="memorycache" /></p>
-
-<p>(图片来源于<strong>Paul</strong>大叔的《<strong>Is Parallel Programming Hard</strong>》这本书第三章)</p>
-
-<p>多个<strong>CPU cores</strong>，每个<strong>core</strong>上有自己的<strong>Cache</strong>。我们知道，<strong>Cache</strong>是部分内存的映射和缓存，或者说，副本。这就带来一个问题：副本一致性。内存只有一个，每个<strong>cpu cores</strong>却有自己的内存副本，如何保证大家看到的内容是一样的、一致的、正确的呢？这就是<strong>Cache Coherence(CC)</strong>要解决的问题。</p>
-
-<h2 id="cache-coherence--vs-memory-consistency">Cache Coherence  VS Memory Consistency</h2>
-
-<p>从以上分析，我们不难看出，<strong>CC</strong>和<strong>MC</strong>涉及的是两个不同层面的东西，解决的是不同的问题，不可混淆。<strong>CC</strong>解决的是副本一致性问题；<strong>MC</strong>保证的是多线程程序访问内存时可以（可能）读到什么值。</p>
-
-<p>两者有联系吗？有。实现<strong>Memory Consistency</strong>时可能会使用到<strong>Cache Coherence</strong>。细节下次我们接着聊。</p>
-
-<h2 id="section">附录</h2>
-
-<p>1，在并行编程中，我们常常有一个问题，或者需求：比如说上面的那个程序，如何保证线程<strong>2</strong>读到的<strong>x</strong>是线程<strong>1</strong>更新（<strong>x=1</strong>）后的<strong>x</strong>的值呢？</p>
-
-<p>如果不加任何同步设施，仅仅考虑上面的程序，那么答案是：无法保证。因为线程的推进速度不同，哪条指令先被执行也一无所知。这个程序重跑几次，也可能输出不同的结果出来。</p>
-
-<p>也就是说，<strong>Memory Model</strong>保证的是，例如，当线程<strong>2</strong>看到<strong>x</strong>等于<strong>1</strong>的时候，线程<strong>1</strong>是否已经执行了<strong>L1</strong>。也就是说，<strong>Memory Model</strong>确保当一件事情发生时，有其他什么事情<strong>has happened</strong>。在<strong>SC</strong>中，当<strong>L1</strong>发生时，说明或者说暗示着，<strong>S1</strong>已经发生了。</p>
-
-<p>2，为什么<strong>x86</strong>下可能得出<strong>r1=0 r2=0</strong>的结果？</p>
-
-<p>因为<strong>S1</strong>是写一个内存变量而<strong>L1</strong>是读取另一个内存变量（两个变量，或者说两个内存地址），这种情况下的写读可能被<strong>CPU</strong>乱序：先执行<strong>L1</strong>，再执行<strong>S1</strong>。（为了性能，所谓的延后写）</p>
-
-<h2 id="section-1">致谢</h2>
-
-<p>本文发出后，微博网友@linyvxiang 指出了其中的一个笔误，非常感谢。</p>
 ]]></content>
   </entry>
   
