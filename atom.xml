@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-04T22:46:39+08:00</updated>
+  <updated>2016-03-04T23:03:23+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -32,7 +32,7 @@
 
 <p>仅使用一个bool类型变量flag，线程i申请锁时，查看flag是否为1-i，如果不是，说明另外一个线程没有在临界区，申请成功，并把flag的值设置为i。</p>
 
-<p>这种方法的问题在于，检查flag是否为1-i，以及设置flag为i这两部不是原子的，无法仅仅通过load和store来原子实现。（需要CAS等类似等原语）</p>
+<p>这种方法的问题在于，检查flag是否为1-i，以及设置flag为i这两步不是原子的，无法仅仅通过load和store来原子实现。（需要CAS等类似的原子操作）</p>
 
 <h3 id="section-3">尝试二：使用两个变量</h3>
 
@@ -118,7 +118,7 @@
 
 <h3 id="petersonstarvation">peterson算法如何防止starvation的发生？</h3>
 
-<p>假设某时刻两个线程都在spin，也就是17行中while的条件对两个线程都成立，也就是说：</p>
+<p>假设某时刻两个线程都在spin，也就是16行中while的条件对两个线程都成立，也就是说：</p>
 
 <p>flag_[0] == true 并且 trun_ == 0 并且 flag_[1] == true 并且turn_ == 1</p>
 
@@ -126,7 +126,7 @@
 
 <h3 id="peterson">peterson算法如何防止两个线程同时进入临界区？</h3>
 
-<p>如果两者同时进入临界区，说明17行中的while判断对两个线程都为false，也就是说</p>
+<p>如果两者同时进入临界区，说明16行中的while判断对两个线程都为false，也就是说</p>
 
 <table>
   <tbody>
@@ -152,27 +152,27 @@
 
 <p>因此只有四种情形：</p>
 
-<p>flag_[1] == false  &amp;&amp; flag_[0] == false  与14行矛盾</p>
+<p>flag_[1] == false  &amp;&amp; flag_[0] == false  与13行矛盾</p>
 
-<p>flag_[1] == false  &amp;&amp; turn_ == 0  与14行矛盾</p>
+<p>flag_[1] == false  &amp;&amp; turn_ == 0  与13行矛盾</p>
 
-<p>turn_ == 1 &amp;&amp; flag_[0] == false 与14行矛盾</p>
+<p>turn_ == 1 &amp;&amp; flag_[0] == false 与13行矛盾</p>
 
 <p>turn _ == 1 &amp;&amp; turn _ == 0 不可能发生</p>
 
 <p>假设线程0进入临界区，进入临界区后由于<code>flag_[0] == true</code>，线程1将在while处spin。</p>
 
-<h3 id="section-6">代码14行和15行能否调换执行顺序？</h3>
+<h3 id="section-6">代码13行和14行能否调换执行顺序？</h3>
 
 <p>调换顺序后无法保证先设置flag为true的线程先进入临界区。</p>
 
-<h3 id="turn--threadid">代码15行能否改为<code>turn_ = !thread_id</code></h3>
+<h3 id="turn--threadid">代码14行能否改为<code>turn_ = !thread_id</code></h3>
 
-<p>可以。只是如果15行改为<code>turn_ = !thread_id</code>，那么17行需要将<code>turn_ == thread_id</code>也改<code>为turn_ == !thread_id</code>。也就是说turn_的初始值是什么并不重要，turn_设置为什么值也不太重要，重要的通过turn_能区分出谁先尝试申请锁。</p>
+<p>可以。只是如果14行改为<code>turn_ = !thread_id</code>，那么16行需要将<code>turn_ == thread_id</code>也改为<code>turn_ == !thread_id</code>。也就是说turn_的初始值是什么并不重要，turn_设置为什么值也不太重要，重要的通过turn_能区分出谁先尝试申请锁。</p>
 
-<h3 id="cpu-memory-barrier">16行的cpu 级别的memory barrier是否必要？</h3>
+<h3 id="cpu-memory-barrier">15行的cpu 级别的memory barrier是否必要？</h3>
 
-<p>非常必要。否则17行对flags_[other]的读取（判断）操作可能和15行发生乱序（写读乱序。而14、15属于写写，是不会乱序的，不用加barrier），最后可能导致两个线程同时进入临界区。这点，请读者自行分析。非常重要！</p>
+<p>非常必要。否则16行对flags_[other]的读取（判断）操作可能和14行发生乱序（写读乱序。而13、14属于写写，是不会乱序的，不用加barrier），最后可能导致两个线程同时进入临界区。这点，请读者自行分析。非常重要！</p>
 
 <h3 id="peterson-1">实现（针对两个线程的）peterson算法所需最少空间为多少？</h3>
 
@@ -182,7 +182,7 @@
 
 <h2 id="section-7">附录：</h2>
 
-<p>在X86下，<code>CPU_BARRIER</code>和<code>CPU_RELAX</code>可以用gcc内置的宏实现：</p>
+<p>在X86下，<code>CPU_BARRIER</code>和<code>CPU_RELAX</code>可以用gcc内置feature，通过宏来实现：</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -190,7 +190,7 @@
 </span><span class="line"><span class="cp">#define CPU_RELAX() __asm__ __volatile__(&quot;pause\n&quot;: : :&quot;memory&quot;)</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>18行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以节能减排，降低cpu的空耗。</p>
+<p>17行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以节能减排，降低cpu的空耗。</p>
 ]]></content>
   </entry>
   
