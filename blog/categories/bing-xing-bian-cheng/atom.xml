@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-05T10:29:49+08:00</updated>
+  <updated>2016-03-05T10:32:35+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -224,7 +224,7 @@ class PetersonSpinLock
 #define CPU_RELAX() __asm__ __volatile__("pause\n": : :"memory")
 </code></p>
 
-<p>17行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以节能减排，降低cpu的空耗。</p>
+<p>17行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以提高性能、节能减排。</p>
 ]]></content>
   </entry>
   
