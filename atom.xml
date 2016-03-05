@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-05T10:32:35+08:00</updated>
+  <updated>2016-03-05T10:44:23+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -199,6 +199,10 @@
 <p>turn_ == 1 &amp;&amp; flag_[0] == false 与13行矛盾</p>
 
 <p>turn _ == 1 &amp;&amp; turn _ == 0 不可能发生</p>
+
+<p>而一旦例如说，线程0，进入临界区后，线程1会因为turn_的值而spin，直到线程0通过unlock将flag_[0]设置为false。</p>
+
+<p>因此，13、14两行的顺序很重要。是这样的吗？接着往下看。</p>
 
 <h3 id="section-6">代码13行和14行能否调换执行顺序？</h3>
 
