@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-05T12:59:58+08:00</updated>
+  <updated>2016-03-05T16:31:49+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -139,27 +139,11 @@ class PetersonSpinLock
 
 <p>如果两者同时进入临界区，说明16行中的while判断对两个线程都为false，也就是说</p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>flag_[1] == false</td>
-      <td> </td>
-      <td>turn _ == 1</td>
-    </tr>
-  </tbody>
-</table>
+<p>flag_[1] == false 或者 turn _ == 1</p>
 
 <p>同时</p>
 
-<table>
-  <tbody>
-    <tr>
-      <td>flag_[0] == false</td>
-      <td> </td>
-      <td>turn_ == 0</td>
-    </tr>
-  </tbody>
-</table>
+<p>flag_[0] == false 或者 turn_ == 0</p>
 
 <p>因此只有四种情形：</p>
 
@@ -189,9 +173,9 @@ class PetersonSpinLock
 
 <p>线程1执行16行的判断，因为flag_[0]为false，所以线程1进入临界区。</p>
 
-<p>线程0执行flag_[1] = true</p>
+<p>线程0执行flag_[0] = true</p>
 
-<p>线程1执行16行判断，此时turn_等于1，所以线程0也进入临界区。</p>
+<p>线程0执行16行判断，此时turn_等于1，所以线程0也进入临界区。</p>
 
 <h3 id="turn--threadid">代码14行能否改为<code>turn_ = !thread_id</code></h3>
 
@@ -233,6 +217,8 @@ class PetersonSpinLock
 <h2 id="section-8">致谢</h2>
 
 <p>本文发出后，微博网友@finalpatch 指出应在代码的28、29行加上volatile。非常感谢。</p>
+
+<p>本文发出后，微博网友@linyvxiang 指出了文中的两处笔误。非常感谢。</p>
 ]]></content>
   </entry>
   
