@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-04T23:03:23+08:00</updated>
+  <updated>2016-03-05T10:16:59+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -25,6 +25,8 @@
 <p>如何仅仅通过load和store实现spin lock呢？</p>
 
 <p>本文只考虑、只针对只有两个线程的情形。假设这两个线程的id分别为0和1。编程环境为X86体系结构 + Intel CPU + gcc</p>
+
+<!--more-->
 
 <h2 id="section-1">分析问题</h2>
 
@@ -114,7 +116,21 @@
 </span><span class="line"><span class="p">};</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>以下是对peterson算法的思考和讨论</p>
+<p>以下是对peterson算法的思考和讨论。在看我的分析之前，请自己尝试思考以下问题：（温馨提示，C/C++，if条件判断是短路求值的。也就是说对于if(A &amp;&amp; B)，一旦知道A是false，那么B将不用evaluate了）</p>
+
+<p>peterson算法如何防止starvation的发生？</p>
+
+<p>peterson算法如何防止两个线程同时进入临界区？</p>
+
+<p>代码13行和14行能否调换执行顺序？</p>
+
+<p>代码14行能否改为<code>turn_ = !thread_id</code> ？</p>
+
+<p>15行的cpu 级别的memory barrier是否必要？</p>
+
+<p>实现（针对两个线程的）peterson算法所需最少空间为多少？</p>
+
+<p>思考了没？下面我们来分析讨论一下：</p>
 
 <h3 id="petersonstarvation">peterson算法如何防止starvation的发生？</h3>
 
@@ -160,11 +176,23 @@
 
 <p>turn _ == 1 &amp;&amp; turn _ == 0 不可能发生</p>
 
-<p>假设线程0进入临界区，进入临界区后由于<code>flag_[0] == true</code>，线程1将在while处spin。</p>
-
 <h3 id="section-6">代码13行和14行能否调换执行顺序？</h3>
 
-<p>调换顺序后无法保证先设置flag为true的线程先进入临界区。</p>
+<p>不可以，否则可能发生两个线程同时进入临界区。</p>
+
+<p>考虑以下情形：</p>
+
+<p>线程0执行turn_ = 0</p>
+
+<p>线程1执行turn_ = 1</p>
+
+<p>线程1执行flag_[1] = true</p>
+
+<p>线程1执行16行的判断，因为flag_[0]为false，所以线程1进入临界区。</p>
+
+<p>线程0执行flag_[1] = true</p>
+
+<p>线程1执行16行判断，此时turn_等于1，所以线程0也进入临界区。</p>
 
 <h3 id="turn--threadid">代码14行能否改为<code>turn_ = !thread_id</code></h3>
 
@@ -172,7 +200,19 @@
 
 <h3 id="cpu-memory-barrier">15行的cpu 级别的memory barrier是否必要？</h3>
 
-<p>非常必要。否则16行对flags_[other]的读取（判断）操作可能和14行发生乱序（写读乱序。而13、14属于写写，是不会乱序的，不用加barrier），最后可能导致两个线程同时进入临界区。这点，请读者自行分析。非常重要！</p>
+<p>非常必要。否则16行对flags_[other]的读取（判断）操作可能和14行发生乱序（写读乱序。而13、14属于写写，是不会乱序的，不用加barrier），最后可能导致两个线程同时进入临界区。这点，请读者务必自己亲自分析。非常重要！</p>
+
+<p>不加memory barrier，乱序后，考虑以下情形：</p>
+
+<p>线程0判断flag_[1]，发现为false（此时线程1还没开始调用lock函数，flag_[1]还是它的初始值false），进入临界区。</p>
+
+<p>线程1判断flag_[0]，发现为true</p>
+
+<p>线程1执行turn_ = 1</p>
+
+<p>线程0执行turn_ = 0</p>
+
+<p>线程1执行16行判断，此时turn_等于0，所以线程1也进入临界区。</p>
 
 <h3 id="peterson-1">实现（针对两个线程的）peterson算法所需最少空间为多少？</h3>
 
