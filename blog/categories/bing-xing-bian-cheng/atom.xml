@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-05T10:16:59+08:00</updated>
+  <updated>2016-03-05T10:29:49+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -87,19 +87,43 @@ class PetersonSpinLock
 };
 </code></p>
 
-<p>以下是对peterson算法的思考和讨论。在看我的分析之前，请自己尝试思考以下问题：（温馨提示，C/C++，if条件判断是短路求值的。也就是说对于if(A &amp;&amp; B)，一旦知道A是false，那么B将不用evaluate了）</p>
+<p>以下是对peterson算法的思考和讨论。在看我的分析之前，请自己尝试思考以下问题：（温馨提示：在C/C++中，if条件判断是短路求值的。也就是说对于if(A &amp;&amp; B)，一旦知道A是false，那么B将不用evaluate了）</p>
 
-<p>peterson算法如何防止starvation的发生？</p>
+<blockquote>
+  <ul>
+    <li>peterson算法如何防止starvation的发生？</li>
+  </ul>
+</blockquote>
 
-<p>peterson算法如何防止两个线程同时进入临界区？</p>
+<blockquote>
+  <ul>
+    <li>peterson算法如何防止两个线程同时进入临界区？</li>
+  </ul>
+</blockquote>
 
-<p>代码13行和14行能否调换执行顺序？</p>
+<blockquote>
+  <ul>
+    <li>代码13行和14行能否调换执行顺序？</li>
+  </ul>
+</blockquote>
 
-<p>代码14行能否改为<code>turn_ = !thread_id</code> ？</p>
+<blockquote>
+  <ul>
+    <li>代码14行能否改为<code>turn_ = !thread_id</code> ？</li>
+  </ul>
+</blockquote>
 
-<p>15行的cpu 级别的memory barrier是否必要？</p>
+<blockquote>
+  <ul>
+    <li>15行的cpu 级别的memory barrier是否必要？</li>
+  </ul>
+</blockquote>
 
-<p>实现（针对两个线程的）peterson算法所需最少空间为多少？</p>
+<blockquote>
+  <ul>
+    <li>实现（针对两个线程的）peterson算法所需最少空间为多少？</li>
+  </ul>
+</blockquote>
 
 <p>思考了没？下面我们来分析讨论一下：</p>
 
@@ -167,21 +191,21 @@ class PetersonSpinLock
 
 <h3 id="turn--threadid">代码14行能否改为<code>turn_ = !thread_id</code></h3>
 
-<p>可以。只是如果14行改为<code>turn_ = !thread_id</code>，那么16行需要将<code>turn_ == thread_id</code>也改为<code>turn_ == !thread_id</code>。也就是说turn_的初始值是什么并不重要，turn_设置为什么值也不太重要，重要的通过turn_能区分出谁先尝试申请锁。</p>
+<p>可以。只是如果14行改为<code>turn_ = !thread_id</code>，那么16行需要将<code>turn_ == thread_id</code>也改为<code>turn_ == !thread_id</code>。也就是说turn_的初始值是什么并不重要，turn_设置成什么值也不太重要，重要的是通过turn_能区分出谁先尝试申请锁。</p>
 
-<h3 id="cpu-memory-barrier">15行的cpu 级别的memory barrier是否必要？</h3>
+<h3 id="cpu-memory-barrier">15行的cpu 级别的Memory Barrier是否必要？</h3>
 
 <p>非常必要。否则16行对flags_[other]的读取（判断）操作可能和14行发生乱序（写读乱序。而13、14属于写写，是不会乱序的，不用加barrier），最后可能导致两个线程同时进入临界区。这点，请读者务必自己亲自分析。非常重要！</p>
 
-<p>不加memory barrier，乱序后，考虑以下情形：</p>
+<p>不加Memory Barrier，乱序后，考虑以下情形：</p>
 
 <p>线程0判断flag_[1]，发现为false（此时线程1还没开始调用lock函数，flag_[1]还是它的初始值false），进入临界区。</p>
 
 <p>线程1判断flag_[0]，发现为true</p>
 
-<p>线程1执行turn_ = 1</p>
+<p>线程1执行<code>turn_ = 1</code></p>
 
-<p>线程0执行turn_ = 0</p>
+<p>线程0执行<code>turn_ = 0</code></p>
 
 <p>线程1执行16行判断，此时turn_等于0，所以线程1也进入临界区。</p>
 
