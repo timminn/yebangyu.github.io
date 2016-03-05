@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-05T10:44:23+08:00</updated>
+  <updated>2016-03-05T12:59:58+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -111,8 +111,8 @@
 </span><span class="line">      <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
 </span><span class="line">    <span class="p">}</span>
 </span><span class="line">  <span class="k">private</span><span class="o">:</span>
-</span><span class="line">    <span class="kt">bool</span> <span class="n">flags_</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
-</span><span class="line">    <span class="kt">bool</span> <span class="n">turn_</span><span class="p">;</span>
+</span><span class="line">    <span class="k">volatile</span> <span class="kt">bool</span> <span class="n">flags_</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span><span class="line">    <span class="k">volatile</span> <span class="kt">bool</span> <span class="n">turn_</span><span class="p">;</span>
 </span><span class="line"><span class="p">};</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
@@ -259,6 +259,10 @@
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
 <p>17行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以提高性能、节能减排。</p>
+
+<h2 id="section-8">致谢</h2>
+
+<p>本文发出后，微博网友@finalpatch 指出应在代码的28、29行加上volatile。非常感谢。</p>
 ]]></content>
   </entry>
   

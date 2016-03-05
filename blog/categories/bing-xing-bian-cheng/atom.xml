@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-05T10:44:23+08:00</updated>
+  <updated>2016-03-05T12:59:58+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -82,8 +82,8 @@ class PetersonSpinLock
       return true;
     }
   private:
-    bool flags_[2];
-    bool turn_;
+    volatile bool flags_[2];
+    volatile bool turn_;
 };
 </code></p>
 
@@ -229,6 +229,10 @@ class PetersonSpinLock
 </code></p>
 
 <p>17行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以提高性能、节能减排。</p>
+
+<h2 id="section-8">致谢</h2>
+
+<p>本文发出后，微博网友@finalpatch 指出应在代码的28、29行加上volatile。非常感谢。</p>
 ]]></content>
   </entry>
   
