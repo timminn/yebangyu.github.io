@@ -171,15 +171,17 @@ else
 
 <p><strong>CPU</strong>对指令可能采取乱序执行，以达到优化的目的。但是，并发访问的锁破坏了这种机制。</p>
 
-<pre><code>c = 3;
+<pre><code>//here
+c = 3;
 lock.lock();
 a = 1;
 b = 2;
 lock.unlock();
 d = 4;
+//there
 </code></pre>
 
-<p><code>d=4</code>绝对不会在<code>a=1</code>之前执行，<code>c=3</code>绝对不会在<code>a=1</code>之后执行。</p>
+<p><code>a=1</code>绝对不会被乱序到here处执行，<code>b=2</code>绝对不会被乱序到there处执行。（不过需要注意的是，<code>c=3</code>和<code>d=4</code>是有可能被拉到临界区里执行的）</p>
 
 <p><strong>lock</strong>和<strong>unlock</strong>中包含了<strong>memory</strong> <strong>barrier</strong>。由于<strong>memory</strong> <strong>barrier</strong>和乱序执行是对着干的，用来防止乱序执行的；而乱序执行一般是优化的手段和方法，因此<strong>memory</strong> <strong>barrier</strong>往往带来性能下降。</p>
 

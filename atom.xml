@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-05T16:31:49+08:00</updated>
+  <updated>2016-03-07T22:50:33+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -84,6 +84,7 @@
 <span class="line-number">28</span>
 <span class="line-number">29</span>
 <span class="line-number">30</span>
+<span class="line-number">31</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">PetersonSpinLock</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="k">public</span><span class="o">:</span>
@@ -97,6 +98,7 @@
 </span><span class="line">    <span class="p">{</span>
 </span><span class="line">      <span class="kt">int</span> <span class="n">other</span> <span class="o">=</span> <span class="o">!</span><span class="n">thread_id</span><span class="p">;</span>
 </span><span class="line">      <span class="n">flags_</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span><span class="line">	  <span class="n">COMPILER_BARRIER</span><span class="p">();</span>
 </span><span class="line">      <span class="n">turn_</span> <span class="o">=</span> <span class="n">thread_id</span><span class="p">;</span>
 </span><span class="line">      <span class="n">CPU_BARRIER</span><span class="p">();</span><span class="c1">// essential</span>
 </span><span class="line">      <span class="k">while</span><span class="p">(</span><span class="n">flags_</span><span class="p">[</span><span class="n">other</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">turn_</span> <span class="o">==</span> <span class="n">thread_id</span><span class="p">)</span> <span class="p">{</span>
@@ -132,19 +134,19 @@
 
 <blockquote>
   <ul>
-    <li>代码13行和14行能否调换执行顺序？</li>
+    <li>代码14行和15行能否调换执行顺序？</li>
   </ul>
 </blockquote>
 
 <blockquote>
   <ul>
-    <li>代码14行能否改为<code>turn_ = !thread_id</code> ？</li>
+    <li>代码15行能否改为<code>turn_ = !thread_id</code> ？</li>
   </ul>
 </blockquote>
 
 <blockquote>
   <ul>
-    <li>15行的cpu 级别的memory barrier是否必要？</li>
+    <li>16行的cpu 级别的memory barrier是否必要？</li>
   </ul>
 </blockquote>
 
@@ -158,7 +160,7 @@
 
 <h3 id="petersonstarvation">peterson算法如何防止starvation的发生？</h3>
 
-<p>假设某时刻两个线程都在spin，也就是16行中while的条件对两个线程都成立，也就是说：</p>
+<p>假设某时刻两个线程都在spin，也就是17行中while的条件对两个线程都成立，也就是说：</p>
 
 <p>flag_[0] == true 并且 trun_ == 0 并且 flag_[1] == true 并且turn_ == 1</p>
 
@@ -166,7 +168,7 @@
 
 <h3 id="peterson">peterson算法如何防止两个线程同时进入临界区？</h3>
 
-<p>如果两者同时进入临界区，说明16行中的while判断对两个线程都为false，也就是说</p>
+<p>如果两者同时进入临界区，说明17行中的while判断对两个线程都为false，也就是说</p>
 
 <p>flag_[1] == false 或者 turn _ == 1</p>
 
@@ -176,17 +178,17 @@
 
 <p>因此只有四种情形：</p>
 
-<p>flag_[1] == false  &amp;&amp; flag_[0] == false  与13行矛盾</p>
+<p>flag_[1] == false  &amp;&amp; flag_[0] == false  与14行矛盾</p>
 
-<p>flag_[1] == false  &amp;&amp; turn_ == 0  与13行矛盾</p>
+<p>flag_[1] == false  &amp;&amp; turn_ == 0  与14行矛盾</p>
 
-<p>turn_ == 1 &amp;&amp; flag_[0] == false 与13行矛盾</p>
+<p>turn_ == 1 &amp;&amp; flag_[0] == false 与14行矛盾</p>
 
 <p>turn _ == 1 &amp;&amp; turn _ == 0 不可能发生</p>
 
 <p>而一旦例如说，线程0，进入临界区后，线程1会因为turn_的值而spin，直到线程0通过unlock将flag_[0]设置为false。</p>
 
-<p>因此，13、14两行的顺序很重要。是这样的吗？接着往下看。</p>
+<p>因此，14、15两行的顺序很重要。是这样的吗？接着往下看。</p>
 
 <h3 id="section-6">代码13行和14行能否调换执行顺序？</h3>
 
@@ -234,11 +236,13 @@
 
 <h2 id="section-7">附录：</h2>
 
-<p>在X86下，<code>CPU_BARRIER</code>和<code>CPU_RELAX</code>可以用gcc内置feature，通过宏来实现：</p>
+<p>在X86下，<code>CPU_BARRIER</code>和<code>CPU_RELAX</code>以及<code>COMPILER_BARRIER</code>可以用gcc内置feature，通过宏来实现：</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
+<span class="line-number">3</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#define CPU_BARRIER() __sync_synchronize()</span>
+</span><span class="line"><span class="cp">#define COMPILER_BARRIER() __asm__ __volatile__(&quot;&quot; : : : &quot;memory&quot;)</span>
 </span><span class="line"><span class="cp">#define CPU_RELAX() __asm__ __volatile__(&quot;pause\n&quot;: : :&quot;memory&quot;)</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
