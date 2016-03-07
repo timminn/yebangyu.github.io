@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-07T22:50:33+08:00</updated>
+  <updated>2016-03-07T23:02:13+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -68,7 +68,7 @@ class PetersonSpinLock
     {
       int other = !thread_id;
       flags_[thread_id] = true; 
-	  COMPILER_BARRIER();
+      COMPILER_BARRIER();
       turn_ = thread_id;
       CPU_BARRIER();// essential
       while(flags_[other] &amp;&amp; turn_ == thread_id) {
@@ -104,7 +104,7 @@ class PetersonSpinLock
 
 <blockquote>
   <ul>
-    <li>代码14行和15行能否调换执行顺序？</li>
+    <li>代码13行和15行能否调换执行顺序？</li>
   </ul>
 </blockquote>
 
@@ -148,19 +148,19 @@ class PetersonSpinLock
 
 <p>因此只有四种情形：</p>
 
-<p>flag_[1] == false  &amp;&amp; flag_[0] == false  与14行矛盾</p>
+<p>flag_[1] == false  &amp;&amp; flag_[0] == false  与13行矛盾</p>
 
-<p>flag_[1] == false  &amp;&amp; turn_ == 0  与14行矛盾</p>
+<p>flag_[1] == false  &amp;&amp; turn_ == 0  与13行矛盾</p>
 
-<p>turn_ == 1 &amp;&amp; flag_[0] == false 与14行矛盾</p>
+<p>turn_ == 1 &amp;&amp; flag_[0] == false 与13行矛盾</p>
 
 <p>turn _ == 1 &amp;&amp; turn _ == 0 不可能发生</p>
 
 <p>而一旦例如说，线程0，进入临界区后，线程1会因为turn_的值而spin，直到线程0通过unlock将flag_[0]设置为false。</p>
 
-<p>因此，14、15两行的顺序很重要。是这样的吗？接着往下看。</p>
+<p>因此，13、15两行的顺序很重要。是这样的吗？接着往下看。</p>
 
-<h3 id="section-6">代码13行和14行能否调换执行顺序？</h3>
+<h3 id="section-6">代码13行和15行能否调换执行顺序？</h3>
 
 <p>不可以，否则可能发生两个线程同时进入临界区。</p>
 
@@ -172,19 +172,21 @@ class PetersonSpinLock
 
 <p>线程1执行flag_[1] = true</p>
 
-<p>线程1执行16行的判断，因为flag_[0]为false，所以线程1进入临界区。</p>
+<p>线程1执行17行的判断，因为flag_[0]为false，所以线程1进入临界区。</p>
 
 <p>线程0执行flag_[0] = true</p>
 
-<p>线程0执行16行判断，此时turn_等于1，所以线程0也进入临界区。</p>
+<p>线程0执行17行判断，此时turn_等于1，所以线程0也进入临界区。</p>
 
-<h3 id="turn--threadid">代码14行能否改为<code>turn_ = !thread_id</code></h3>
+<p>因此13行和15行执行顺序不可以交换；而这两个都是store操作，在X86 Intel CPU下，cpu不会乱序执行它们，因此只需要在14行增加一个compiler级别的memory barrier，防止编译器乱序即可。</p>
 
-<p>可以。只是如果14行改为<code>turn_ = !thread_id</code>，那么16行需要将<code>turn_ == thread_id</code>也改为<code>turn_ == !thread_id</code>。也就是说turn_的初始值是什么并不重要，turn_设置成什么值也不太重要，重要的是通过turn_能区分出谁先尝试申请锁。</p>
+<h3 id="turn--threadid">代码15行能否改为<code>turn_ = !thread_id</code></h3>
 
-<h3 id="cpu-memory-barrier">15行的cpu 级别的Memory Barrier是否必要？</h3>
+<p>可以。只是如果15行改为<code>turn_ = !thread_id</code>，那么17行需要将<code>turn_ == thread_id</code>也改为<code>turn_ == !thread_id</code>。也就是说turn_的初始值是什么并不重要，turn_设置成什么值也不太重要，重要的是通过turn_能区分出谁先尝试申请锁。</p>
 
-<p>非常必要。否则16行对flags_[other]的读取（判断）操作可能和14行发生乱序（写读乱序。而13、14属于写写，是不会乱序的，不用加barrier），最后可能导致两个线程同时进入临界区。这点，请读者务必自己亲自分析。非常重要！</p>
+<h3 id="cpu-memory-barrier">16行的cpu 级别的Memory Barrier是否必要？</h3>
+
+<p>非常必要。否则17行对flags_[other]的读取（判断）操作可能和15行发生乱序（写读乱序。而13、15属于写写，是不会被CPU乱序执行的，不用加cpu 级别的memory barrier），最后可能导致两个线程同时进入临界区。这点，请读者务必自己亲自分析。非常重要！</p>
 
 <p>不加Memory Barrier，乱序后，考虑以下情形：</p>
 
@@ -196,7 +198,7 @@ class PetersonSpinLock
 
 <p>线程0执行<code>turn_ = 0</code></p>
 
-<p>线程1执行16行判断，此时turn_等于0，所以线程1也进入临界区。</p>
+<p>线程1执行17行判断，此时turn_等于0，所以线程1也进入临界区。</p>
 
 <h3 id="peterson-1">实现（针对两个线程的）peterson算法所需最少空间为多少？</h3>
 
@@ -211,14 +213,14 @@ class PetersonSpinLock
 <p><code>c++
 #define CPU_BARRIER() __sync_synchronize()
 #define COMPILER_BARRIER() __asm__ __volatile__("" : : : "memory")
-#define CPU_RELAX() __asm__ __volatile__("pause\n": : :"memory")
+#define CPU_RELAX() __asm__ __volatile__("pause": : :"memory")
 </code></p>
 
-<p>17行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以提高性能、节能减排。</p>
+<p>18行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以提高性能、节能减排。</p>
 
 <h2 id="section-8">致谢</h2>
 
-<p>本文发出后，微博网友@finalpatch 指出应在代码的28、29行加上volatile。非常感谢。</p>
+<p>本文发出后，微博网友@finalpatch 指出应在代码的29、30行加上volatile。非常感谢。</p>
 
 <p>本文发出后，微博网友@linyvxiang 指出了文中的两处笔误。非常感谢。</p>
 ]]></content>
