@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-09T23:03:24+08:00</updated>
+  <updated>2016-03-09T23:06:02+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -64,7 +64,7 @@
 
 <p>首先，两个方向采取的策略应该是一样的，也就是要么都暂停（然后交换），要么都继续扫描。否则将导致两个子数组不平衡。</p>
 
-<p>其次，为了更好分析这个问题，我们不妨考虑所有元素都相同的情形。如果我们遇到和pivot相等的时候不停止，那么从左到右扫描时，两指针将相遇，此次过程结束。结果呢？什么都没做，却得到了两个大小极其不均衡的数组。算法时间复杂度为O($n^2$)。如果我们选择遇到相等元素时停止扫描，然后交换，那么虽然看上去交换的次数变多了，但是我们将得到大小相等（或者差1）的两个子数组。算法的时间复杂度为O（$nlgn$）。</p>
+<p>其次，为了更好分析这个问题，我们不妨考虑所有元素都相同的情形。如果我们遇到和pivot相等的时候不停止，那么从左到右扫描时，两指针将相遇，此次过程结束。结果呢？什么都没做，却得到了两个大小极其不均衡的数组。算法时间复杂度为O($n^2$)。如果我们选择遇到相等元素时停止扫描，然后交换，那么虽然看上去交换的次数变多了，但是我们将得到大小相等（或者差1）的两个子数组。算法的时间复杂度为O($nlgn$)。</p>
 
 <p>因此，遇到和pivot相等的元素时候我们都暂停扫描，交换元素后继续，直到指针相遇或者交叉。</p>
 
@@ -171,7 +171,7 @@ INLINE const T&amp; YedisSort&lt;T, CallBack, threashold&gt;::get_pivot(T *data,
 
 <p>测试程序已经放到了github上，可以从<a href="https://github.com/yebangyu/Yedis/blob/master/src/bad/test.cpp">这里</a>下载。</p>
 
-<p>我们的pk对象包括STL中的sort，以及C语言里大名鼎鼎的qsort。</p>
+<p>我们pk的对象包括STL中的sort，以及C语言里大名鼎鼎的qsort。</p>
 
 <p>测试结果：</p>
 
