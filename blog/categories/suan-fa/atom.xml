@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-09T23:02:33+08:00</updated>
+  <updated>2016-03-09T23:03:24+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[深入讨论快速排序(Quick Sort)]]></title>
+    <title type="html"><![CDATA[深入解析快速排序(Quick Sort)]]></title>
     <link href="http://www.yebangyu.org/blog/2016/03/09/quicksort/"/>
     <updated>2016-03-09T22:34:14+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/03/09/quicksort</id>
