@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-09T23:06:02+08:00</updated>
+  <updated>2016-03-09T23:09:38+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -82,7 +82,7 @@ class CompareOperator
 public:
   INLINE bool operator() (const T &amp;a, const T &amp;b) { return a &lt; b;}
 };
-template&lt;typename T, typename CallBack, int64_t threashold = 20&gt;
+template&lt;typename T, typename CallBack, int64_t threshold = 20&gt;
 class YedisSort
 {
 public:
@@ -92,17 +92,17 @@ private:
   static void insertion_sort(T *data, int64_t left, int64_t right, CallBack &amp;cb);
   static const T&amp; get_pivot(T *data, int64_t left, int64_t right, CallBack &amp;cb);
 };
-template&lt;typename T, typename CallBack, int64_t threashold&gt;
-INLINE void YedisSort&lt;T, CallBack, threashold&gt;::sort(T *data, int64_t size)
+template&lt;typename T, typename CallBack, int64_t threshold&gt;
+INLINE void YedisSort&lt;T, CallBack, threshold&gt;::sort(T *data, int64_t size)
 {
   CallBack cb;
   sort_(data, 0, size - 1, cb);
 }</typename></p>
 
-<p>template&lt;typename T, typename CallBack, int64_t threashold&gt;
-void YedisSort&lt;T, CallBack, threashold&gt;::sort_(T *data, int64_t left, int64_t right, CallBack &amp;cb)
+<p>template&lt;typename T, typename CallBack, int64_t threshold&gt;
+void YedisSort&lt;T, CallBack, threshold&gt;::sort_(T *data, int64_t left, int64_t right, CallBack &amp;cb)
 {
-  if(right - left &gt; threashold) {
+  if(right - left &gt; threshold) {
     const T&amp; pivot = get_pivot(data, left, right, cb);
     int64_t i = left;
     int64_t j = right - 1;
@@ -129,8 +129,8 @@ void YedisSort&lt;T, CallBack, threashold&gt;::sort_(T *data, int64_t left, int6
   }
 }</p>
 
-<p>template&lt;typename T, typename CallBack, int64_t threashold&gt;
-INLINE void YedisSort&lt;T, CallBack, threashold&gt;::insertion_sort(T *data, int64_t left, int64_t right, CallBack &amp;cb)
+<p>template&lt;typename T, typename CallBack, int64_t threshold&gt;
+INLINE void YedisSort&lt;T, CallBack, threshold&gt;::insertion_sort(T *data, int64_t left, int64_t right, CallBack &amp;cb)
 {
   int64_t begin = left + 1;
   int64_t end = right + 1;
@@ -146,8 +146,8 @@ INLINE void YedisSort&lt;T, CallBack, threashold&gt;::insertion_sort(T *data, in
   }
 }</p>
 
-<p>template&lt;typename T, typename CallBack, int64_t threashold&gt;
-INLINE const T&amp; YedisSort&lt;T, CallBack, threashold&gt;::get_pivot(T *data, int64_t left, int64_t right, CallBack &amp;cb)
+<p>template&lt;typename T, typename CallBack, int64_t threshold&gt;
+INLINE const T&amp; YedisSort&lt;T, CallBack, threshold&gt;::get_pivot(T *data, int64_t left, int64_t right, CallBack &amp;cb)
 {
   int64_t mid = (left + right) / 2;
   if (cb(data[mid], data[left])) {
@@ -175,7 +175,7 @@ INLINE const T&amp; YedisSort&lt;T, CallBack, threashold&gt;::get_pivot(T *data,
 
 <p>测试结果：</p>
 
-<p>1000W个32位无符号整数</p>
+<p>1000W个随机打乱的32位无符号整数</p>
 
 <p>开启O2优化（单位：秒）：</p>
 
