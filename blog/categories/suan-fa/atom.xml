@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-09T23:55:13+08:00</updated>
+  <updated>2016-03-10T00:00:45+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -92,9 +92,9 @@ class YedisSort
 public:
   static void sort(T *data, int64_t size);
 private:
-  static void sort_(T *data, int64_t left, int64_t right, CallBack &amp;cb);
-  static void insertion_sort(T *data, int64_t left, int64_t right, CallBack &amp;cb);
-  static const T&amp; get_pivot(T *data, int64_t left, int64_t right, CallBack &amp;cb);
+  static void sort_(T *data, int64_t left, int64_t right, const CallBack &amp;cb);
+  static void insertion_sort(T *data, int64_t left, int64_t right, const CallBack &amp;cb);
+  static const T&amp; get_pivot(T *data, int64_t left, int64_t right, const CallBack &amp;cb);
 };
 template&lt;typename T, typename CallBack, int64_t threshold&gt;
 INLINE void YedisSort&lt;T, CallBack, threshold&gt;::sort(T *data, int64_t size)
@@ -104,7 +104,7 @@ INLINE void YedisSort&lt;T, CallBack, threshold&gt;::sort(T *data, int64_t size)
 }</typename></p>
 
 <p>template&lt;typename T, typename CallBack, int64_t threshold&gt;
-void YedisSort&lt;T, CallBack, threshold&gt;::sort_(T *data, int64_t left, int64_t right, CallBack &amp;cb)
+void YedisSort&lt;T, CallBack, threshold&gt;::sort_(T *data, int64_t left, int64_t right, const CallBack &amp;cb)
 {
   if(right - left &gt; threshold) {
     const T&amp; pivot = get_pivot(data, left, right, cb);
@@ -134,7 +134,7 @@ void YedisSort&lt;T, CallBack, threshold&gt;::sort_(T *data, int64_t left, int64
 }</p>
 
 <p>template&lt;typename T, typename CallBack, int64_t threshold&gt;
-INLINE void YedisSort&lt;T, CallBack, threshold&gt;::insertion_sort(T *data, int64_t left, int64_t right, CallBack &amp;cb)
+INLINE void YedisSort&lt;T, CallBack, threshold&gt;::insertion_sort(T *data, int64_t left, int64_t right, const CallBack &amp;cb)
 {
   int64_t begin = left + 1;
   int64_t end = right + 1;
@@ -151,7 +151,7 @@ INLINE void YedisSort&lt;T, CallBack, threshold&gt;::insertion_sort(T *data, int
 }</p>
 
 <p>template&lt;typename T, typename CallBack, int64_t threshold&gt;
-INLINE const T&amp; YedisSort&lt;T, CallBack, threshold&gt;::get_pivot(T *data, int64_t left, int64_t right, CallBack &amp;cb)
+INLINE const T&amp; YedisSort&lt;T, CallBack, threshold&gt;::get_pivot(T *data, int64_t left, int64_t right, const CallBack &amp;cb)
 {
   int64_t mid = (left + right) / 2;
   if (cb(data[mid], data[left])) {
@@ -221,7 +221,7 @@ INLINE const T&amp; YedisSort&lt;T, CallBack, threshold&gt;::get_pivot(T *data, 
 
 <p>开了优化，那么所需时间 sort &lt; YedisSort &lt; qsort</p>
 
-<p>为什么sort可以这么屌？据说它综合了插入排序、快速排序和堆排序。这让我想起了推荐和广告比赛里，有些队伍利用Ensemble Learning没节操地堆了几百个model。。。</p>
+<p>为什么sort可以这么叼？据说它综合了插入排序、快速排序和堆排序。这让我想起了推荐和广告比赛里，有些队伍利用Ensemble Learning没节操地堆了几百个model。。。</p>
 
 <h2 id="further-thinking">Further Thinking</h2>
 
@@ -244,10 +244,12 @@ while(true) {
   } else {
     break;
   }
-};
+}
 </code></p>
 
-<p>3，快速排序的栈空间是多少？能否进一步优化？</p>
+<p>深入分析这样的case，将会对编写正确的快速排序的困难性有更深的体会，虽然我们已经有循环不变式这个强大的工具。</p>
+
+<p>3，快速排序所需的栈空间是多少？能否进一步优化？</p>
 
 <p>4，YedisSort的时间复杂度是多少？O($n^2$)还是O($nlgn$)？如果是前者，那么，什么情况下是二次的？</p>
 ]]></content>
