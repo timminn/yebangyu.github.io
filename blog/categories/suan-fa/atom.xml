@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-10T23:29:46+08:00</updated>
+  <updated>2016-03-10T23:35:31+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -81,44 +81,44 @@
 <p>```c++
 #define INLINE <strong>attribute</strong>((always_inline))
 template<typename t="">
-class CompareOperator
+class MyCompareOperator
 {
 public:
   INLINE bool operator() (const T &amp;a, const T &amp;b) { return a &lt; b;}
 };
-template&lt;typename T, typename CallBack, int64_t threshold = 20&gt;
+template&lt;typename T, typename CompareOperator, int64_t threshold = 20&gt;
 class YedisSort
 {
 public:
   static void sort(T *data, int64_t size);
 private:
-  static void sort_(T *data, int64_t left, int64_t right, const CallBack &amp;cb);
-  static void insertion_sort(T *data, int64_t left, int64_t right, const CallBack &amp;cb);
-  static const T&amp; get_pivot(T *data, int64_t left, int64_t right, const CallBack &amp;cb);
+  static void sort_(T *data, int64_t left, int64_t right, const CompareOperator &amp;co);
+  static void insertion_sort(T *data, int64_t left, int64_t right, const CompareOperator &amp;co);
+  static const T&amp; get_pivot(T *data, int64_t left, int64_t right, const CompareOperator &amp;co);
 };
-template&lt;typename T, typename CallBack, int64_t threshold&gt;
-INLINE void YedisSort&lt;T, CallBack, threshold&gt;::sort(T *data, int64_t size)
+template&lt;typename T, typename CompareOperator, int64_t threshold&gt;
+INLINE void YedisSort&lt;T, CompareOperator, threshold&gt;::sort(T *data, int64_t size)
 {
-  CallBack cb;
-  sort_(data, 0, size - 1, cb);
+  CompareOperator co;
+  sort_(data, 0, size - 1, co);
 }</typename></p>
 
-<p>template&lt;typename T, typename CallBack, int64_t threshold&gt;
-void YedisSort&lt;T, CallBack, threshold&gt;::sort_(T *data, int64_t left, int64_t right, const CallBack &amp;cb)
+<p>template&lt;typename T, typename CompareOperator, int64_t threshold&gt;
+void YedisSort&lt;T, CompareOperator, threshold&gt;::sort_(T *data, int64_t left, int64_t right, const CompareOperator &amp;co)
 {
   if(right - left &gt; threshold) {
-    const T&amp; pivot = get_pivot(data, left, right, cb);
+    const T&amp; pivot = get_pivot(data, left, right, co);
     int64_t i = left;
     int64_t j = right - 1;
     while(true) {
       do
       {
         ++i;
-      }while(cb(data[i], pivot));
+      }while(co(data[i], pivot));
       do
       {
         –j;
-      }while(cb(pivot, data[j]));
+      }while(co(pivot, data[j]));
       if (i &lt; j) {
         std::swap(data[i], data[j]);
       } else {
@@ -126,15 +126,15 @@ void YedisSort&lt;T, CallBack, threshold&gt;::sort_(T *data, int64_t left, int64
       }
     }
     std::swap(data[i], data[right - 1]);//restore pivot
-    sort_(data, left, i - 1, cb);
-    sort_(data, i + 1, right, cb);
+    sort_(data, left, i - 1, co);
+    sort_(data, i + 1, right, co);
   } else {
-    insertion_sort(data, left, right, cb);
+    insertion_sort(data, left, right, co);
   }
 }</p>
 
-<p>template&lt;typename T, typename CallBack, int64_t threshold&gt;
-INLINE void YedisSort&lt;T, CallBack, threshold&gt;::insertion_sort(T *data, int64_t left, int64_t right, const CallBack &amp;cb)
+<p>template&lt;typename T, typename CompareOperator, int64_t threshold&gt;
+INLINE void YedisSort&lt;T, CompareOperator, threshold&gt;::insertion_sort(T *data, int64_t left, int64_t right, const CompareOperator &amp;co)
 {
   int64_t begin = left + 1;
   int64_t end = right + 1;
@@ -142,7 +142,7 @@ INLINE void YedisSort&lt;T, CallBack, threshold&gt;::insertion_sort(T *data, int
     //insert data[i]. data[left to i-1] are ordered already
     int64_t j = i - 1;
     T tmp = data[i];
-    while(j &gt;-1 &amp;&amp; cb(tmp, data[j])) {
+    while(j &gt;-1 &amp;&amp; co(tmp, data[j])) {
       data[j+1] = data[j];
       j–;
     }
@@ -150,17 +150,17 @@ INLINE void YedisSort&lt;T, CallBack, threshold&gt;::insertion_sort(T *data, int
   }
 }</p>
 
-<p>template&lt;typename T, typename CallBack, int64_t threshold&gt;
-INLINE const T&amp; YedisSort&lt;T, CallBack, threshold&gt;::get_pivot(T *data, int64_t left, int64_t right, const CallBack &amp;cb)
+<p>template&lt;typename T, typename CompareOperator, int64_t threshold&gt;
+INLINE const T&amp; YedisSort&lt;T, CompareOperator, threshold&gt;::get_pivot(T *data, int64_t left, int64_t right, const CompareOperator &amp;co)
 {
   int64_t mid = (left + right) / 2;
-  if (cb(data[mid], data[left])) {
+  if (co(data[mid], data[left])) {
     std::swap(data[mid], data[left]);
   }
-  if (cb(data[right], data[mid])) {
+  if (co(data[right], data[mid])) {
     std::swap(data[mid], data[right]);
   }
-  if (cb(data[mid], data[left])) {
+  if (co(data[mid], data[left])) {
     std::swap(data[mid], data[left]);
   }
   //Store pivot there to facilitate bound processing in sort_
@@ -225,7 +225,7 @@ INLINE const T&amp; YedisSort&lt;T, CallBack, threshold&gt;::get_pivot(T *data, 
 
 <h2 id="further-thinking">Further Thinking</h2>
 
-<p>1，64行的 <code>while(j &gt;-1 &amp;&amp; cb(tmp, data[j]))</code> 能否改为 <code>while(j &gt;-1 &amp;&amp; !cb(data[j], tmp))</code> ？ 同理，36和40行能否作相应的改动？</p>
+<p>1，64行的 <code>while(j &gt;-1 &amp;&amp; co(tmp, data[j]))</code> 能否改为 <code>while(j &gt;-1 &amp;&amp; !co(data[j], tmp))</code> ？ 同理，36和40行能否作相应的改动？</p>
 
 <p>2，30-46行能否改为：</p>
 
@@ -233,10 +233,10 @@ INLINE const T&amp; YedisSort&lt;T, CallBack, threshold&gt;::get_pivot(T *data, 
 int64_t i = left + 1;
 int64_t j = right - 2;
 while(true) {
-  while(cb(data[i], pivot)) {
+  while(co(data[i], pivot)) {
     ++i;
   }
-  while(cb(pivot, data[j])) {
+  while(co(pivot, data[j])) {
     --j;
   }
   if (i &lt; j) {
