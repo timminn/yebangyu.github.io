@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-11T00:22:11+08:00</updated>
+  <updated>2016-03-11T22:40:24+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -172,7 +172,7 @@
 </span><span class="line"><span class="k">class</span> <span class="nc">MyCompareOperator</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line"><span class="k">public</span><span class="o">:</span>
-</span><span class="line">  <span class="n">INLINE</span> <span class="kt">bool</span> <span class="k">operator</span><span class="p">()</span> <span class="p">(</span><span class="k">const</span> <span class="n">T</span> <span class="o">&amp;</span><span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="n">T</span> <span class="o">&amp;</span><span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">;}</span>
+</span><span class="line">  <span class="n">INLINE</span> <span class="kt">bool</span> <span class="k">operator</span><span class="p">()</span> <span class="p">(</span><span class="k">const</span> <span class="n">T</span> <span class="o">&amp;</span><span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="n">T</span> <span class="o">&amp;</span><span class="n">b</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">;}</span>
 </span><span class="line"><span class="p">};</span>
 </span><span class="line"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">threshold</span> <span class="o">=</span> <span class="mi">20</span><span class="o">&gt;</span>
 </span><span class="line"><span class="k">class</span> <span class="nc">YedisSort</span>
@@ -257,13 +257,15 @@
 </span><span class="line">  <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">right</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>我们把以上实现的快速排序称为YedisSort。</p>
+<p>我们把以上实现的快速排序称为YedisSort。是的，90行不到。</p>
 
 <h2 id="section-6">测试结果</h2>
 
 <p>测试程序已经放到了github上，可以从<a href="https://github.com/yebangyu/Yedis/blob/master/src/bad/test.cpp">这里</a>下载。</p>
 
 <p>我们pk的对象包括STL中的sort，以及C语言里大名鼎鼎的qsort。</p>
+
+<p>我们的平台是Ubuntu 64位系统 + gcc 4.8</p>
 
 <p>测试结果：</p>
 
