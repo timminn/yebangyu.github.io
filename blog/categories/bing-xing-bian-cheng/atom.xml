@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-11T22:40:24+08:00</updated>
+  <updated>2016-03-26T12:16:31+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -203,8 +203,6 @@ class PetersonSpinLock
 <h3 id="peterson-1">实现（针对两个线程的）peterson算法所需最少空间为多少？</h3>
 
 <p>3个bit足矣。两个flag_两个bit，turn_也只需要1个bit。</p>
-
-<p>下次，我们将讨论peterson算法的拓展，用于n个线程的情形。</p>
 
 <h2 id="section-7">附录：</h2>
 

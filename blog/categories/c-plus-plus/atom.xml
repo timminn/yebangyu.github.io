@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-11T22:40:24+08:00</updated>
+  <updated>2016-03-26T12:16:31+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,92 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[C99中的柔性数组]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/03/25/fuckthefever/"/>
+    <updated>2016-03-25T12:00:34+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/03/25/fuckthefever</id>
+    <content type="html"><![CDATA[<p>柔性数组是C99引入的feature。</p>
+
+<p><code>c++
+struct Data
+{
+  int i;
+  int a[0];
+};
+</code></p>
+
+<p>其中柔性数组a处于结构体的末尾，并且声明的大小为0。</p>
+
+<!--more-->
+
+<p>那么它有什么性质呢？</p>
+
+<p>1，首先，a不占用结构体本身的空间。因此</p>
+
+<p>sizeof(Data) = sizeof(int) （这里的int是那个变量i）</p>
+
+<p>2，我们可以利用a来分配动态内存：</p>
+
+<p><code>c++
+Data *p = (Data*) malloc(sizeof(Data) + 10 * sizeof(int))
+</code></p>
+
+<p>这样，p就包含了10个int型元素构成的数组。</p>
+
+<p>3，有些人说，为什么我们不这样呢？</p>
+
+<p><code>c++
+struct Data
+{
+  int i;
+  int *a;
+};
+Data *p = (Data*) malloc(sizeof(Data));
+p-&gt;a = malloc(10 * sizeof(int));
+</code></p>
+
+<p>这样子不是挺好的么？是挺好的，但是这样结构体大小就得翻倍了，因为这下a不是占位符而是实实在在的指针变量了。</p>
+
+<p>这还算小事。大事呢？大事就是我们第三点要扯的：如果改成这样后，结构体成员i和数组a中的那10个元素，地址将几乎肯定不是连续的！！！这可能会带来很多问题，包括cache unfriendly等。</p>
+
+<p>而如果使用柔性数组，我们可以简单做个实验发现：</p>
+
+<p><code>c++
+#include&lt;iostream&gt;
+using namespace std;
+struct Data
+{
+  int i;
+  int a[0];
+};
+int main()
+{
+  Data *p = (Data*)malloc(sizeof(Data) + 100 * sizeof(int));
+  cout&lt;&lt;&amp;(p-&gt;i)&lt;&lt;endl;
+  cout&lt;&lt;&amp;(p-&gt;a[0])&lt;&lt;endl;
+  cout&lt;&lt;&amp;(p-&gt;a[1])&lt;&lt;endl;
+  cout&lt;&lt;&amp;(p-&gt;a[2])&lt;&lt;endl;
+  cout&lt;&lt;sizeof(Data)&lt;&lt;endl;
+  return 0;
+}
+</code>
+在ubuntu 14.04 64位系统＋gcc 4.8下编译运行后，程序输出：</p>
+
+<pre><code>0x8a9010
+0x8a9014
+0x8a9018
+0x8a901c
+4
+</code></pre>
+
+<p>不额外占用空间、实现变长结构体、连续地址。能同时做到这三点的，除了柔性数组，不知还能有谁？不过这玩意，个人意见能少用尽量少用，能不用尽量不用，毕竟可能有移植性问题。</p>
+
+<p>柔性数组的一个很常见的应用是跳表(Skip List)。由于跳表中不同的节点拥有不尽相同的高度,每个节点所包含的后继指针数量也不尽相同,因此此时柔性数组的合理使用可以最大利用内存空间.</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[编写高质量代码(下)]]></title>
@@ -496,172 +582,6 @@ int main()
 }
 </code>
 那么，这种情况下，编译器是如何处理的呢？就留给读者诸君作为练习吧。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[空指针(NULL)不能用吗？]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/11/06/null-pointer-can-be-accessed/"/>
-    <updated>2015-11-06T22:38:30+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/11/06/null-pointer-can-be-accessed</id>
-    <content type="html"><![CDATA[<p>我们常常被告知，使用指针前需要判断是否为<strong>NULL</strong>；如果是<strong>NULL</strong>而你去使用它就会出问题。真相果真是这样吗？</p>
-
-<p>同事颜廷帅（微博：@颜挺帅）给我看以下一个程序，问我，这段程序执行后，有问题吗？</p>
-
-<!--more-->
-
-<p><code>c++
-#include&lt;iostream&gt;
-#include&lt;cstdlib&gt;
-using namespace std;
-class Test1
-{
-private:
-  int a;
-public:
-  void f()
-  {
-    cout&lt;&lt;"Test1: Core or not ? "&lt;&lt;endl;
-  }
-};
-int main()
-{
-  Test1 *p = NULL;
-  p-&gt;f();//会core吗？会出大事吗？
-  return 0;
-}
-</code></p>
-
-<p>这里，<strong>p</strong>是一个空指针，通过这个空指针，我们访问了函数<strong>f</strong>。没<strong>core</strong>，没问题，成功输出了 <strong>Test1: Core or not ?</strong></p>
-
-<p>发生了什么事？空指针也能用？</p>
-
-<p>如果我们把<strong>f</strong>稍作修改，程序其他地方不做任何变动：</p>
-
-<pre><code>void f()
-{
-  cout&lt;&lt;"Test1: Core or not ? "&lt;&lt;a&lt;&lt;endl;//access a
-}
-</code></pre>
-
-<p>那么程序运行后分分钟<strong>core</strong>掉了。</p>
-
-<p>有没有感觉了？嗯，相信有了。我们继续往下看：</p>
-
-<p><code>c++
-#include&lt;iostream&gt;
-#include&lt;cstdlib&gt;
-using namespace std;
-static int global = 1;
-class Test2
-{
-private:
-  int a;
-public:
-  void f()
-  {
-    cout&lt;&lt;"Test1: Core or not ? "&lt;&lt;global&lt;&lt;endl;//access global
-  }
-};
-int main()
-{
-  Test2 *p = NULL;
-  p-&gt;f();//会core吗？会出大事吗？
-  return 0;
-}
-</code></p>
-
-<p>也没问题。</p>
-
-<p>嗯，你可能已经知道了真相。通过空指针访问东西，只要那个东西是确实存在的，就不会有问题。</p>
-
-<p>怎么理解“确实存在”？它是一个实体，看得见，摸得着。</p>
-
-<p>这得说到<strong>C++</strong>程序中对象的内存布局。</p>
-
-<p>在<strong>C++</strong>中，成员函数、静态变量是独立于对象存放的；而普通的数据成员是和对象相关的。</p>
-
-<pre><code>Test1 obj1;
-Test1 obj2;
-</code></pre>
-
-<p><strong>obj1</strong>和<strong>obj2</strong>是共用函数<strong>f</strong>的，函数<strong>f</strong>对<strong>obj1</strong>和<strong>obj2</strong>是相同的，内存中只有一份实体；而<strong>obj1</strong>和<strong>obj2</strong>有自己的实体<strong>a</strong>。</p>
-
-<p>然而，注意到<code>Test1 *p = NULL;</code>仅仅是声明式，而非定义式。这时候，没有定义任何的对象出来，通过<strong>p</strong>如何访问<strong>a</strong>呢？哪来的<strong>a</strong>呢？<strong>a</strong>在内存里并不存在。因此，访问<strong>a</strong>必定<strong>core</strong>。</p>
-
-<p>而函数<strong>f</strong>呢？它是独立于对象存放的，自然没问题。一般说来，<strong>f</strong>位于程序的代码段，而全局变量一般位于<strong>BSS</strong>段或者<strong>DATA</strong>段（这个比较复杂，和该全局变量是否初始化以及初始化为<strong>0</strong>还是非<strong>0</strong>有关）。而当我们定义对象时，才为该对象分配内存，才有数据成员<strong>a</strong>的存在：</p>
-
-<p><code>c++
-#include&lt;iostream&gt;
-#include&lt;cstdlib&gt;
-using namespace std;
-static int global1 = 1; //DATA段
-static int global2; //BSS段
-class Test3
-{
-private:
-  int a;
-public:
-  void f()
-  {
-    cout&lt;&lt;"Test1: Core or not ? "&lt;&lt;endl;
-  }
-};
-Test3 obj3; //DATA段 (调用默认构造函数进行初始化)
-int main()
-{
-  Test3 obj1; //stack段。定义obj1，这时候自然为a分配内存了
-  Test3 *obj2 = new Test3();//heap段，也为a分配内存了。
-  Test3 *p;//只是声明，没有定义。没有对象，也没有a。
-  return 0;
-}
-</code>
-受王杰兄（微博：@skyline09_）启发和提示，其实我们可以换一种形式来理解。</p>
-
-<p>我们知道，<strong>C++</strong>中，类的非静态成员函数会被编译器改写：</p>
-
-<p><code>void Test::f()</code>被改写为类似于<code>void Test__f(Test *const this)</code></p>
-
-<p>而</p>
-
-<pre><code>Test *p = NULL;
-
-p-&gt;f();
-</code></pre>
-
-<p>将被编译器改写为</p>
-
-<pre><code>Test *p = NULL;
-Test__f(p);
-</code></pre>
-
-<p>因此<code>Test::f</code>中带有一个值为<strong>NULL</strong>的<strong>this</strong>指针（<strong>p</strong>），如果通过这个空指针<strong>p</strong>读写数据，就会崩溃。否则，安然无事。</p>
-
-<p>那么，<strong>this</strong>指针可以操纵哪些东西呢？哦，类的非静态数据成员。而类的静态数据成员，全局变量等，是不会通过<strong>this</strong>指针访问的，因此，上例中，访问<strong>a</strong>崩溃，访问<strong>global</strong>则安全。</p>
-
-<p>最后，我们看一个问题。这个问题，最早我是从杜克伟兄（微博：@小伙伴-小伙伴儿）那里听到的。
-<code>c++
-class Test4
-{
-public:
-  void f()
-  {
-    cout&lt;&lt;&amp;(*this)&lt;&lt;endl; // 有问题吗？
-  }
-};
-int main()
-{
-  Test4 *p = NULL;
-  p-&gt;f();
-  return 0;
-}
-</code></p>
-
-<p>没问题。<strong>&amp;(*this)</strong>就是<strong>this</strong>，值和<strong>p</strong>相等。因此上面会输出<strong>0</strong>。</p>
-
-<p>综上，使用空指针并不一定会发生问题，关键是怎么用。遇到问题得理性分析，不要想当然。</p>
-
-<p>纸上学来终觉浅，绝知此事要躬行。</p>
 ]]></content>
   </entry>
   

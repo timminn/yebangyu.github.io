@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-11T22:40:24+08:00</updated>
+  <updated>2016-03-26T12:16:31+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,118 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[C99中的柔性数组]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/03/25/fuckthefever/"/>
+    <updated>2016-03-25T12:00:34+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/03/25/fuckthefever</id>
+    <content type="html"><![CDATA[<p>柔性数组是C99引入的feature。</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">struct</span> <span class="n">Data</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span class="line"><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>其中柔性数组a处于结构体的末尾，并且声明的大小为0。</p>
+
+<!--more-->
+
+<p>那么它有什么性质呢？</p>
+
+<p>1，首先，a不占用结构体本身的空间。因此</p>
+
+<p>sizeof(Data) = sizeof(int) （这里的int是那个变量i）</p>
+
+<p>2，我们可以利用a来分配动态内存：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">Data</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">Data</span><span class="o">*</span><span class="p">)</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Data</span><span class="p">)</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">))</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>这样，p就包含了10个int型元素构成的数组。</p>
+
+<p>3，有些人说，为什么我们不这样呢？</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">struct</span> <span class="n">Data</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="n">Data</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">Data</span><span class="o">*</span><span class="p">)</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Data</span><span class="p">));</span>
+</span><span class="line"><span class="n">p</span><span class="o">-&gt;</span><span class="n">a</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>这样子不是挺好的么？是挺好的，但是这样结构体大小就得翻倍了，因为这下a不是占位符而是实实在在的指针变量了。</p>
+
+<p>这还算小事。大事呢？大事就是我们第三点要扯的：如果改成这样后，结构体成员i和数组a中的那10个元素，地址将几乎肯定不是连续的！！！这可能会带来很多问题，包括cache unfriendly等。</p>
+
+<p>而如果使用柔性数组，我们可以简单做个实验发现：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;iostream&gt;</span>
+</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class="line"><span class="k">struct</span> <span class="n">Data</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">Data</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">Data</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Data</span><span class="p">)</span> <span class="o">+</span> <span class="mi">100</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">i</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Data</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>在ubuntu 14.04 64位系统＋gcc 4.8下编译运行后，程序输出：</p>
+
+<pre><code>0x8a9010
+0x8a9014
+0x8a9018
+0x8a901c
+4
+</code></pre>
+
+<p>不额外占用空间、实现变长结构体、连续地址。能同时做到这三点的，除了柔性数组，不知还能有谁？不过这玩意，个人意见能少用尽量少用，能不用尽量不用，毕竟可能有移植性问题。</p>
+
+<p>柔性数组的一个很常见的应用是跳表(Skip List)。由于跳表中不同的节点拥有不尽相同的高度,每个节点所包含的后继指针数量也不尽相同,因此此时柔性数组的合理使用可以最大利用内存空间.</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[深入解析快速排序(Quick Sort)]]></title>
@@ -579,8 +691,6 @@
 <h3 id="peterson-1">实现（针对两个线程的）peterson算法所需最少空间为多少？</h3>
 
 <p>3个bit足矣。两个flag_两个bit，turn_也只需要1个bit。</p>
-
-<p>下次，我们将讨论peterson算法的拓展，用于n个线程的情形。</p>
 
 <h2 id="section-7">附录：</h2>
 
@@ -3107,127 +3217,6 @@ distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distcc
 <p>3，如果<strong>Dmucs</strong>获知某台机器的平均负载过高（回忆下，该信息是服务器上的<strong>loadavg</strong>进程发过来的），那么会把该机器放到低一级的<strong>power-index</strong>对应的列表里。例如，<strong>192.168.1.11</strong>会被“下放”到<strong>power-index</strong>为<strong>5</strong>对应的列表里。</p>
 
 <p>4，如果某台机器的平均负载过高超过五分钟，那么该机器会被暂时雪藏，不会给它分发编译任务，直到它的负载下降到正常水平。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[利用Distcc和Dmucs构建大规模、分布式C++编译环境(上)]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev/"/>
-    <updated>2015-11-23T22:48:32+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev</id>
-    <content type="html"><![CDATA[<p>如果您的<strong>C++</strong>项目非常庞大，含有<strong>1000</strong>个<strong>.h</strong>文件，<strong>2000</strong>个<strong>.cpp</strong>文件，那么我敢打赌，每次编译所花的时间，都足够您喝<strong>3000</strong>杯咖啡了。如何加快编译速度？</p>
-
-<p><strong>Distcc</strong>是开源的用于搭建分布式编译环境的利器，它通过利用多台机器的资源，并行编译，来解决这个棘手的问题。然而，它的调度算法过于简单，不大合理，因此我们利用<strong>DMUCS</strong>提供的调度功能，来搭建一个相对完美的分布式编译平台。本文，我们首先介绍如何（单独）使用<strong>Distcc</strong>来加速编译，下一篇介绍如何组合使用<strong>Distcc</strong>+<strong>DMUCS</strong>来做进一步的完善和优化。</p>
-
-<p>话不多说，我们的编译平台包括：</p>
-
-<!--more-->
-
-<p>开发机（<strong>Client</strong>）：这一台机器上有我们的项目、工程文件、代码，平时我们在这台机器上写代码，要编译的对象也在这台机器上。机器<strong>IP</strong>为<strong>192.168.1.99</strong></p>
-
-<p>服务器（<strong>Server</strong>）：负责编译的机器，一共有<strong>3</strong>台。<strong>IP</strong>分别为<strong>192.168.1.11</strong>,<strong>192.168.1.22</strong>,<strong>192.168.1.33</strong>.</p>
-
-<p>调度器（<strong>Scheduler</strong>）：调度程序所在的机器，负责把编译任务合理的派发到编译机器（服务器）的编译程序上。<strong>IP</strong>为<strong>192.168.1.88</strong>。这台机器的部署和配置，我们留到下一篇博文介绍。</p>
-
-<p>以上所有机器都是安装的<strong>Ubuntu 14.04</strong>操作系统。</p>
-
-<h2 id="section">服务器</h2>
-
-<p>1，安装<strong>gcc</strong></p>
-
-<pre><code>sudo apt-get install gcc
-</code></pre>
-
-<p>2，安装<strong>Distcc</strong></p>
-
-<pre><code>sudo apt-get install distcc
-</code></pre>
-
-<p>安装后可以得到两个二进制文件，<strong>distccd</strong>和<strong>distcc</strong>。前者主要负责网络数据处理，后者可以认为是<strong>g++</strong>的前端，调用<strong>g++</strong>进行编译。</p>
-
-<p>3，配置<strong>Distcc</strong></p>
-
-<p>打开<code>/etc/default/distcc</code>，设置如下配置项：</p>
-
-<pre><code>STARTDISTCC="true"  
-ALLOWEDNETS="127.0.0.1 192.168.1.0/24"
-LISTENER="0.0.0.0"
-</code></pre>
-
-<p>第一行设置开机就启动<strong>distccd</strong></p>
-
-<p>第二行设置允许利用本机进行编译的开发机</p>
-
-<p>第三行设置监听的网络</p>
-
-<p>4，启动<strong>distccd</strong></p>
-
-<pre><code>sudo service distcc start
-</code></pre>
-
-<p>经过以上配置，每次机器开机，都会自动运行<strong>distccd</strong>。</p>
-
-<p>运行如下命令确认下：</p>
-
-<pre><code>ps -aux | grep distccd
-</code></pre>
-
-<p>如果看到类似的输出，说明一切OK了。</p>
-
-<pre><code>distccd   3457  0.0  0.0   3260   144 ?        SNs  23:33   0:00 /usr/bin/distccd --pid-file=/var/run/distccd.pid --log-file=/var/log/distccd.log --daemon --allow 127.0.0.1 --listen 0.0.0.0 --nice 10
-distccd   3458  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distccd --pid-file=/var/run/distccd.pid --log-file=/var/log/distccd.log --daemon --allow 127.0.0.1 --listen 0.0.0.0 --nice 10
-distccd   3461  0.0  0.0   3260   144 ?        SN   23:33   0:00 /usr/bin/distccd --pid-file=/var/run/distccd.pid --log-file=/var/log/distccd.log --daemon --allow 127.0.0.1 --listen 0.0.0.0 --nice 10
-</code></pre>
-
-<h2 id="section-1">开发机</h2>
-
-<p>1，安装<strong>Distcc</strong></p>
-
-<p>当然啦，我们假设您的开发机上已经安装<strong>gcc</strong>了。</p>
-
-<p>2，设置编译资源</p>
-
-<p>这一步是指定哪些机器（也就是上面的<strong>Server</strong>）来负责编译工作。</p>
-
-<pre><code>export DISTCC_HOSTS="192.168.1.11 192.168.1.22 192.168.1.33"
-</code></pre>
-
-<p>每台机器的<strong>IP</strong>之间用空格隔开。</p>
-
-<p>如果机器很多，那么这样填写可能不大方便，可以在<code>/etc/distcc/hosts</code>里添加。</p>
-
-<p>这两种方法可以任选一种，如果您两种都用，那么<strong>Distcc</strong>只认<strong>DISTCC_HOSTS</strong>值。</p>
-
-<p>3，应用<strong>Distcc</strong></p>
-
-<p>应用<strong>Distcc</strong>来编译代码有几种方法：</p>
-
-<p>方法一：修改<strong>makefile</strong>中的<code>CXX</code>的值</p>
-
-<p>将<strong>makefile</strong>文件中的这一行</p>
-
-<pre><code>CXX = g++ 
-</code></pre>
-
-<p>改为</p>
-
-<pre><code>CXX = distcc g++
-</code></pre>
-
-<p>然后运行<code>make -j18</code>即可。这里的<strong>18</strong>，为所有服务器的<strong>CPU Cores</strong>的数量乘以<strong>1.5</strong>。上面有3台服务器，每台有<strong>4</strong>核，因此这里设置为<strong>18</strong>。</p>
-
-<p>为了获得最优值，很可能需要反复实验、测试。</p>
-
-<p>方法二：修改<strong>configure</strong>文件</p>
-
-<p>如果您的<strong>makefile</strong>文件由<strong>automake</strong>产生，那么在运行<code>./configure</code>时得加上参数，变为：</p>
-
-<pre><code>./configure --CXX=distcc g++
-</code></pre>
-
-<p>那么生成的<strong>makefile</strong>文件将自动使用<strong>Distcc</strong>了。</p>
-
-<p>如果不出意外，编译速度已经大大提升了。然而，还有提高的空间，欲知详情，请看<a href="http://www.yebangyu.org/blog/2015/11/30/build-distributed-compilation-env/">下篇</a>分解。</p>
 ]]></content>
   </entry>
   
