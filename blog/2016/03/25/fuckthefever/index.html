@@ -120,7 +120,7 @@ MathJax.Hub.Config({
 
 <p>那么它有什么性质呢？</p>
 
-<p>1，首先，a不占用结构体本身的空间。因此</p>
+<p>1，首先，a不占用结构体空间。它只是一个占位符而已。因此</p>
 
 <p>sizeof(Data) = sizeof(int) （这里的int是那个变量i）</p>
 
@@ -147,12 +147,12 @@ MathJax.Hub.Config({
 </span><span class="line">  <span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">;</span>
 </span><span class="line"><span class="p">};</span>
 </span><span class="line"><span class="n">Data</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">Data</span><span class="o">*</span><span class="p">)</span> <span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Data</span><span class="p">));</span>
-</span><span class="line"><span class="n">p</span><span class="o">-&gt;</span><span class="n">a</span> <span class="o">=</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+</span><span class="line"><span class="n">p</span><span class="o">-&gt;</span><span class="n">a</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">)</span> <span class="n">malloc</span><span class="p">(</span><span class="mi">10</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
 <p>这样子不是挺好的么？是挺好的，但是这样结构体大小就得翻倍了，因为这下a不是占位符而是实实在在的指针变量了。</p>
 
-<p>这还算小事。大事呢？大事就是我们第三点要扯的：如果改成这样后，结构体成员i和数组a中的那10个元素，地址将几乎肯定不是连续的！！！这可能会带来很多问题，包括cache unfriendly等。</p>
+<p>这还算小事。大事呢？这就是我们第三点要扯的：如果改成这样后，结构体成员i和数组a中的(首个)元素，地址将几乎肯定不是挨着的！！！这可能会带来很多问题，包括cache unfriendly等。</p>
 
 <p>而如果使用柔性数组，我们可以简单做个实验发现：</p>
 
@@ -171,8 +171,6 @@ MathJax.Hub.Config({
 <span class="line-number">13</span>
 <span class="line-number">14</span>
 <span class="line-number">15</span>
-<span class="line-number">16</span>
-<span class="line-number">17</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;iostream&gt;</span>
 </span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span><span class="line"><span class="k">struct</span> <span class="n">Data</span>
@@ -185,8 +183,6 @@ MathJax.Hub.Config({
 </span><span class="line">  <span class="n">Data</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">Data</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Data</span><span class="p">)</span> <span class="o">+</span> <span class="mi">100</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
 </span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">i</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
 </span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
-</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
-</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;&amp;</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
 </span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Data</span><span class="p">)</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
 </span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>
@@ -195,8 +191,6 @@ MathJax.Hub.Config({
 
 <pre><code>0x8a9010
 0x8a9014
-0x8a9018
-0x8a901c
 4
 </code></pre>
 

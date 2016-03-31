@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-03-26T12:28:11+08:00</updated>
+  <updated>2016-03-31T23:19:48+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -34,7 +34,7 @@ struct Data
 
 <p>那么它有什么性质呢？</p>
 
-<p>1，首先，a不占用结构体本身的空间。因此</p>
+<p>1，首先，a不占用结构体空间。它只是一个占位符而已。因此</p>
 
 <p>sizeof(Data) = sizeof(int) （这里的int是那个变量i）</p>
 
@@ -55,12 +55,12 @@ struct Data
   int *a;
 };
 Data *p = (Data*) malloc(sizeof(Data));
-p-&gt;a = malloc(10 * sizeof(int));
+p-&gt;a = (int*) malloc(10 * sizeof(int));
 </code></p>
 
 <p>这样子不是挺好的么？是挺好的，但是这样结构体大小就得翻倍了，因为这下a不是占位符而是实实在在的指针变量了。</p>
 
-<p>这还算小事。大事呢？大事就是我们第三点要扯的：如果改成这样后，结构体成员i和数组a中的那10个元素，地址将几乎肯定不是连续的！！！这可能会带来很多问题，包括cache unfriendly等。</p>
+<p>这还算小事。大事呢？这就是我们第三点要扯的：如果改成这样后，结构体成员i和数组a中的(首个)元素，地址将几乎肯定不是挨着的！！！这可能会带来很多问题，包括cache unfriendly等。</p>
 
 <p>而如果使用柔性数组，我们可以简单做个实验发现：</p>
 
@@ -77,8 +77,6 @@ int main()
   Data *p = (Data*)malloc(sizeof(Data) + 100 * sizeof(int));
   cout&lt;&lt;&amp;(p-&gt;i)&lt;&lt;endl;
   cout&lt;&lt;&amp;(p-&gt;a[0])&lt;&lt;endl;
-  cout&lt;&lt;&amp;(p-&gt;a[1])&lt;&lt;endl;
-  cout&lt;&lt;&amp;(p-&gt;a[2])&lt;&lt;endl;
   cout&lt;&lt;sizeof(Data)&lt;&lt;endl;
   return 0;
 }
@@ -87,8 +85,6 @@ int main()
 
 <pre><code>0x8a9010
 0x8a9014
-0x8a9018
-0x8a901c
 4
 </code></pre>
 
