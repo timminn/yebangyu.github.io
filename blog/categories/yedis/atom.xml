@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: yedis | Yebangyu's Blog]]></title>
+  <link href="http://www.yebangyu.org/blog/categories/yedis/atom.xml" rel="self"/>
+  <link href="http://www.yebangyu.org/"/>
+  <updated>2016-03-31T23:57:21+08:00</updated>
+  <id>http://www.yebangyu.org/</id>
+  <author>
+    <name><![CDATA[Yebangyu]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Yedis: A High Performance Nosql]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/03/31/yedis01/"/>
+    <updated>2016-03-31T23:53:16+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/03/31/yedis01</id>
+    <content type="html"><![CDATA[<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、支付宝软件工程师、本站站长Yebangyu同学在业余时间独立开发完成。Github地址：https://github.com/yebangyu/Yedis</p>
+
+<p>Yedis名称由来：Yedis = Yebangyu + Redis</p>
+
+<h2 id="section">动机</h2>
+
+<p>开发Yedis的主要原因是想通过这个项目，进一步提高和熟悉C++服务器端的技术和知识。</p>
+
+<h2 id="section-1">特性</h2>
+
+<p>换句话说，它和Redis相比有什么不同？</p>
+
+<!--more-->
+
+<p>哦，计划是：Redis有的，Yedis都有。但是不兼容它，API也和它不同。</p>
+
+<p>Redis没有的，但是很实用的，Yedis也有。比如说Cuckoo Hashing Map等。再比如说Treap，这玩意其实用来实现倒排索引非常高效，细节请参考Sigir2013的论文。</p>
+
+<p>到时候再写些博客详谈。</p>
+
+<h2 id="section-2">进度</h2>
+
+<p>目前已经支持</p>
+
+<blockquote>
+  <ul>
+    <li>Standard Bloom Filter</li>
+    <li>Trie</li>
+  </ul>
+</blockquote>
+
+<p>还有很多bug，已知的就有不少；未知的也有一些。</p>
+
+<p>还有很多feature需要实现，包括但是不局限于：</p>
+
+<h3 id="section-3">内存管理</h3>
+
+<h3 id="section-4">数据结构</h3>
+
+<blockquote>
+  <ul>
+    <li>List</li>
+    <li>HashMap</li>
+    <li>Priority Queue</li>
+    <li>Skip List</li>
+    <li>Treap</li>
+    <li>Kd tree</li>
+    <li>Cuckoo Hashing Map</li>
+    <li>d-left hashing based Couting Bloom Filter</li>
+  </ul>
+</blockquote>
+
+<h3 id="section-5">性能优化</h3>
+
+<p>总之，Yedis是写着玩的，别当真。</p>
+]]></content>
+  </entry>
+  
+</feed>

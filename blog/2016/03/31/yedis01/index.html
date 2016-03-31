@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Category: 其他 - Yebangyu's Blog</title>
+  <title>Yedis: A High Performance Nosql - Yebangyu's Blog</title>
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="Category: 其他">
-  
+  <meta name="description" content="Yedis是一款高性能Nosql，旨在替代Redis">
+  <meta name="keywords" content="Yedis 高性能  Redis  Nosql 开源 数据库 yebangyu">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://www.yebangyu.org/blog/categories/qi-ta/">
+  <link rel="canonical" href="http://www.yebangyu.org/blog/2016/03/31/yedis01/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Yebangyu's Blog" type="application/atom+xml">
@@ -80,77 +80,122 @@ MathJax.Hub.Config({
   <div id="main">
     <div id="content">
       <div>
-<article role="article">
+<article class="hentry" role="article">
   
   <header>
-    <h1 class="entry-title">Category: 其他</h1>
+    
+      <h1 class="entry-title">Yedis: A High Performance Nosql</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-31T23:53:16+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>11:53 pm</span></time>
+        
+      </p>
     
   </header>
-  
-  <div id="blog-archives" class="category">
 
 
+<div class="entry-content"><p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、支付宝软件工程师、本站站长Yebangyu同学在业余时间独立开发完成。Github地址：https://github.com/yebangyu/Yedis</p>
 
-  
-  <h2>2015</h2>
+<p>Yedis名称由来：Yedis = Yebangyu + Redis</p>
 
-<article>
-  
-<h1><a href="/blog/2015/12/26/aprogrammersclock/">程序员时钟解读</a></h1>
-<time datetime="2015-12-26T10:59:04+08:00" pubdate><span class='month'>Dec</span> <span class='day'>26</span> <span class='year'>2015</span></time>
+<h2 id="section">动机</h2>
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/qi-ta/'>其他</a></span>
-</footer>
+<p>开发Yedis的主要原因是想通过这个项目，进一步提高和熟悉C++服务器端的技术和知识。</p>
 
+<h2 id="section-1">特性</h2>
 
-</article>
+<p>换句话说，它和Redis相比有什么不同？</p>
 
+<!--more-->
 
+<p>哦，计划是：Redis有的，Yedis都有。但是不兼容它，API也和它不同。</p>
 
-<article>
-  
-<h1><a href="/blog/2015/12/16/readinglist/">2015-12-16 近期好书推荐</a></h1>
-<time datetime="2015-12-16T23:05:35+08:00" pubdate><span class='month'>Dec</span> <span class='day'>16</span> <span class='year'>2015</span></time>
+<p>Redis没有的，但是很实用的，Yedis也有。比如说Cuckoo Hashing Map等。再比如说Treap，这玩意其实用来实现倒排索引非常高效，细节请参考Sigir2013的论文。</p>
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/qi-ta/'>其他</a></span>
-</footer>
+<p>到时候再写些博客详谈。</p>
 
+<h2 id="section-2">进度</h2>
 
-</article>
+<p>目前已经支持</p>
 
+<blockquote>
+  <ul>
+    <li>Standard Bloom Filter</li>
+    <li>Trie</li>
+  </ul>
+</blockquote>
 
+<p>还有很多bug，已知的就有不少；未知的也有一些。</p>
 
-<article>
-  
-<h1><a href="/blog/2015/10/22/tipsforwritingcv/">计算机应届生简历撰写指南</a></h1>
-<time datetime="2015-10-22T22:39:33+08:00" pubdate><span class='month'>Oct</span> <span class='day'>22</span> <span class='year'>2015</span></time>
+<p>还有很多feature需要实现，包括但是不局限于：</p>
 
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/qi-ta/'>其他</a></span>
-</footer>
+<h3 id="section-3">内存管理</h3>
 
+<h3 id="section-4">数据结构</h3>
 
-</article>
+<blockquote>
+  <ul>
+    <li>List</li>
+    <li>HashMap</li>
+    <li>Priority Queue</li>
+    <li>Skip List</li>
+    <li>Treap</li>
+    <li>Kd tree</li>
+    <li>Cuckoo Hashing Map</li>
+    <li>d-left hashing based Couting Bloom Filter</li>
+  </ul>
+</blockquote>
 
+<h3 id="section-5">性能优化</h3>
 
-
-<article>
-  
-<h1><a href="/blog/2015/10/17/whattodoinmaster/">深谈读研如何提高技术</a></h1>
-<time datetime="2015-10-17T14:34:04+08:00" pubdate><span class='month'>Oct</span> <span class='day'>17</span> <span class='year'>2015</span></time>
-
-<footer>
-  <span class="categories">posted in <a class='category' href='/blog/categories/qi-ta/'>其他</a></span>
-</footer>
-
-
-</article>
-
+<p>总之，Yedis是写着玩的，别当真。</p>
 </div>
 
+
+  <footer>
+    <p class="meta">
+      
   
+
+<span class="byline author vcard">Posted by <span class="fn">Yebangyu</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-03-31T23:53:16+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>11:53 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/yedis/'>yedis</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/03/25/fuckthefever/" title="Previous Post: C99中的柔性数组">&laquo; C99中的柔性数组</a>
+      
+      
+    </p>
+  </footer>
 </article>
 
 
