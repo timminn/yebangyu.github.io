@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-01T08:44:50+08:00</updated>
+  <updated>2016-04-01T22:33:28+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -26,7 +26,7 @@
 
 <h2 id="section">动机</h2>
 
-<p>开发Yedis的主要原因是想通过这个项目，进一步提高和熟悉C++服务器端的技术和知识。</p>
+<p>开发Yedis的主要原因是想通过这个项目，进一步提高和熟悉C++服务器端开发相关的技术和知识。</p>
 
 <h2 id="section-1">特性</h2>
 
@@ -34,11 +34,9 @@
 
 <!--more-->
 
-<p>哦，计划是：Redis有的，Yedis都有。但是不兼容它，API也和它不同。</p>
+<p>目标：Redis有的，Yedis都有。Redis没有的，但是很实用的，Yedis也有，比如说Cuckoo Hashing Map等。再比如说Treap，这玩意其实用来实现倒排索引非常高效，细节请参考Sigir2013的论文。</p>
 
-<p>Redis没有的，但是很实用的，Yedis也有。比如说Cuckoo Hashing Map等。再比如说Treap，这玩意其实用来实现倒排索引非常高效，细节请参考Sigir2013的论文。</p>
-
-<p>到时候再写些博客详谈。</p>
+<p>但是不打算兼容它，API和协议也和它不同。</p>
 
 <h2 id="section-2">进度</h2>
 
@@ -48,6 +46,7 @@
   <ul>
     <li>Standard Bloom Filter</li>
     <li>Trie</li>
+    <li>切换数据库</li>
   </ul>
 </blockquote>
 
@@ -80,7 +79,17 @@
 
 <p>单机的内存数据库意义不大。</p>
 
-<p>总之，Yedis是写着玩的，别当真。</p>
+<h2 id="section-6">截图</h2>
+
+<h3 id="server">server</h3>
+
+<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/server.png" alt="server" /></p>
+
+<h3 id="client">client</h3>
+
+<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/client.png" alt="client" /></p>
+
+<p>不过，Yedis是写着玩的，别太当真。</p>
 ]]></content>
   </entry>
   
