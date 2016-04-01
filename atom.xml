@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-01T00:02:54+08:00</updated>
+  <updated>2016-04-01T08:44:50+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,9 +18,9 @@
     <link href="http://www.yebangyu.org/blog/2016/03/31/yedis01/"/>
     <updated>2016-03-31T23:53:16+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/03/31/yedis01</id>
-    <content type="html"><![CDATA[<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、支付宝软件工程师、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+    <content type="html"><![CDATA[<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ， 很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/client.py">这里</a>。</p>
+<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/client.py">这里</a>。</p>
 
 <p>Yedis名称由来：Yedis = Yebangyu + Redis</p>
 
@@ -51,13 +51,13 @@
   </ul>
 </blockquote>
 
-<p>还有很多bug，已知的就有不少；未知的也有一些。</p>
+<p>还有很多工作要做，包括但是不局限于：</p>
 
-<p>还有很多feature需要实现，包括但是不局限于：</p>
+<h3 id="bug-">Bug 修复</h3>
 
-<h3 id="section-3">内存管理</h3>
+<p>毕竟，稳定和正确是第一位的。</p>
 
-<h3 id="section-4">数据结构</h3>
+<h3 id="section-3">数据结构</h3>
 
 <blockquote>
   <ul>
@@ -72,7 +72,13 @@
   </ul>
 </blockquote>
 
-<h3 id="section-5">性能优化</h3>
+<h3 id="section-4">性能优化</h3>
+
+<p>超过或者达到Redis。</p>
+
+<h3 id="section-5">分布式</h3>
+
+<p>单机的内存数据库意义不大。</p>
 
 <p>总之，Yedis是写着玩的，别当真。</p>
 ]]></content>
