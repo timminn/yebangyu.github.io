@@ -4,7 +4,7 @@
   <title><![CDATA[Category: yedis | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/yedis/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-01T22:33:28+08:00</updated>
+  <updated>2016-04-04T13:16:27+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -14,13 +14,139 @@
 
   
   <entry>
+    <title type="html"><![CDATA[Yedis源码解析之itoa实现]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/04/04/itoa-in-yedis/"/>
+    <updated>2016-04-04T12:37:06+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/04/04/itoa-in-yedis</id>
+    <content type="html"><![CDATA[<h2 id="section">写在最前</h2>
+
+<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+
+<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+
+<h2 id="section-1">提出问题</h2>
+
+<p>如何用C/C++实现正确的、可移植的、高效的、对所有整数都work的itoa函数？</p>
+
+<p>原型如下</p>
+
+<p><code>int itoa(char *buffer, int64_t value);</code></p>
+
+<p>将value转为字符串后存在buffer中，返回字符串的长度。</p>
+
+<!--more-->
+
+<h2 id="section-2">分析问题</h2>
+
+<p>这还不容易么？很容易写出这样的代码：</p>
+
+<p><code>c++
+int itoa(char *buffer, int64_t value)
+{
+  char *p = buffer;
+  int64_t tmp = value;
+  do {
+    *p = tmp % 10 + '0';
+    tmp /= 10;
+    ++p;
+  } while(tmp);
+  if (value &lt; 0) {
+  *p++ = '-';
+  }
+  std::reverse(buffer, p);
+  return p - buffer;
+}
+</code>
+这个实现，有什么问题？</p>
+
+<p>问题出在第6、7行。</p>
+
+<p>举个例子，请问，-9/4结果是多少？</p>
+
+<p>因为<code>-9 = (-2) * 4 + (-1)</code> 因此结果为-2，同时<code>-9 % 4 = -1</code></p>
+
+<p>但是！</p>
+
+<p>因为<code>-9 =(-3)* 4 + 3</code> 因此结果为-3，同时<code>-9 % 4 = 3</code></p>
+
+<p>哪个结果是对的？</p>
+
+<p>C++98和C++03标准并没有对被除数和除数不都为正数时的情形进行明确的说明，语言只保证:</p>
+
+<p>如果<code>a = br + q</code></p>
+
+<p>那么 <code>a / b = r</code>  且 <code>a % b = q</code></p>
+
+<p>因此，当a和b都是正数时，语言保证结果是正的；否则，结果是实现相关的。</p>
+
+<p>因此第6、7行的结果是未定义的，是很不可移植的。</p>
+
+<p>有些人说，这还不容易吗？把负数都搞成正数，用它的绝对值来计算，不就行了吗？于是很容易写出这样的代码：</p>
+
+<p><code>c++
+int itoa(char *buffer, int64_t value)
+{
+  char *p = buffer;
+  int64_t tmp = value &lt; 0 ? -value : value;
+  do {
+    *p = tmp % 10 + '0';
+    tmp /= 10;
+    ++p;
+  } while(tmp);
+  if (value &lt; 0) {
+    *p++ = '-';
+  }
+  std::reverse(buffer, p);
+  return p - buffer;
+}
+</code></p>
+
+<p>还是有问题，注意第4行。我们知道，对于有符号整数，它的最大值和最小值是不对称的，绝对值差1。其中，64位有符号整数的范围为[-9223372036854775808, 9223372036854775807]</p>
+
+<p>因此，在第4行，如果value是INT64_MIN，对它求绝对值-value的结果其实已经超出了64位有符号整数可以表示的范围，这里已经溢出了！！！</p>
+
+<p>哦哦，这好办，对INT64_MIN单独处理行不行？</p>
+
+<p>行，但是代码会非常不优雅了。</p>
+
+<h2 id="section-3">解决问题</h2>
+
+<p>Yedis中实现了itoa，代码在<code>src/server/yedis_order.cpp</code></p>
+
+<p><code>c++
+YEDIS_MUST_INLINE int64_t int2char(char *buffer, int64_t value)
+{
+  static const char offset[19] = {'9','8','7','6','5','4','3','2','1','0','1','2','3','4','5','6','7','8','9'};
+  static const char *digit = offset + 9;
+  char *p = buffer;
+  int64_t tmp = value;
+  do {
+    *p = *(digit + tmp % 10);
+    tmp /= 10;
+    ++p;
+  } while(tmp);
+  if (value &lt; 0) {
+    *p++ = '-';
+  }
+  std::reverse(buffer, p);
+  return p - buffer;
+}
+</code></p>
+
+<p>通过offset数组，很巧妙、很完美的解决了这个问题。它对于[INT64_MIN, INT64_MAX]中的任何一个数都是正确的。</p>
+
+<p>这个实现，想法来源于Matthew Wilson大神的Efficient Integer to String Conversions文章。</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[Yedis: A High Performance Nosql]]></title>
     <link href="http://www.yebangyu.org/blog/2016/03/31/yedis01/"/>
     <updated>2016-03-31T23:53:16+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/03/31/yedis01</id>
     <content type="html"><![CDATA[<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/client.py">这里</a>。</p>
+<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a>。</p>
 
 <p>Yedis名称由来：Yedis = Yebangyu + Redis</p>
 
