@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-04T13:16:27+08:00</updated>
+  <updated>2016-04-04T13:20:28+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -65,7 +65,7 @@
 </span><span class="line">    <span class="o">++</span><span class="n">p</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span> <span class="k">while</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
 </span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">  <span class="o">*</span><span class="n">p</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;-&#39;</span><span class="p">;</span>
+</span><span class="line">    <span class="o">*</span><span class="n">p</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;-&#39;</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span>
 </span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="n">reverse</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
 </span><span class="line">  <span class="k">return</span> <span class="n">p</span> <span class="o">-</span> <span class="n">buffer</span><span class="p">;</span>

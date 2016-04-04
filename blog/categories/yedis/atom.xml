@@ -4,7 +4,7 @@
   <title><![CDATA[Category: yedis | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/yedis/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-04T13:16:27+08:00</updated>
+  <updated>2016-04-04T13:20:28+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -51,7 +51,7 @@ int itoa(char *buffer, int64_t value)
     ++p;
   } while(tmp);
   if (value &lt; 0) {
-  *p++ = '-';
+    *p++ = '-';
   }
   std::reverse(buffer, p);
   return p - buffer;
