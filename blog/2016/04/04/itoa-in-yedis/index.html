@@ -146,14 +146,14 @@ MathJax.Hub.Config({
 </span><span class="line">    <span class="n">tmp</span> <span class="o">/=</span> <span class="mi">10</span><span class="p">;</span>
 </span><span class="line">    <span class="o">++</span><span class="n">p</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span> <span class="k">while</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
-</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">  <span class="k">if</span><span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">    <span class="o">*</span><span class="n">p</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;-&#39;</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span>
 </span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="n">reverse</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
 </span><span class="line">  <span class="k">return</span> <span class="n">p</span> <span class="o">-</span> <span class="n">buffer</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>这个实现，有什么问题？问题是显而易见的：当value为负数时，在第6行，例如value = -123，那么tmp % 10 = -3，而-3 + ‘0’并不是期望的结果。</p>
+<p>这个实现，有什么问题？问题是显而易见的：当value为负数时，在第6行，例如value = -123，如果tmp % 10 = -3，而-3 + ‘0’并不是期望的结果。</p>
 
 <p>有些人说，这还不容易吗？把负数都搞成正数，用它的绝对值来计算，不就行了吗？于是很容易写出这样的代码：</p>
 
@@ -181,7 +181,7 @@ MathJax.Hub.Config({
 </span><span class="line">    <span class="n">tmp</span> <span class="o">/=</span> <span class="mi">10</span><span class="p">;</span>
 </span><span class="line">    <span class="o">++</span><span class="n">p</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span> <span class="k">while</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
-</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">  <span class="k">if</span><span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">    <span class="o">*</span><span class="n">p</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;-&#39;</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span>
 </span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="n">reverse</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
@@ -227,7 +227,7 @@ MathJax.Hub.Config({
 </span><span class="line">    <span class="n">tmp</span> <span class="o">/=</span> <span class="mi">10</span><span class="p">;</span>
 </span><span class="line">    <span class="o">++</span><span class="n">p</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span> <span class="k">while</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
-</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">  <span class="k">if</span><span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">    <span class="o">*</span><span class="n">p</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;-&#39;</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span>
 </span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="n">reverse</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
@@ -292,7 +292,7 @@ MathJax.Hub.Config({
 </span><span class="line">                                               <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="p">}</span> <span class="p">};</span><span class="c1">//负数								  </span>
 </span><span class="line">  <span class="kt">char</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">buffer</span><span class="p">;</span>
 </span><span class="line">  <span class="kt">int64_t</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">value</span><span class="p">;</span>
-</span><span class="line">  <span class="kt">int</span> <span class="n">flag</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">flag</span> <span class="o">=</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">);</span>
 </span><span class="line">  <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">digit</span> <span class="o">=</span> <span class="n">remainder_offset</span><span class="p">[</span><span class="n">flag</span><span class="p">]</span> <span class="o">+</span> <span class="mi">9</span><span class="p">;</span>
 </span><span class="line">  <span class="k">const</span> <span class="kt">bool</span> <span class="o">*</span><span class="n">offset</span> <span class="o">=</span> <span class="n">quotient_offset</span><span class="p">[</span><span class="n">flag</span><span class="p">]</span> <span class="o">+</span> <span class="mi">9</span><span class="p">;</span>
 </span><span class="line">  <span class="k">do</span> <span class="p">{</span>
@@ -301,7 +301,7 @@ MathJax.Hub.Config({
 </span><span class="line">    <span class="n">tmp</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="n">remainder</span><span class="p">];</span>
 </span><span class="line">    <span class="o">++</span><span class="n">p</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
-</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">  <span class="k">if</span><span class="p">(</span><span class="n">flag</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">    <span class="o">*</span><span class="n">p</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;-&#39;</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span>
 </span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="n">reverse</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>

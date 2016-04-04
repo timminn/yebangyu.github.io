@@ -4,7 +4,7 @@
   <title><![CDATA[Category: yedis | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/yedis/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-04T19:28:06+08:00</updated>
+  <updated>2016-04-04T22:47:53+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -50,14 +50,14 @@ int itoa(char *buffer, int64_t value)
     tmp /= 10;
     ++p;
   } while(tmp);
-  if (value &lt; 0) {
+  if(value &lt; 0) {
     *p++ = '-';
   }
   std::reverse(buffer, p);
   return p - buffer;
 }
 </code>
-这个实现，有什么问题？问题是显而易见的：当value为负数时，在第6行，例如value = -123，那么tmp % 10 = -3，而-3 + ‘0’并不是期望的结果。</p>
+这个实现，有什么问题？问题是显而易见的：当value为负数时，在第6行，例如value = -123，如果tmp % 10 = -3，而-3 + ‘0’并不是期望的结果。</p>
 
 <p>有些人说，这还不容易吗？把负数都搞成正数，用它的绝对值来计算，不就行了吗？于是很容易写出这样的代码：</p>
 
@@ -71,7 +71,7 @@ int itoa(char *buffer, int64_t value)
     tmp /= 10;
     ++p;
   } while(tmp);
-  if (value &lt; 0) {
+  if(value &lt; 0) {
     *p++ = '-';
   }
   std::reverse(buffer, p);
@@ -101,7 +101,7 @@ int int2char(char *buffer, int64_t value)
     tmp /= 10;
     ++p;
   } while(tmp);
-  if (value &lt; 0) {
+  if(value &lt; 0) {
     *p++ = '-';
   }
   std::reverse(buffer, p);
@@ -139,11 +139,11 @@ YEDIS_MUST_INLINE int64_t int2char(char *buffer, int64_t value)
 
 <p>static const bool quotient_offset[2][19] = { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },//正数</p>
 
-<pre><code>                                           { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1 } };//负数								     char *p = buffer;   int64_t tmp = value;   int flag = value &lt; 0;   const char *digit = remainder_offset[flag] + 9;   const bool *offset = quotient_offset[flag] + 9;   do {
+<pre><code>                                           { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1 } };//负数								     char *p = buffer;   int64_t tmp = value;   int flag = (value &lt; 0);   const char *digit = remainder_offset[flag] + 9;   const bool *offset = quotient_offset[flag] + 9;   do {
 int remainder = tmp % 10;
 *p = digit[remainder];
 tmp = tmp / 10 + offset[remainder];
-++p;   } while (tmp);   if (value &lt; 0) {
+++p;   } while (tmp);   if(flag) {
 *p++ = '-';   }   std::reverse(buffer, p);   return p - buffer; } ```
 </code></pre>
 
