@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-04T13:20:28+08:00</updated>
+  <updated>2016-04-04T19:24:03+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -71,29 +71,7 @@
 </span><span class="line">  <span class="k">return</span> <span class="n">p</span> <span class="o">-</span> <span class="n">buffer</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>这个实现，有什么问题？</p>
-
-<p>问题出在第6、7行。</p>
-
-<p>举个例子，请问，-9/4结果是多少？</p>
-
-<p>因为<code>-9 = (-2) * 4 + (-1)</code> 因此结果为-2，同时<code>-9 % 4 = -1</code></p>
-
-<p>但是！</p>
-
-<p>因为<code>-9 =(-3)* 4 + 3</code> 因此结果为-3，同时<code>-9 % 4 = 3</code></p>
-
-<p>哪个结果是对的？</p>
-
-<p>C++98和C++03标准并没有对被除数和除数不都为正数时的情形进行明确的说明，语言只保证:</p>
-
-<p>如果<code>a = br + q</code></p>
-
-<p>那么 <code>a / b = r</code>  且 <code>a % b = q</code></p>
-
-<p>因此，当a和b都是正数时，语言保证结果是正的；否则，结果是实现相关的。</p>
-
-<p>因此第6、7行的结果是未定义的，是很不可移植的。</p>
+<p>这个实现，有什么问题？问题是显而易见的：当value为负数时，在第6行，例如value = -123，那么tmp % 10 = -3，而-3 + ‘0’并不是期望的结果。</p>
 
 <p>有些人说，这还不容易吗？把负数都搞成正数，用它的绝对值来计算，不就行了吗？于是很容易写出这样的代码：</p>
 
@@ -129,13 +107,69 @@
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>还是有问题，注意第4行。我们知道，对于有符号整数，它的最大值和最小值是不对称的，绝对值差1。其中，64位有符号整数的范围为[-9223372036854775808, 9223372036854775807]</p>
+<p>还是有问题，注意第4行。回一下本科时候所学的计算机组成原理，我们知道，对于有符号整数，它的最大值和最小值是不对称的，绝对值差1。其中，64位有符号整数的范围为[-9223372036854775808, 9223372036854775807]</p>
 
 <p>因此，在第4行，如果value是INT64_MIN，对它求绝对值-value的结果其实已经超出了64位有符号整数可以表示的范围，这里已经溢出了！！！</p>
 
 <p>哦哦，这好办，对INT64_MIN单独处理行不行？</p>
 
 <p>行，但是代码会非常不优雅了。</p>
+
+<p>Matthew Wilson大神的Efficient Integer to String Conversions文章里，使用如下的trick，来处理这些问题。</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">int2char</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">buffer</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">value</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">digits</span><span class="p">[</span><span class="mi">19</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="sc">&#39;9&#39;</span><span class="p">,</span><span class="sc">&#39;8&#39;</span><span class="p">,</span><span class="sc">&#39;7&#39;</span><span class="p">,</span><span class="sc">&#39;6&#39;</span><span class="p">,</span><span class="sc">&#39;5&#39;</span><span class="p">,</span><span class="sc">&#39;4&#39;</span><span class="p">,</span><span class="sc">&#39;3&#39;</span><span class="p">,</span><span class="sc">&#39;2&#39;</span><span class="p">,</span><span class="sc">&#39;1&#39;</span><span class="p">,</span><span class="sc">&#39;0&#39;</span><span class="p">,</span><span class="sc">&#39;1&#39;</span><span class="p">,</span><span class="sc">&#39;2&#39;</span><span class="p">,</span><span class="sc">&#39;3&#39;</span><span class="p">,</span><span class="sc">&#39;4&#39;</span><span class="p">,</span><span class="sc">&#39;5&#39;</span><span class="p">,</span><span class="sc">&#39;6&#39;</span><span class="p">,</span><span class="sc">&#39;7&#39;</span><span class="p">,</span><span class="sc">&#39;8&#39;</span><span class="p">,</span><span class="sc">&#39;9&#39;</span><span class="p">};</span>
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">zero</span> <span class="o">=</span> <span class="n">digits</span> <span class="o">+</span> <span class="mi">9</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">char</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">buffer</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int64_t</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">value</span><span class="p">;</span>
+</span><span class="line">  <span class="k">do</span> <span class="p">{</span>
+</span><span class="line">    <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">zero</span><span class="p">[</span><span class="n">tmp</span> <span class="o">%</span> <span class="mi">10</span><span class="p">];</span><span class="c1">//下标可能是负数</span>
+</span><span class="line">    <span class="n">tmp</span> <span class="o">/=</span> <span class="mi">10</span><span class="p">;</span>
+</span><span class="line">    <span class="o">++</span><span class="n">p</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span> <span class="k">while</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="o">*</span><span class="n">p</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;-&#39;</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="n">reverse</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">p</span><span class="p">);</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">p</span> <span class="o">-</span> <span class="n">buffer</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>这下没问题了吧？有。</p>
+
+<p>问题出在第6、7行。</p>
+
+<p>举个例子，请问，-123 / 10结果是多少？-123 % 10 呢？</p>
+
+<p>因为<code>-123 = (-12) * 10 + (-3)</code> 因此<code>-123 / 10 = -12</code>，同时<code>-123 % 10 = -3</code></p>
+
+<p>但是！</p>
+
+<p>因为<code>-123 =(-13) * 10 + 7</code> 因此<code>-123 / 10 = -13</code>，同时<code>-123 % 10 = 7</code></p>
+
+<p>哪个结果是对的？</p>
+
+<p>C++98和C++03标准并没有对被除数和除数不都为正数时的情形进行明确的说明，第6、7行的结果是未定义的，是很不可移植的。</p>
+
+<p>如果在某个具体的实现下，<code>-123 / 10 = -13</code>，并且 <code>-123 % 10 = 7</code> ，那么以上代码结果不对。</p>
 
 <h2 id="section-3">解决问题</h2>
 
@@ -158,17 +192,37 @@
 <span class="line-number">15</span>
 <span class="line-number">16</span>
 <span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">YEDIS_MUST_INLINE</span> <span class="kt">int64_t</span> <span class="nf">int2char</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">buffer</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">value</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">offset</span><span class="p">[</span><span class="mi">19</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="sc">&#39;9&#39;</span><span class="p">,</span><span class="sc">&#39;8&#39;</span><span class="p">,</span><span class="sc">&#39;7&#39;</span><span class="p">,</span><span class="sc">&#39;6&#39;</span><span class="p">,</span><span class="sc">&#39;5&#39;</span><span class="p">,</span><span class="sc">&#39;4&#39;</span><span class="p">,</span><span class="sc">&#39;3&#39;</span><span class="p">,</span><span class="sc">&#39;2&#39;</span><span class="p">,</span><span class="sc">&#39;1&#39;</span><span class="p">,</span><span class="sc">&#39;0&#39;</span><span class="p">,</span><span class="sc">&#39;1&#39;</span><span class="p">,</span><span class="sc">&#39;2&#39;</span><span class="p">,</span><span class="sc">&#39;3&#39;</span><span class="p">,</span><span class="sc">&#39;4&#39;</span><span class="p">,</span><span class="sc">&#39;5&#39;</span><span class="p">,</span><span class="sc">&#39;6&#39;</span><span class="p">,</span><span class="sc">&#39;7&#39;</span><span class="p">,</span><span class="sc">&#39;8&#39;</span><span class="p">,</span><span class="sc">&#39;9&#39;</span><span class="p">};</span>
-</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">digit</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">+</span> <span class="mi">9</span><span class="p">;</span>
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">char</span> <span class="n">remainder_offset</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">19</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="p">{</span> <span class="sc">&#39;9&#39;</span><span class="p">,</span> <span class="sc">&#39;8&#39;</span><span class="p">,</span> <span class="sc">&#39;7&#39;</span><span class="p">,</span> <span class="sc">&#39;6&#39;</span><span class="p">,</span> <span class="sc">&#39;5&#39;</span><span class="p">,</span> <span class="sc">&#39;4&#39;</span><span class="p">,</span> <span class="sc">&#39;3&#39;</span><span class="p">,</span> <span class="sc">&#39;2&#39;</span><span class="p">,</span> <span class="sc">&#39;1&#39;</span><span class="p">,</span> <span class="sc">&#39;0&#39;</span><span class="p">,</span> <span class="sc">&#39;1&#39;</span><span class="p">,</span> <span class="sc">&#39;2&#39;</span><span class="p">,</span> <span class="sc">&#39;3&#39;</span><span class="p">,</span> <span class="sc">&#39;4&#39;</span><span class="p">,</span> <span class="sc">&#39;5&#39;</span><span class="p">,</span> <span class="sc">&#39;6&#39;</span><span class="p">,</span> <span class="sc">&#39;7&#39;</span><span class="p">,</span> <span class="sc">&#39;8&#39;</span><span class="p">,</span> <span class="sc">&#39;9&#39;</span> <span class="p">},</span><span class="c1">//正数</span>
+</span><span class="line">
+</span><span class="line">                                                <span class="p">{</span> <span class="sc">&#39;9&#39;</span><span class="p">,</span> <span class="sc">&#39;8&#39;</span><span class="p">,</span> <span class="sc">&#39;7&#39;</span><span class="p">,</span> <span class="sc">&#39;6&#39;</span><span class="p">,</span> <span class="sc">&#39;5&#39;</span><span class="p">,</span> <span class="sc">&#39;4&#39;</span><span class="p">,</span> <span class="sc">&#39;3&#39;</span><span class="p">,</span> <span class="sc">&#39;2&#39;</span><span class="p">,</span> <span class="sc">&#39;1&#39;</span><span class="p">,</span> <span class="sc">&#39;0&#39;</span><span class="p">,</span> <span class="sc">&#39;9&#39;</span><span class="p">,</span> <span class="sc">&#39;8&#39;</span><span class="p">,</span> <span class="sc">&#39;7&#39;</span><span class="p">,</span> <span class="sc">&#39;6&#39;</span><span class="p">,</span> <span class="sc">&#39;5&#39;</span><span class="p">,</span> <span class="sc">&#39;4&#39;</span><span class="p">,</span> <span class="sc">&#39;3&#39;</span><span class="p">,</span> <span class="sc">&#39;2&#39;</span><span class="p">,</span> <span class="sc">&#39;1&#39;</span> <span class="p">}</span> <span class="p">};</span><span class="c1">//负数</span>
+</span><span class="line">
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">bool</span> <span class="n">quotient_offset</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">19</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span><span class="c1">//正数</span>
+</span><span class="line">
+</span><span class="line">                                               <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span> <span class="p">}</span> <span class="p">};</span><span class="c1">//负数								  </span>
 </span><span class="line">  <span class="kt">char</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">buffer</span><span class="p">;</span>
 </span><span class="line">  <span class="kt">int64_t</span> <span class="n">tmp</span> <span class="o">=</span> <span class="n">value</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">flag</span> <span class="o">=</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">  <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">digit</span> <span class="o">=</span> <span class="n">remainder_offset</span><span class="p">[</span><span class="n">flag</span><span class="p">]</span> <span class="o">+</span> <span class="mi">9</span><span class="p">;</span>
+</span><span class="line">  <span class="k">const</span> <span class="kt">bool</span> <span class="o">*</span><span class="n">offset</span> <span class="o">=</span> <span class="n">quotient_offset</span><span class="p">[</span><span class="n">flag</span><span class="p">]</span> <span class="o">+</span> <span class="mi">9</span><span class="p">;</span>
 </span><span class="line">  <span class="k">do</span> <span class="p">{</span>
-</span><span class="line">    <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="o">*</span><span class="p">(</span><span class="n">digit</span> <span class="o">+</span> <span class="n">tmp</span> <span class="o">%</span> <span class="mi">10</span><span class="p">);</span>
-</span><span class="line">    <span class="n">tmp</span> <span class="o">/=</span> <span class="mi">10</span><span class="p">;</span>
+</span><span class="line">    <span class="kt">int</span> <span class="n">remainder</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">%</span> <span class="mi">10</span><span class="p">;</span>
+</span><span class="line">    <span class="kt">char</span> <span class="n">c</span> <span class="o">=</span> <span class="n">digit</span><span class="p">[</span><span class="n">remainder</span><span class="p">];</span>
+</span><span class="line">    <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="n">digit</span><span class="p">[</span><span class="n">remainder</span><span class="p">];</span>
+</span><span class="line">    <span class="n">tmp</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="mi">10</span> <span class="o">+</span> <span class="n">offset</span><span class="p">[</span><span class="n">remainder</span><span class="p">];</span>
 </span><span class="line">    <span class="o">++</span><span class="n">p</span><span class="p">;</span>
-</span><span class="line">  <span class="p">}</span> <span class="k">while</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
+</span><span class="line">  <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
 </span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">    <span class="o">*</span><span class="n">p</span><span class="o">++</span> <span class="o">=</span> <span class="sc">&#39;-&#39;</span><span class="p">;</span>
 </span><span class="line">  <span class="p">}</span>
@@ -177,9 +231,8 @@
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>通过offset数组，很巧妙、很完美的解决了这个问题。它对于[INT64_MIN, INT64_MAX]中的任何一个数都是正确的。</p>
+<p>通过两个二维数组，很巧妙、完美的解决了这个问题。它对于[INT64_MIN, INT64_MAX]中的任何一个数都是正确的。</p>
 
-<p>这个实现，想法来源于Matthew Wilson大神的Efficient Integer to String Conversions文章。</p>
 ]]></content>
   </entry>
   
