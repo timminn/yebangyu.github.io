@@ -4,7 +4,7 @@
   <title><![CDATA[Category: yedis | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/yedis/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-04T22:47:53+08:00</updated>
+  <updated>2016-04-09T22:37:32+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -90,7 +90,7 @@ int itoa(char *buffer, int64_t value)
 <p>Matthew Wilson大神的Efficient Integer to String Conversions文章里，使用如下的trick，来处理这些问题。</p>
 
 <p><code>c++
-int int2char(char *buffer, int64_t value)
+int itoa(char *buffer, int64_t value)
 {
   static const char digits[19] = {'9','8','7','6','5','4','3','2','1','0','1','2','3','4','5','6','7','8','9'};
   static const char *zero = digits + 9;
