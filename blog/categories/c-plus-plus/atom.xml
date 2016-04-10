@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-09T22:40:30+08:00</updated>
+  <updated>2016-04-10T22:09:46+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,82 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[String Literal In C++]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/04/10/stringliteralincpp/"/>
+    <updated>2016-04-10T22:05:21+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/04/10/stringliteralincpp</id>
+    <content type="html"><![CDATA[<p>最近被一个很基本的知识点给咬伤，虽然之前知道这个问题，但是写代码的时候不小心还是容易犯错。简单记录一下。</p>
+
+<h2 id="section">提出问题</h2>
+
+<p>之前，代码里拥有如下数组：</p>
+
+<p><code>c++
+const char *COLORS[3] = { "red",
+                         "black",
+                         "green"
+                        };
+</code></p>
+
+<p>现在需要以追加的形式，添加一个yellow的颜色。粗心之下，我写成了：</p>
+
+<!--more-->
+
+<p><code>c++
+const char *COLORS[4] = { "red",
+                         "black",
+                         "green"
+                         "yellow"
+                        };
+</code></p>
+
+<p>在某处代码，我使用了COLORS[3]，类似于</p>
+
+<p><code>cout&lt;&lt;COLORS[3]&lt;&lt;endl;</code></p>
+
+<p>程序执行后，就崩溃了。</p>
+
+<h2 id="section-1">分析问题</h2>
+
+<p>问题出在，在追加的代码中的第4行，漏掉了一个逗号！！！正确的形式应该是：</p>
+
+<p><code>c++
+const char *COLORS[4] = { "red",
+                         "black",
+                         "green", //这里有个逗号！！！
+                         "yellow"
+                        };
+</code></p>
+
+<p>在没有逗号下，编译器将”green”和”yellow”当做一个字符串，也就是”greepyellow”，因此，COLORS[2]其实是”greenyellow”，而COLORS[3]是未显式初始化的，为NULL。因此使用COLORS[3]程序崩溃。</p>
+
+<h2 id="section-2">解决问题</h2>
+
+<p>上面已经解决了问题。这里小小补充下:</p>
+
+<p>在C++中，如下几种形式结果是一样的，表示的是同一个字符串”hello,world” ：</p>
+
+<p><code>c++
+"hello, world"
+</code></p>
+
+<p><code>c++
+"hello, "
+"world"
+</code></p>
+
+<p><code>c++
+"hello, \
+world"
+</code></p>
+
+<p><code>c++
+"hello, "  "w"  "orld"
+</code></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[C99中的柔性数组]]></title>
@@ -404,180 +480,6 @@ int main()
 </code></p>
 
 <p>这里说的都是<strong>wall clock</strong>，如果想获得<strong>cpu</strong>执行时间，以及了解<code>clock_gettime</code>参数的解释和可能的取值，可以<strong>man</strong>一下。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[再谈C++中的static const]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/11/15/static-const-in-cpp/"/>
-    <updated>2015-11-15T12:45:16+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/11/15/static-const-in-cpp</id>
-    <content type="html"><![CDATA[<p>废话不多说了，开始这次的讨论吧。</p>
-
-<h2 id="section">提出问题</h2>
-
-<p>同事颜廷帅（微博：@颜挺帅）拿了一段代码让我分析。以下代码，能编译链接通过吗？</p>
-
-<!--more-->
-
-<p><code>c++
-void f(const int &amp;value)
-{
-}
-class Test
-{
-public:
-  static const int a = 1;
-};
-int main()
-{
-  f(Test::a);
-  return 0;
-}
-</code></p>
-
-<p>我的第一感觉是：应该没问题，吧。在<strong>Visual Studio 2013</strong> 实验了下，顺利通过，一切正常.</p>
-
-<p>然而同事说，<strong>gcc</strong>下是报错的：Undefined reference to ‘Test::a’</p>
-
-<p>这是为什么？</p>
-
-<h2 id="section-1">分析问题</h2>
-
-<p>写作本文时所用的环境是<strong>gcc 4.8.2 (Ubuntu 14.04 , X86平台)</strong>。</p>
-
-<p>注意，本文的讨论只针对类的<strong>static const</strong>成员，也就是所谓的<strong>class scope</strong>。<strong>namespace scope</strong>的情况不属于我们的讨论范围内。</p>
-
-<p>把以上代码保存为<strong>test.cpp</strong>，然后用<strong>gcc</strong>编译它：</p>
-
-<pre><code>g++ -c -o test.o test.cpp
-</code></pre>
-
-<p>这个命令执行之后，我们会在目录下得到<strong>test.o</strong>文件。接着，我们通过<strong>objdump</strong>来查看符号表：</p>
-
-<pre><code>objdump -x test.o
-</code></pre>
-
-<p>我们可以看到类似如下的输出：</p>
-
-<pre><code>SYMBOL TABLE:
-00000000 l    df *ABS*	00000000 test.cpp
-00000000 l    d  .text	00000000 .text
-00000000 l    d  .data	00000000 .data
-00000000 l    d  .bss	00000000 .bss
-00000000 l    d  .note.GNU-stack	00000000 .note.GNU-stack
-00000000 l    d  .eh_frame	00000000 .eh_frame
-00000000 l    d  .comment	00000000 .comment
-00000000 g     F .text	00000005 _Z1fRKi
-00000005 g     F .text	00000019 main
-00000000         *UND*	00000000 _ZN4Test1aE
-</code></pre>
-
-<p>上面的最后一行，<strong>_ZN4Test1aE</strong>就是对应我们程序中声明的<strong>Test::a</strong>。之所以长得这么复杂、奇怪，是因为编译器做了<strong>mangling</strong>处理。</p>
-
-<p>注意到*UND*没？根据<a href="https://sourceware.org/binutils/docs/binutils/objdump.html">文档</a>的解释：</p>
-
-<p>*UND* : if the section is referenced in the file being dumped, but not defined there</p>
-
-<p>也就是<strong>_ZN4Test1aE</strong>在本<strong>.o</strong>文件中引用，然而它却木有定义。因此，报Undefined reference to ‘Test::a’的错，也就情理之中了。</p>
-
-<p>那么，我们的程序是否真的引用了<strong>_ZN4Test1aE</strong>呢？恩，我们接着往下看。</p>
-
-<p>输入如下命令：</p>
-
-<pre><code>g++ -S test.cpp
-</code></pre>
-
-<p>我们可以得到类似这样的汇编代码(做了整理，节选)：</p>
-
-<pre><code>main:
-	pushl	%ebp
-	movl	%esp, %ebp
-	subl	$4, %esp
-	movl	$_ZN4Test1aE, (%esp) ;看到没？_ZN4Test1aE ！
-	call	_Z1fRKi ;调用函数f
-	movl	$0, %eax
-	leave
-	ret
-</code></pre>
-
-<p>虽然我们已经分析出为什么会报错，然而，我们还有一个疑问，就是，为什么下面的代码，是OK的？</p>
-
-<p><code>c++
-void f(const int value) //这里没有 &amp;
-{
-}
-class Test
-{
-public:
-  static const int a = 1;
-};
-int main()
-{
-  f(Test::a);//没问题
-  return 0;
-}
-</code></p>
-
-<p>恩，有了前面的基础，相信读者诸君已经知道怎么分析。我们可以用同样的方法，看看它的汇编代码：</p>
-
-<pre><code>main:
-	pushl	%ebp
-	movl	%esp, %ebp
-	subl	$4, %esp
-	movl	$1, (%esp)     ;看到没？1，不是_ZN4Test1aE，也不是Test::a
-	call	_Z1fi
-	movl	$0, %eax
-	leave
-	ret
-</code></pre>
-
-<p>也就是说，在这里，编译器只是把<strong>Test::a</strong>认作一个占位符，实际使用之处用<strong>1</strong>代替了。</p>
-
-<h2 id="section-2">解决问题</h2>
-
-<p>知道原因了，那么怎么解决呢？恩，至少三种方法：</p>
-
-<p>1，我们可以<strong>定义</strong>（而不是声明）<strong>Test::a</strong>。是的，上面的<code>static const int a = 1;</code>并不是它的定义式。如果要定义，那么我们应该这么做：</p>
-
-<p><code>c++
-void f(const int &amp;value)//还是传引用
-{
-}
-class Test
-{
-public:
-  static const int a;
-};
-const int Test::a = 1;//定义a
-int main()
-{
-  f(Test::a);//现在没问题了
-  return 0;
-}
-</code>
-有兴趣的读者可以看看这个程序对应的符号表，就会发现<strong>Test::a</strong>被放在了程序的<strong>rodata section</strong>，而不是*UND*了。</p>
-
-<p>2，如果仅仅声明<strong>a</strong>，那么我们可以按值的方式使用它，这没问题。也就是只使用它的值；而不去获得它的地址(当然，也包括引用。引用本质上也是地址)。</p>
-
-<p>3，使用枚举类型。是的，枚举！像这样：</p>
-
-<p><code>c++
-void f(const int &amp;value)//还是传引用
-{
-}
-class Test
-{
-public:
-  enum HELLOWORLD {a = 1}; //枚举，而不是 static const
-};
-int main()
-{
-  f(Test::a);//没问题
-  return 0;
-}
-</code>
-那么，这种情况下，编译器是如何处理的呢？就留给读者诸君作为练习吧。</p>
 ]]></content>
   </entry>
   
