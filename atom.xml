@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-10T22:09:46+08:00</updated>
+  <updated>2016-04-10T22:14:22+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -28,7 +28,7 @@
 <span class="line-number">2</span>
 <span class="line-number">3</span>
 <span class="line-number">4</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">COLORS</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&quot;red&quot;</span><span class="p">,</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">COLORS</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;red&quot;</span><span class="p">,</span>
 </span><span class="line">                         <span class="s">&quot;black&quot;</span><span class="p">,</span>
 </span><span class="line">                         <span class="s">&quot;green&quot;</span>
 </span><span class="line">                        <span class="p">};</span>
@@ -43,7 +43,7 @@
 <span class="line-number">3</span>
 <span class="line-number">4</span>
 <span class="line-number">5</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">COLORS</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&quot;red&quot;</span><span class="p">,</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">COLORS</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;red&quot;</span><span class="p">,</span>
 </span><span class="line">                         <span class="s">&quot;black&quot;</span><span class="p">,</span>
 </span><span class="line">                         <span class="s">&quot;green&quot;</span>
 </span><span class="line">                         <span class="s">&quot;yellow&quot;</span>
@@ -65,14 +65,14 @@
 <span class="line-number">3</span>
 <span class="line-number">4</span>
 <span class="line-number">5</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">COLORS</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s">&quot;red&quot;</span><span class="p">,</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">COLORS</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;red&quot;</span><span class="p">,</span>
 </span><span class="line">                         <span class="s">&quot;black&quot;</span><span class="p">,</span>
-</span><span class="line">                         <span class="s">&quot;green&quot;</span><span class="p">,</span> <span class="c1">//这里有个逗号！！！</span>
+</span><span class="line">                         <span class="s">&quot;green&quot;</span><span class="p">,</span> <span class="c1">//这里应该有个逗号！！！</span>
 </span><span class="line">                         <span class="s">&quot;yellow&quot;</span>
 </span><span class="line">                        <span class="p">};</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>在没有逗号下，编译器将”green”和”yellow”当做一个字符串，也就是”greepyellow”，因此，COLORS[2]其实是”greenyellow”，而COLORS[3]是未显式初始化的，为NULL。因此使用COLORS[3]程序崩溃。</p>
+<p>在没有逗号下，编译器将”green”和”yellow”当做一个字符串，也就是”greenyellow”，因此，COLORS[2]其实是”greenyellow”，而COLORS[3]是未显式初始化的，为NULL。因此使用COLORS[3]程序崩溃。</p>
 
 <h2 id="section-2">解决问题</h2>
 

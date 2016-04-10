@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-10T22:09:46+08:00</updated>
+  <updated>2016-04-10T22:14:22+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -25,7 +25,7 @@
 <p>之前，代码里拥有如下数组：</p>
 
 <p><code>c++
-const char *COLORS[3] = { "red",
+const char *COLORS[3] = {"red",
                          "black",
                          "green"
                         };
@@ -36,7 +36,7 @@ const char *COLORS[3] = { "red",
 <!--more-->
 
 <p><code>c++
-const char *COLORS[4] = { "red",
+const char *COLORS[4] = {"red",
                          "black",
                          "green"
                          "yellow"
@@ -54,14 +54,14 @@ const char *COLORS[4] = { "red",
 <p>问题出在，在追加的代码中的第4行，漏掉了一个逗号！！！正确的形式应该是：</p>
 
 <p><code>c++
-const char *COLORS[4] = { "red",
+const char *COLORS[4] = {"red",
                          "black",
-                         "green", //这里有个逗号！！！
+                         "green", //这里应该有个逗号！！！
                          "yellow"
                         };
 </code></p>
 
-<p>在没有逗号下，编译器将”green”和”yellow”当做一个字符串，也就是”greepyellow”，因此，COLORS[2]其实是”greenyellow”，而COLORS[3]是未显式初始化的，为NULL。因此使用COLORS[3]程序崩溃。</p>
+<p>在没有逗号下，编译器将”green”和”yellow”当做一个字符串，也就是”greenyellow”，因此，COLORS[2]其实是”greenyellow”，而COLORS[3]是未显式初始化的，为NULL。因此使用COLORS[3]程序崩溃。</p>
 
 <h2 id="section-2">解决问题</h2>
 
