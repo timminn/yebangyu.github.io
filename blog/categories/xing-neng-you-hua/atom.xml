@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 性能优化 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/xing-neng-you-hua/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-22T23:28:02+08:00</updated>
+  <updated>2016-04-22T23:35:51+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -20,7 +20,7 @@
     <id>http://www.yebangyu.org/blog/2016/04/22/optimization</id>
     <content type="html"><![CDATA[<h2 id="section">写在最前</h2>
 
-<p>本文针对C++和linux环境，但是思想和方法，却对其他语言和环境同样适用。很可供参考的。</p>
+<p>本文针对<strong>C++</strong>和<strong>linux</strong>环境，但是思想和方法，却对其他语言和环境同样适用。很可供参考的。</p>
 
 <h2 id="section-1">优化前</h2>
 
@@ -48,14 +48,14 @@
 
 <p>第一，如何定位程序瓶颈段？</p>
 
-<p>要是有一个工具，能够告诉我系统模块的开销比例，那就太好了。有这样的工具吗？有的。<strong>linux</strong>下的<strong>perf</strong>就是。<a href="https://www.ibm.com/developerworks/cn/linux/l-cn-perf1/">这里</a>是对<strong>perf</strong>非常好的<strong>tutorial</strong>，强烈建议初学者阅读。简单说来，一条命令即可：</p>
+<p>要是有一个工具，能够告诉我系统模块的开销比例，那就太好了。有这样的工具吗？有的。<strong>Linux</strong>下的<strong>perf</strong>就是。<a href="https://www.ibm.com/developerworks/cn/Linux/l-cn-perf1/">这里</a>是对<strong>perf</strong>非常好的<strong>tutorial</strong>，强烈建议初学者阅读。简单说来，一条命令即可：</p>
 
 <pre><code>sudo perf record -g ./yourprograme
 </code></pre>
 
 <p>第二，我想给我的程序的某个函数计时，应该怎么做？</p>
 
-<p>有很多方法，强烈建议您阅读我的<a href="http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux/">这篇</a>博客，很可供参考。我个人比较喜欢用<strong>timespec</strong>，原因是：知道它的人不多；它可以精确到纳秒；它不受系统时钟的影响（<strong>gettimeofday</strong>显然会，因为它就是读取系统时钟嘛）。</p>
+<p>有很多方法，强烈建议您阅读我的<a href="http://www.yebangyu.org/blog/2016/01/07/timingcprograminLinux/">这篇</a>博客，很可供参考。我个人比较喜欢用<strong>timespec</strong>，原因是：知道它的人不多；它可以精确到纳秒；它不受系统时钟的影响（<strong>gettimeofday</strong>显然会，因为它就是读取系统时钟嘛）。</p>
 
 <p>第三，优化后，函数变快了，系统变快了多少？</p>
 
@@ -109,19 +109,19 @@
 
 <p>其中<code>strlen(a)</code>可以事先计算好，用一个变量存放即可。</p>
 
-<p>还有很多很多。就看你的知识面和经验了。</p>
+<p>还有很多很多。就看您的知识面和经验了。</p>
 
 <h2 id="section-3">优化后</h2>
 
-<p>优化后，请记得再次对你的程序进行<strong>profile</strong>，确保优化是有效的。</p>
+<p>优化后，请记得再次对您的程序进行<strong>profile</strong>，确保优化是有效的。</p>
 
-<p>别偏听偏信，别坚信Kmp一定比暴力算法快，别盲信教科书、博客、资料里的说法，别跪舔大佬！请实际测试！测试！！再测试！！！</p>
+<p>别偏听偏信，别坚信KMP一定比暴力算法快，别盲信教科书、博客、资料里的说法，别跪舔大佬！请实际测试！测试！！再测试！！！</p>
 
-<p>一切以你的环境、以你的系统、以你的测试为准。没有权威。</p>
+<p>一切以您的环境、以您的系统、以您的测试为准。没有权威。</p>
 
 <h2 id="section-4">参考资料</h2>
 
-<p>专门针对<strong>C++</strong>和<strong>linux</strong>的优化的书，不多。但是有一些零碎的、七七八八的资料，编程珠玑啊，深入理解计算机系统啊，还有过几个月会出的<strong>optimized c++</strong>啊等等。</p>
+<p>专门针对<strong>C++</strong>和<strong>Linux</strong>的优化的书，不多。但是有一些零碎的、七七八八的资料，编程珠玑啊，深入理解计算机系统啊，还有过几个月会出的<strong>optimized c++</strong>啊等等。</p>
 
 ]]></content>
   </entry>
