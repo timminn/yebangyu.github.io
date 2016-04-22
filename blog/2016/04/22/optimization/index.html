@@ -167,7 +167,7 @@ MathJax.Hub.Config({
 
 <p>排序算法：快速排序，非常常见、常用。那么，如何编写一个高效的快速排序？建议您阅读我的<a href="http://www.yebangyu.org/blog/2016/03/09/quicksort/">这篇</a>博客。</p>
 
-<p>2，将小但是频繁的函数内联。注意，<strong>gcc</strong>有提供强制内联的<strong>feature</strong>，也就是<code>__attribute__((always_inline))</code></p>
+<p>2，将小但是频繁调用的函数内联。注意，<strong>gcc</strong>有提供强制内联的<strong>feature</strong>，也就是<code>__attribute__((always_inline))</code></p>
 
 <p>3，为分支预测适当加上<strong>likely</strong>或者<strong>unlikely</strong>。请注意，<strong>if</strong>语句并不可怕，可怕的是分支预测失败。这正和锁并不可怕，因为加锁和释放锁其实很快，可怕的是锁冲突。所以，您需要了解这两组宏：</p>
 
