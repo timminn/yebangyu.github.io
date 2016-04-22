@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-22T23:37:02+08:00</updated>
+  <updated>2016-04-22T23:38:58+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -113,9 +113,9 @@
 
 <h2 id="section-3">优化后</h2>
 
-<p>优化后，请记得再次对您的程序进行<strong>profile</strong>，确保优化是有效的。</p>
+<p>优化后，请记得再次对您的程序进行<strong>profiling</strong>，确保优化是有效的。</p>
 
-<p>别偏听偏信，别坚信KMP一定比暴力算法快，别盲信教科书、博客、资料里的说法，别跪舔大佬！请实际测试！测试！！再测试！！！</p>
+<p>别偏听偏信，别坚信<strong>KMP</strong>一定比暴力算法快，别盲信教科书、博客、资料里的说法，别跪舔大佬！请实际测试！测试！！再测试！！！</p>
 
 <p>一切以您的环境、以您的系统、以您的测试为准。没有权威。</p>
 
