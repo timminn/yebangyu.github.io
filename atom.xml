@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-22T23:38:58+08:00</updated>
+  <updated>2016-04-23T10:00:54+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -36,13 +36,13 @@
 
 <p>有两个方法可以免费地、快速地提高效率：</p>
 
-<p>第一个是使用<strong>release</strong>模式。如果你的程序在<strong>debug</strong>模式下表现不佳，那么可以尝试使用<strong>release</strong>模式进行编译链接。一般说来，这也是发布程序的默认模式。</p>
+<p>第一个是使用<strong>release</strong>模式。如果您的程序在<strong>debug</strong>模式下表现不佳，那么可以尝试使用<strong>release</strong>模式进行编译链接。一般说来，这也是发布程序的默认模式。</p>
 
 <p>第二是开启编译器优化。例如<strong>g++</strong>就提供了多个级别的优化选项，一般使用<strong>O2</strong>。</p>
 
 <p>3，确定做了优化前的准备工作</p>
 
-<p>最重要的一点是对程序的性能进行详细分析，找出瓶颈段<strong>（hot spot</strong>）。这很重要，否则，可能导致在错误的方向上越走越远。例如一个程序由函数<strong>f</strong>和<strong>g</strong>构成，<strong>f</strong>花费了<strong>2s</strong>，<strong>g</strong>花费了<strong>100ms</strong>，那你把<strong>g</strong>从<strong>100ms</strong>优化为<strong>50ms</strong>，对系统又有什么帮助呢？<strong>f</strong>才是大头啊。</p>
+<p>最重要的一点是对程序的性能进行详细分析，找出瓶颈段<strong>（hot spot</strong>）。这很重要，否则，可能导致在错误的方向上越走越远。例如一个程序由函数<strong>f</strong>和<strong>g</strong>构成，<strong>f</strong>花费了<strong>2s</strong>，<strong>g</strong>花费了<strong>100ns</strong>，那您把<strong>g</strong>从<strong>100ns</strong>优化为<strong>20ns</strong>，对系统又有什么帮助呢？<strong>f</strong>才是大头啊。</p>
 
 <p>因此，这里就会有三个问题：</p>
 
@@ -55,11 +55,11 @@
 
 <p>第二，我想给我的程序的某个函数计时，应该怎么做？</p>
 
-<p>有很多方法，强烈建议您阅读我的<a href="http://www.yebangyu.org/blog/2016/01/07/timingcprograminLinux/">这篇</a>博客，很可供参考。我个人比较喜欢用<strong>timespec</strong>，原因是：知道它的人不多；它可以精确到纳秒；它不受系统时钟的影响（<strong>gettimeofday</strong>显然会，因为它就是读取系统时钟嘛）。</p>
+<p>有很多方法，强烈建议您阅读我的<a href="http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux/">这篇</a>博客，很可供参考。我个人比较喜欢用<strong>timespec</strong>，原因是：知道它的人不多；它可以精确到纳秒；它不受系统时钟的影响（<strong>gettimeofday</strong>显然会，因为它就是读取系统时钟嘛）。</p>
 
 <p>第三，优化后，函数变快了，系统变快了多少？</p>
 
-<p>哦，回忆一下我们本科计算机体系结构里的<strong>Amdahl</strong>定律。如果您没学过这个定律，或者早已还给老师，那么<a href="https://en.wikipedia.org/wiki/Amdahl%27s_law">这里</a>的内容可能对你有帮助。</p>
+<p>哦，回忆一下我们本科计算机体系结构里的<strong>Amdahl</strong>定律。如果您没学过这个定律，或者早已还给老师，那么<a href="https://en.wikipedia.org/wiki/Amdahl%27s_law">这里</a>的内容可能对您有帮助。</p>
 
 <h2 id="section-2">优化中</h2>
 
@@ -71,9 +71,9 @@
 
 <p>1，算法和数据结构层面</p>
 
-<p>使用合适的、高效的数据结构和算法，往往能带来很大的提升。不过，前提是，你需要对你的需求进行认真分析。<strong>find、search、insert、successor、del、min、max</strong>这些操作，哪些是你期望需要非常高效的？哪些操作是你业务里经常出现的？</p>
+<p>使用合适的、高效的数据结构和算法，往往能带来很大的提升。不过，前提是，您需要对您的需求进行认真分析。<strong>find、search、insert、successor、del、min、max</strong>这些操作，哪些是您期望需要非常高效的？哪些操作是您业务里经常出现的？</p>
 
-<p>你需要对以下数据结构和算法有所了解：</p>
+<p>您需要对以下数据结构和算法有所了解：</p>
 
 <p>哈希表：<strong>O(1)</strong>的查找时间，因此这点常常成为除了数组之外的首选，当查找非常关键时。只知道<strong>Separate Chaining</strong>和<strong>Open Addressing</strong>？那您<strong>out</strong>了。建议您阅读我的<a href="http://www.yebangyu.org/blog/2015/12/19/cuckoo-hashing/">这篇</a>讲解<strong>cuckoo hashing</strong>的博客。</p>
 
@@ -81,7 +81,7 @@
 
 <p><strong>Sunday</strong>算法：字符串匹配里，<strong>KMP</strong>算法是大名鼎鼎了。谁让<strong>Knuth</strong>是大佬呢？可是，您是否知道<strong>Sunday</strong>算法？<strong>Sunday</strong>算法什么时候会比<strong>KMP</strong>高效而且高效地多？</p>
 
-<p><strong>string.h</strong>里提供的算法：包括<strong>memcmp、memcpy、memmem</strong>（我第一次知道<strong>memmem</strong>是从我的主管杨志丰先生那儿）等。当你想手工实现这些函数，正在写一大堆<strong>while</strong>循环时，请优先选择这些库函数。</p>
+<p><strong>string.h</strong>里提供的算法：包括<strong>memcmp、memcpy、memmem</strong>（我第一次知道<strong>memmem</strong>是从我的主管杨志丰先生那儿）等。当您想手工实现这些函数，正在写一大堆<strong>while</strong>循环时，请优先选择这些库函数。</p>
 
 <p>排序算法：快速排序，非常常见、常用。那么，如何编写一个高效的快速排序？建议您阅读我的<a href="http://www.yebangyu.org/blog/2016/03/09/quicksort/">这篇</a>博客。</p>
 
