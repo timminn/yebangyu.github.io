@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 性能优化 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/xing-neng-you-hua/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-23T10:00:54+08:00</updated>
+  <updated>2016-04-23T10:16:38+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -28,7 +28,7 @@
 
 <p>如果程序已经跑的足够快了，内存使用也足够省了，那么完全没有优化的必要。什么是足够呢？能够满足当前的业务和需求。因此，如果不是绝对必要，不要优化。</p>
 
-<p>这是因为虽然优化不是万恶之源，但是优化可能会带来问题。它会让你把头发掉光，绞尽脑汁；它可能让之前只需要一两行逻辑很清晰的代码，变成很难理解的高度优化的实现。优化很多时候某种程度上让代码可读性和可维护性变差。</p>
+<p>这是因为虽然优化不是万恶之源，但是优化可能会带来问题。为了提升一点点性能就得绞尽脑汁、辗转反侧；它可能让之前只需要一两行逻辑很清晰的代码，变成很难理解的高度优化的实现。优化很多时候某种程度上让代码可读性和可维护性变差。</p>
 
 <p>2，确定该做的优化都做了</p>
 
@@ -87,7 +87,7 @@
 
 <p>2，将小但是频繁调用的函数内联。注意，<strong>gcc</strong>有提供强制内联的<strong>feature</strong>，也就是<code>__attribute__((always_inline))</code></p>
 
-<p>3，为分支预测适当加上<strong>likely</strong>或者<strong>unlikely</strong>。请注意，<strong>if</strong>语句并不可怕，可怕的是分支预测失败。这正和锁并不可怕，因为加锁和释放锁其实很快，可怕的是锁冲突。所以，您需要了解这两组宏：</p>
+<p>3，为分支预测适当加上<strong>likely</strong>或者<strong>unlikely</strong>。请注意，<strong>if</strong>语句并不可怕，可怕的是分支预测失败。这正和锁并不可怕一样，因为加锁和释放锁其实很快，可怕的是锁冲突。所以，您需要了解这两组宏：</p>
 
 <pre><code>#define  likely(x)        __builtin_expect(!!(x), 1) 
 #define  unlikely(x)      __builtin_expect(!!(x), 0) 
@@ -110,6 +110,12 @@
 <p>其中<code>strlen(a)</code>可以事先计算好，用一个变量存放即可。</p>
 
 <p>还有很多很多。就看您的知识面和经验了。</p>
+
+<p>有一个错误的想法，很值得在这里说。很多资料上写着：用移位代替乘除法。因此很多人的代码里充斥着大量的<code>&gt;&gt;1</code> 以及 <code>&lt;&lt;1</code>，美其名曰性能优化。</p>
+
+<p>事实上，现在的编译器很聪明了，一点都不傻，不信可以看看用-O2编译后的反汇编代码。结果会让您赞叹的。上面的左移一位、右移一位没有任何必要。</p>
+
+<p>正常情况下，请按照逻辑需要直接写代码。现代编译器真的已经很牛逼了。因此，您应该重点关注算法、cache、分支预测等层面。</p>
 
 <h2 id="section-3">优化后</h2>
 
