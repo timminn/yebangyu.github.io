@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-23T10:16:38+08:00</updated>
+  <updated>2016-04-23T10:20:19+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -113,9 +113,9 @@
 
 <p>有一个错误的想法，很值得在这里说。很多资料上写着：用移位代替乘除法。因此很多人的代码里充斥着大量的<code>&gt;&gt;1</code> 以及 <code>&lt;&lt;1</code>，美其名曰性能优化。</p>
 
-<p>事实上，现在的编译器很聪明了，一点都不傻，不信可以看看用-O2编译后的反汇编代码。结果会让您赞叹的。上面的左移一位、右移一位没有任何必要。</p>
+<p>事实上，现在的编译器很聪明了，一点都不傻，不信您可以直接写<code>a / 2</code> 然后看看开启<strong>-O2</strong>选项后的汇编代码。结果会让您赞叹的。上面的左移一位、右移一位没有任何必要。</p>
 
-<p>正常情况下，请按照逻辑需要直接写代码。现代编译器真的已经很牛逼了。因此，您应该重点关注算法、cache、分支预测等层面。</p>
+<p>正常情况下，请按照逻辑需要直接写代码。现代编译器真的已经很牛逼了。因此，您应该重点关注算法、<strong>Cache</strong>、分支预测等层面。</p>
 
 <h2 id="section-3">优化后</h2>
 
