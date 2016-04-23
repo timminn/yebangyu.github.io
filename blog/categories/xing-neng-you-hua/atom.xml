@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 性能优化 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/xing-neng-you-hua/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-04-23T10:20:19+08:00</updated>
+  <updated>2016-04-23T10:26:15+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -75,7 +75,7 @@
 
 <p>您需要对以下数据结构和算法有所了解：</p>
 
-<p>哈希表：<strong>O(1)</strong>的查找时间，因此这点常常成为除了数组之外的首选，当查找非常关键时。只知道<strong>Separate Chaining</strong>和<strong>Open Addressing</strong>？那您<strong>out</strong>了。建议您阅读我的<a href="http://www.yebangyu.org/blog/2015/12/19/cuckoo-hashing/">这篇</a>讲解<strong>cuckoo hashing</strong>的博客。</p>
+<p>哈希表：<strong>O(1)</strong>期望查找时间让它常常成为除了数组之外的首选，尤其是当查找非常关键时。只知道<strong>Separate Chaining</strong>和<strong>Open Addressing</strong>？那您<strong>out</strong>了。建议您阅读我的<a href="http://www.yebangyu.org/blog/2015/12/19/cuckoo-hashing/">这篇</a>讲解<strong>cuckoo hashing</strong>的博客。</p>
 
 <p>跳表：说到<strong>O(lgn)</strong>的<strong>insert、find、del</strong>，很多人想到二叉搜索树，由于非平衡的二叉搜索树有退化为<strong>O(n)</strong>的风险，因此很多场景需要平衡树。<strong>B</strong>树？红黑树？太<strong>heavy</strong>了。有时候，您需要跳表，真的，很需要。它足够简单，而且很多时候就能满足您的需求。除此之外，<strong>Treap</strong>也是一种随机的数据结构，我实现的大规模分布式数据库<a href="https://github.com/yebangyu/Yedis">Yedis</a>里就有提供相应的实现，以后会放出。</p>
 
