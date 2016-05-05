@@ -147,7 +147,9 @@ MathJax.Hub.Config({
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>不难看出，<code>gettimeofday</code>只能精确到微秒；如果想精确到纳秒呢？</p>
+<p><code>gettimeofday</code>只能精确到微秒，并且它受系统时钟的影响(它的原理就是通过读取系统时钟，因此当计时的这段时间里有其他程序修改了系统时钟，那么结果将不准确)。</p>
+
+<p>如果想精确到纳秒呢？继续往下看：</p>
 
 <p>方法三：</p>
 
