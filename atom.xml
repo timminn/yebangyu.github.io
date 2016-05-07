@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-05T22:09:38+08:00</updated>
+  <updated>2016-05-07T10:30:41+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,558 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Treap：一种高效的高级数据结构]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/05/07/treappkskiplist/"/>
+    <updated>2016-05-07T10:00:12+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/05/07/treappkskiplist</id>
+    <content type="html"><![CDATA[<h2 id="section">写在最前</h2>
+
+<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+
+<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+
+<h2 id="treap">Treap</h2>
+
+<p>Yedis也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。这两种都是概率性的高级数据结构，具体性能依赖于随机数的选择。</p>
+
+<p>那么，什么是Treap呢？</p>
+
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/TreapAlphaKey.svg/440px-TreapAlphaKey.svg.png" alt="Treap" /></p>
+
+<p>(图片来源于WikiMedia)</p>
+
+<p>简单说来，Treap是这样的树：Treap中的每个节点至少包含key和优先级两个字段，其中key满足搜索树性质，优先级满足堆序性。如上图所示，数字是优先级字段，字母是key字段。其中优先级构成了一个大根堆。</p>
+
+<p>也就是说，在Treap中，key组成了一个二叉搜索树，优先级组成了一个堆。所谓Treap = Tree + Heap。</p>
+
+<!--more-->
+
+<p>插入一个节点时，随机生成一个优先级。这时候可能堆序性被破坏，而这可以通过旋转来恢复。由于只可能有左右单旋转两种情形，因此它的代码编写比AVL树、Red-Black Tree要简单的多，并且可以证明旋转的期望次数小于2。</p>
+
+<p>在Treap上的删除、插入、查找的期望时间复杂度都是O($lgn$)。</p>
+
+<h2 id="treap-pk-skiplist">Treap PK SkipList</h2>
+
+<h3 id="treap-1">Treap实现</h3>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+<span class="line-number">29</span>
+<span class="line-number">30</span>
+<span class="line-number">31</span>
+<span class="line-number">32</span>
+<span class="line-number">33</span>
+<span class="line-number">34</span>
+<span class="line-number">35</span>
+<span class="line-number">36</span>
+<span class="line-number">37</span>
+<span class="line-number">38</span>
+<span class="line-number">39</span>
+<span class="line-number">40</span>
+<span class="line-number">41</span>
+<span class="line-number">42</span>
+<span class="line-number">43</span>
+<span class="line-number">44</span>
+<span class="line-number">45</span>
+<span class="line-number">46</span>
+<span class="line-number">47</span>
+<span class="line-number">48</span>
+<span class="line-number">49</span>
+<span class="line-number">50</span>
+<span class="line-number">51</span>
+<span class="line-number">52</span>
+<span class="line-number">53</span>
+<span class="line-number">54</span>
+<span class="line-number">55</span>
+<span class="line-number">56</span>
+<span class="line-number">57</span>
+<span class="line-number">58</span>
+<span class="line-number">59</span>
+<span class="line-number">60</span>
+<span class="line-number">61</span>
+<span class="line-number">62</span>
+<span class="line-number">63</span>
+<span class="line-number">64</span>
+<span class="line-number">65</span>
+<span class="line-number">66</span>
+<span class="line-number">67</span>
+<span class="line-number">68</span>
+<span class="line-number">69</span>
+<span class="line-number">70</span>
+<span class="line-number">71</span>
+<span class="line-number">72</span>
+<span class="line-number">73</span>
+<span class="line-number">74</span>
+<span class="line-number">75</span>
+<span class="line-number">76</span>
+<span class="line-number">77</span>
+<span class="line-number">78</span>
+<span class="line-number">79</span>
+<span class="line-number">80</span>
+<span class="line-number">81</span>
+<span class="line-number">82</span>
+<span class="line-number">83</span>
+<span class="line-number">84</span>
+<span class="line-number">85</span>
+<span class="line-number">86</span>
+<span class="line-number">87</span>
+<span class="line-number">88</span>
+<span class="line-number">89</span>
+<span class="line-number">90</span>
+<span class="line-number">91</span>
+<span class="line-number">92</span>
+<span class="line-number">93</span>
+<span class="line-number">94</span>
+<span class="line-number">95</span>
+<span class="line-number">96</span>
+<span class="line-number">97</span>
+<span class="line-number">98</span>
+<span class="line-number">99</span>
+<span class="line-number">100</span>
+<span class="line-number">101</span>
+<span class="line-number">102</span>
+<span class="line-number">103</span>
+<span class="line-number">104</span>
+<span class="line-number">105</span>
+<span class="line-number">106</span>
+<span class="line-number">107</span>
+<span class="line-number">108</span>
+<span class="line-number">109</span>
+<span class="line-number">110</span>
+<span class="line-number">111</span>
+<span class="line-number">112</span>
+<span class="line-number">113</span>
+<span class="line-number">114</span>
+<span class="line-number">115</span>
+<span class="line-number">116</span>
+<span class="line-number">117</span>
+<span class="line-number">118</span>
+<span class="line-number">119</span>
+<span class="line-number">120</span>
+<span class="line-number">121</span>
+<span class="line-number">122</span>
+<span class="line-number">123</span>
+<span class="line-number">124</span>
+<span class="line-number">125</span>
+<span class="line-number">126</span>
+<span class="line-number">127</span>
+<span class="line-number">128</span>
+<span class="line-number">129</span>
+<span class="line-number">130</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cm">/*</span>
+</span><span class="line"><span class="cm"> * treap.h</span>
+</span><span class="line"><span class="cm">*/</span>
+</span><span class="line"><span class="cp">#ifndef YEDIS_TREAP_H_</span>
+</span><span class="line"><span class="cp">#define YEDIS_TREAP_H_</span>
+</span><span class="line"><span class="cp">#include &lt;stdlib.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;time.h&gt;</span>
+</span><span class="line"><span class="cp">#define YEDIS_INT32_MAX 2147483647</span>
+</span><span class="line"><span class="cp">#define nullptr 0</span>
+</span><span class="line">
+</span><span class="line"><span class="k">struct</span> <span class="n">YedisTreapNode</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">key</span><span class="p">;</span><span class="c1">//binary search tree</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">value</span><span class="p">;</span>
+</span><span class="line">  <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">left</span><span class="p">;</span>
+</span><span class="line">  <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">right</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">priority</span><span class="p">;</span><span class="c1">//max heap</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line">
+</span><span class="line"><span class="k">class</span> <span class="nc">YedisTreap</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">init</span><span class="p">();</span>
+</span><span class="line">  <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="nf">find</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">key</span><span class="p">);</span>
+</span><span class="line">  <span class="kt">int</span> <span class="nf">insert</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">key</span><span class="p">,</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">value</span><span class="p">);</span>
+</span><span class="line"><span class="k">private</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">insert_</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">key</span><span class="p">,</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">value</span><span class="p">,</span><span class="n">YedisTreapNode</span> <span class="o">*&amp;</span><span class="n">treap</span><span class="p">);</span>
+</span><span class="line">  <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="nf">left_rotation_</span><span class="p">(</span><span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">k1</span><span class="p">,</span> <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">k2</span><span class="p">);</span>
+</span><span class="line">  <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="nf">right_rotation_</span><span class="p">(</span><span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">k1</span><span class="p">,</span> <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">k2</span><span class="p">);</span>
+</span><span class="line"><span class="k">private</span><span class="o">:</span>
+</span><span class="line">  <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">root_</span><span class="p">;</span>
+</span><span class="line">  <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">sentinel_</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line">
+</span><span class="line"><span class="cp">#define INSERT(subtree1, substree2) \</span>
+</span><span class="line"><span class="cp">   insert_(key, value, treap-&gt;subtree1); \</span>
+</span><span class="line"><span class="cp">   if (treap-&gt;subtree1-&gt;priority &gt; treap-&gt;priority) { \</span>
+</span><span class="line"><span class="cp">     treap = substree2##_rotation_(treap, treap-&gt;subtree1); \</span>
+</span><span class="line"><span class="cp">   }</span>
+</span><span class="line">
+</span><span class="line"> <span class="kt">int</span> <span class="n">YedisTreap</span><span class="o">::</span><span class="n">init</span><span class="p">()</span>
+</span><span class="line"> <span class="p">{</span>
+</span><span class="line">   <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">   <span class="n">sentinel_</span> <span class="o">=</span> <span class="n">root_</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class="line">   <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class="line">   <span class="k">if</span> <span class="p">(</span><span class="mi">0</span> <span class="o">==</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">YedisTreapNode</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">YedisTreapNode</span><span class="p">)))))</span> <span class="p">{</span>
+</span><span class="line">     <span class="n">ret</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span><span class="line">   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">     <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">key</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">     <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">     <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">left</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">right</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class="line">     <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">priority</span> <span class="o">=</span> <span class="n">YEDIS_INT32_MAX</span><span class="p">;</span>
+</span><span class="line">     <span class="n">sentinel_</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">;</span>
+</span><span class="line">   <span class="p">}</span>
+</span><span class="line">   <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"> <span class="p">}</span>
+</span><span class="line"> <span class="kt">int</span> <span class="n">YedisTreap</span><span class="o">::</span><span class="n">insert</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">key</span><span class="p">,</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">value</span><span class="p">)</span>
+</span><span class="line"> <span class="p">{</span>
+</span><span class="line">   <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">   <span class="k">if</span> <span class="p">(</span><span class="k">nullptr</span> <span class="o">==</span> <span class="n">sentinel_</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">     <span class="n">ret</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="p">;</span>
+</span><span class="line">   <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">nullptr</span> <span class="o">==</span> <span class="n">root_</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">     <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">YedisTreapNode</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">YedisTreapNode</span><span class="p">)));</span>
+</span><span class="line">     <span class="k">if</span> <span class="p">(</span><span class="k">nullptr</span> <span class="o">==</span> <span class="n">tmp</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">       <span class="n">ret</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span><span class="line">     <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">       <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="p">;</span>
+</span><span class="line">       <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="p">;</span>
+</span><span class="line">       <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">left</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">right</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class="line">       <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">priority</span> <span class="o">=</span> <span class="n">key</span><span class="p">;</span>
+</span><span class="line">       <span class="n">sentinel_</span><span class="o">-&gt;</span><span class="n">left</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">;</span>
+</span><span class="line">       <span class="n">root_</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">;</span>
+</span><span class="line">     <span class="p">}</span>
+</span><span class="line">   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">     <span class="n">ret</span> <span class="o">=</span> <span class="n">insert_</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">root_</span><span class="p">);</span>
+</span><span class="line">   <span class="p">}</span>
+</span><span class="line">   <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+</span><span class="line"> <span class="p">}</span>
+</span><span class="line"> <span class="kt">int</span> <span class="n">YedisTreap</span><span class="o">::</span><span class="n">insert_</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">key</span><span class="p">,</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">value</span><span class="p">,</span> <span class="n">YedisTreapNode</span> <span class="o">*&amp;</span><span class="n">treap</span><span class="p">)</span>
+</span><span class="line"> <span class="p">{</span>
+</span><span class="line">   <span class="kt">int</span> <span class="n">ret</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">   <span class="k">if</span> <span class="p">(</span><span class="k">nullptr</span> <span class="o">==</span> <span class="n">treap</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">     <span class="k">if</span> <span class="p">(</span><span class="k">nullptr</span> <span class="o">==</span> <span class="p">(</span><span class="n">treap</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="n">YedisTreapNode</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">YedisTreapNode</span><span class="p">)))))</span> <span class="p">{</span>
+</span><span class="line">       <span class="n">ret</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+</span><span class="line">     <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">       <span class="n">treap</span><span class="o">-&gt;</span><span class="n">key</span> <span class="o">=</span> <span class="n">key</span><span class="p">;</span>
+</span><span class="line">       <span class="n">treap</span><span class="o">-&gt;</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="p">;</span>
+</span><span class="line">       <span class="n">treap</span><span class="o">-&gt;</span><span class="n">left</span> <span class="o">=</span> <span class="n">treap</span><span class="o">-&gt;</span><span class="n">right</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span><span class="line">       <span class="n">srand</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">time</span><span class="p">(</span><span class="nb">NULL</span><span class="p">));</span>
+</span><span class="line">       <span class="n">treap</span><span class="o">-&gt;</span><span class="n">priority</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">rand</span><span class="p">();</span>
+</span><span class="line">     <span class="p">}</span>
+</span><span class="line">   <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="n">treap</span><span class="o">-&gt;</span><span class="n">key</span> <span class="o">&gt;</span> <span class="n">key</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">     <span class="n">INSERT</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">);</span>
+</span><span class="line">   <span class="p">}</span> <span class="k">else</span> <span class="k">if</span><span class="p">(</span><span class="n">treap</span><span class="o">-&gt;</span><span class="n">key</span> <span class="o">&lt;</span> <span class="n">key</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">     <span class="n">INSERT</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left</span><span class="p">);</span>
+</span><span class="line">   <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">treap</span><span class="o">-&gt;</span><span class="n">priority</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">     <span class="n">INSERT</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">left</span><span class="p">);</span><span class="c1">//duplicate elements</span>
+</span><span class="line">   <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">     <span class="n">INSERT</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">);</span><span class="c1">//duplicate elements</span>
+</span><span class="line">   <span class="p">}</span>
+</span><span class="line">   <span class="k">return</span> <span class="n">ret</span><span class="p">;</span>
+</span><span class="line"> <span class="p">}</span>
+</span><span class="line"> <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">YedisTreap</span><span class="o">::</span><span class="n">left_rotation_</span><span class="p">(</span><span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">k1</span><span class="p">,</span> <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">k2</span><span class="p">)</span>
+</span><span class="line"> <span class="p">{</span>
+</span><span class="line">   <span class="n">k1</span><span class="o">-&gt;</span><span class="n">right</span> <span class="o">=</span> <span class="n">k2</span><span class="o">-&gt;</span><span class="n">left</span><span class="p">;</span>
+</span><span class="line">   <span class="n">k2</span><span class="o">-&gt;</span><span class="n">left</span> <span class="o">=</span> <span class="n">k1</span><span class="p">;</span>
+</span><span class="line">   <span class="k">return</span> <span class="n">k2</span><span class="p">;</span>
+</span><span class="line"> <span class="p">}</span>
+</span><span class="line"> <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">YedisTreap</span><span class="o">::</span><span class="n">right_rotation_</span><span class="p">(</span><span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">k1</span><span class="p">,</span> <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">k2</span><span class="p">)</span>
+</span><span class="line"> <span class="p">{</span>
+</span><span class="line">   <span class="n">k1</span><span class="o">-&gt;</span><span class="n">left</span> <span class="o">=</span> <span class="n">k2</span><span class="o">-&gt;</span><span class="n">right</span><span class="p">;</span>
+</span><span class="line">   <span class="n">k2</span><span class="o">-&gt;</span><span class="n">right</span> <span class="o">=</span> <span class="n">k1</span><span class="p">;</span>
+</span><span class="line">   <span class="k">return</span> <span class="n">k2</span><span class="p">;</span>
+</span><span class="line"> <span class="p">}</span>
+</span><span class="line"> <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">YedisTreap</span><span class="o">::</span><span class="n">find</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">key</span><span class="p">)</span>
+</span><span class="line"> <span class="p">{</span>
+</span><span class="line">   <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="n">root_</span><span class="p">;</span>
+</span><span class="line">   <span class="k">while</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">     <span class="k">if</span> <span class="p">(</span><span class="n">tmp</span><span class="o">-&gt;</span><span class="n">key</span> <span class="o">&gt;</span> <span class="n">key</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">       <span class="n">tmp</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">left</span><span class="p">;</span>
+</span><span class="line">     <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">tmp</span><span class="o">-&gt;</span><span class="n">key</span> <span class="o">&lt;</span> <span class="n">key</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">       <span class="n">tmp</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">right</span><span class="p">;</span>
+</span><span class="line">     <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">       <span class="k">break</span><span class="p">;</span>
+</span><span class="line">     <span class="p">}</span>
+</span><span class="line">   <span class="p">}</span>
+</span><span class="line">   <span class="k">return</span> <span class="n">tmp</span><span class="p">;</span>
+</span><span class="line"> <span class="p">}</span>
+</span><span class="line">
+</span><span class="line"><span class="cp">#endif </span><span class="cm">/* YEDIS_TREAP_H_ */</span><span class="cp"></span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>说明：</p>
+
+<p>1，93-95行处理重复key的情形，为了不让某个子树过分倾斜，我们选择根据priority的奇偶性来决定把重复key插入到哪个子树。</p>
+
+<p>2，通过设置一个具有最大优先级的sentinel节点，来简化处理和判断。</p>
+
+<p>3，显然，递归地实现Treap比较方便和容易。</p>
+
+<h3 id="section-1">测试程序</h3>
+
+<p>本次PK的对象Skip List的代码，来自我的朋友<a href="http://weibo.com/fullofbull">我的上铺叫路遥</a>之前写的一个<a href="https://github.com/begeekmyfriend/skiplist/blob/master/skiplist.h">实现</a></p>
+
+<p>测试程序则是在他之前写的<a href="https://github.com/begeekmyfriend/skiplist/blob/master/skiplist_test.c">文件</a>的基础上稍作修改。(主要是修改为更准确的计时方式)。</p>
+
+<p>测试数据则是随机打乱的10,000,000个元素。</p>
+
+<p>对于Treap的测试程序如下：</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+<span class="line-number">29</span>
+<span class="line-number">30</span>
+<span class="line-number">31</span>
+<span class="line-number">32</span>
+<span class="line-number">33</span>
+<span class="line-number">34</span>
+<span class="line-number">35</span>
+<span class="line-number">36</span>
+<span class="line-number">37</span>
+<span class="line-number">38</span>
+<span class="line-number">39</span>
+<span class="line-number">40</span>
+<span class="line-number">41</span>
+<span class="line-number">42</span>
+<span class="line-number">43</span>
+<span class="line-number">44</span>
+<span class="line-number">45</span>
+<span class="line-number">46</span>
+<span class="line-number">47</span>
+<span class="line-number">48</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cm">/*</span>
+</span><span class="line"><span class="cm"> * test_treap.cpp</span>
+</span><span class="line"><span class="cm">*/</span>
+</span><span class="line"><span class="cp">#include &quot;treap.h&quot;</span>
+</span><span class="line"><span class="cp">#include &lt;stdlib.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;time.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;iostream&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;vector&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;algorithm&gt;</span>
+</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class="line"><span class="cp">#define N 10000000</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="o">*</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">)</span> <span class="n">malloc</span><span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+</span><span class="line">  <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">tmp</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;generating data for test...&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">tmp</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="c1">//通过random_shuffle打乱数据</span>
+</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="n">random_shuffle</span><span class="p">(</span><span class="n">tmp</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="n">tmp</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;generating data for test successfully...&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">YedisTreap</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="n">YedisTreap</span><span class="p">();</span>
+</span><span class="line">  <span class="n">p</span><span class="o">-&gt;</span><span class="n">init</span><span class="p">();</span>
+</span><span class="line">  <span class="n">timespec</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;starting to insert data to treap&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t1</span><span class="p">);</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">p</span><span class="o">-&gt;</span><span class="n">insert</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t2</span><span class="p">);</span>
+</span><span class="line">  <span class="kt">long</span> <span class="kt">long</span> <span class="n">cost1</span> <span class="o">=</span> <span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">-</span> <span class="n">t1</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000000000</span> <span class="o">+</span> <span class="n">t2</span><span class="p">.</span><span class="n">tv_nsec</span> <span class="o">-</span> <span class="n">t1</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Insertion takes &quot;</span><span class="o">&lt;&lt;</span><span class="n">cost1</span><span class="o">&lt;&lt;</span><span class="s">&quot;ns&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;starting to search data in treap&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t1</span><span class="p">);</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">YedisTreapNode</span> <span class="o">*</span><span class="n">node</span> <span class="o">=</span> <span class="n">p</span><span class="o">-&gt;</span><span class="n">find</span><span class="p">(</span><span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">node</span><span class="p">)</span> <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;so bad&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t2</span><span class="p">);</span>
+</span><span class="line">  <span class="kt">long</span> <span class="kt">long</span> <span class="n">cost2</span> <span class="o">=</span> <span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">-</span> <span class="n">t1</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000000000</span> <span class="o">+</span> <span class="n">t2</span><span class="p">.</span><span class="n">tv_nsec</span> <span class="o">-</span> <span class="n">t1</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Searching takes &quot;</span><span class="o">&lt;&lt;</span><span class="n">cost2</span><span class="o">&lt;&lt;</span><span class="s">&quot;ns&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>Skip List的测试程序如下：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+<span class="line-number">29</span>
+<span class="line-number">30</span>
+<span class="line-number">31</span>
+<span class="line-number">32</span>
+<span class="line-number">33</span>
+<span class="line-number">34</span>
+<span class="line-number">35</span>
+<span class="line-number">36</span>
+<span class="line-number">37</span>
+<span class="line-number">38</span>
+<span class="line-number">39</span>
+<span class="line-number">40</span>
+<span class="line-number">41</span>
+<span class="line-number">42</span>
+<span class="line-number">43</span>
+<span class="line-number">44</span>
+<span class="line-number">45</span>
+<span class="line-number">46</span>
+<span class="line-number">47</span>
+<span class="line-number">48</span>
+<span class="line-number">49</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cm">/*</span>
+</span><span class="line"><span class="cm"> * test_skiplist.cpp</span>
+</span><span class="line"><span class="cm">*/</span>
+</span><span class="line"><span class="cp">#include&lt;stdio.h&gt;</span>
+</span><span class="line"><span class="cp">#include&lt;stdlib.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;stdlib.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;time.h&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;iostream&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;vector&gt;</span>
+</span><span class="line"><span class="cp">#include &lt;algorithm&gt;</span>
+</span><span class="line"><span class="cp">#include &quot;skiplist.h&quot;</span>
+</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class="line"><span class="cp">#define N 10000000</span>
+</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="o">*</span><span class="n">key</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="o">*</span><span class="p">)</span> <span class="n">malloc</span><span class="p">(</span><span class="n">N</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+</span><span class="line">  <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">tmp</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;generating data for test...&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">tmp</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="n">random_shuffle</span><span class="p">(</span><span class="n">tmp</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="n">tmp</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;generating data for test successfully...&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="k">struct</span> <span class="n">skiplist</span> <span class="o">*</span><span class="n">list</span> <span class="o">=</span> <span class="n">skiplist_new</span><span class="p">();</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;starting to insert data to skip list&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">timespec</span> <span class="n">t1</span><span class="p">,</span><span class="n">t2</span><span class="p">;</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t1</span><span class="p">);</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">skiplist_insert</span><span class="p">(</span><span class="n">list</span><span class="p">,</span> <span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t2</span><span class="p">);</span>
+</span><span class="line">  <span class="kt">long</span> <span class="kt">long</span> <span class="n">cost1</span> <span class="o">=</span> <span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">-</span> <span class="n">t1</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000000000</span> <span class="o">+</span> <span class="n">t2</span><span class="p">.</span><span class="n">tv_nsec</span> <span class="o">-</span> <span class="n">t1</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Insertion takes &quot;</span><span class="o">&lt;&lt;</span><span class="n">cost1</span><span class="o">&lt;&lt;</span><span class="s">&quot;ns&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;starting to search data in skip list&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t1</span><span class="p">);</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="k">struct</span> <span class="n">skipnode</span> <span class="o">*</span><span class="n">node</span> <span class="o">=</span> <span class="n">skiplist_search</span><span class="p">(</span><span class="n">list</span><span class="p">,</span> <span class="n">key</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">node</span><span class="p">)</span> <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;so bad&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="n">clock_gettime</span><span class="p">(</span><span class="n">CLOCK_MONOTONIC</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">t2</span><span class="p">);</span>
+</span><span class="line">  <span class="kt">long</span> <span class="kt">long</span> <span class="n">cost2</span> <span class="o">=</span> <span class="p">(</span><span class="n">t2</span><span class="p">.</span><span class="n">tv_sec</span> <span class="o">-</span> <span class="n">t1</span><span class="p">.</span><span class="n">tv_sec</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000000000</span> <span class="o">+</span> <span class="n">t2</span><span class="p">.</span><span class="n">tv_nsec</span> <span class="o">-</span> <span class="n">t1</span><span class="p">.</span><span class="n">tv_nsec</span><span class="p">;</span>
+</span><span class="line">  <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;Searching takes &quot;</span><span class="o">&lt;&lt;</span><span class="n">cost2</span><span class="o">&lt;&lt;</span><span class="s">&quot;ns&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">  <span class="n">skiplist_delete</span><span class="p">(</span><span class="n">list</span><span class="p">);</span>
+</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>编译链接这两个测试程序时，请记得加<code>-lrt</code>选项。</p>
+
+<h3 id="section-2">测试结果</h3>
+
+<p>测试环境是Ubuntu 14.04 64位系统 + 16GB内存 + gcc4.8</p>
+
+<p>未开启优化：</p>
+
+<p>SkipList：插入，27783017437ns = 27s，查找，30369272721ns = 30s</p>
+
+<p>Treap：插入，36651505605ns = 36s，查找，15831823811ns = 15s</p>
+
+<p>开启O3优化后：</p>
+
+<p>SkipList：插入，25877643715ns = 25s，查找，28741237934ns = 28s</p>
+
+<p>Treap：插入，35317025584ns = 35s，查找，14883111063ns = 14s</p>
+
+<p>可以看出在查找上，Treap的性能确实是可圈可点的。</p>
+
+<h2 id="further-thinking">Further Thinking</h2>
+
+<p>1，为什么Treap的查找会这么高效？</p>
+
+<p>针对本次测试数据，对find函数进行统计分析，发现查找的平均深度是29，而lg(10000000） = 23.2。也就是说本次测试时平均深度是$1.26lgn$。BTW，根据分析，AVL树的最大深度不会超过$1.44lgn$，对于Red-Black Tree，这个值大概在$2lg(n+1)$。</p>
+
+<p>2，如何优化Treap的插入性能？</p>
+
+<p>可能可以实施的点包括优化随机数生成程序、将递归改为非递归实现、优化分支预测等。具体怎么做？无从下手？建议您阅读我的<a href="http://www.yebangyu.org/blog/2016/04/22/optimization/">这篇</a>博客。</p>
+
+<h2 id="section-3">参考文献</h2>
+
+<p>1，Mark Allen Weiss的《Data Structures &amp; Algorithm Analysis in C++》中介绍了Treap，这也是我第一次接触和知道Treap的地方。</p>
+
+<p>2，《Introduction to Algorithms》中在某个章节里，以习题的形式介绍了Treap。</p>
+
+<p>3，之前陈利人童鞋在微博上推荐了某大学的某学生写的Treap资料，他们都说好。我没看，也没兴趣。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[论汉武帝独尊儒术]]></title>
@@ -3037,113 +3589,6 @@ sys     0m0.000s
 <h2 id="section-4">致谢</h2>
 
 <p>本文发出后，微博网友@Debin_IIE指出了一个笔误。非常感谢。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[程序员时钟解读]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/12/26/aprogrammersclock/"/>
-    <updated>2015-12-26T10:59:04+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/12/26/aprogrammersclock</id>
-    <content type="html"><![CDATA[<p>最近购买圣诞礼物，抱着万能的淘宝的想法，在上面搜了一下“数学钟”，也就是非常流行的下面这幅图：</p>
-
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/mathclock.jpg" alt="matchclock" /></p>
-
-<p>以前，只知道其中十一个点钟的分析；对于3点钟，一直没有思路。于是发了一条朋友圈，求助大神解释其中的3点钟。在刘梓溪、贾顾森、黎鸣等大神的指导下，明白了其中是怎么回事。所以这里介绍下这十二个点，应该如何解释。个人观点，仅供参考。</p>
-
-<h2 id="section">12点</h2>
-
-<p>不用说了，1728的立方根。</p>
-
-<h2 id="section-1">1点</h2>
-
-<p>可能很多人不大知道，这是勒让德常数：</p>
-
-<!--more-->
-
-<p>$\lim_{x \rightarrow +\infty} {ln(x) - \frac{x}{\pi(x)}}$</p>
-
-<p>其中的$\pi(x)$表示不大于x的素数的个数，可以用$\frac{x}{lnx}$近似。</p>
-
-<p>这个值经过勒让德、高斯等一批数学大佬的努力，最后被数学家Charles Jean证明为1。</p>
-
-<h2 id="section-2">2点</h2>
-
-<p>无穷递缩等比级数的求和，首项为1，公比为$\frac{1}{2}$ ，所以它的和为</p>
-
-<p>S = $\frac{a_1}{1-q}$ = 2</p>
-
-<h2 id="section-3">3点</h2>
-
-<p>在刘梓溪、贾顾森、黎鸣等大神的帮助下，终于知道了。</p>
-
-<p>广泛用于XML、HTML中。&amp;#后面接十进制字符，&amp;#x后面接十六进制字符。相当于转义序列吧。</p>
-
-<p>其中十六进制33，等于十进制51，即’3’。</p>
-
-<h2 id="section-4">4点</h2>
-
-<p>同余问题（Modular Multiplicative Inverse）</p>
-
-<p>令</p>
-
-<p>$x\equiv2^{-1} mod 7$</p>
-
-<p>$2x\equiv1 mod 7$</p>
-
-<p>$x =  4$</p>
-
-<h2 id="section-5">5点</h2>
-
-<p>$\phi$表示黄金分割比，$\phi = \frac{\sqrt{5} - 1}{2} $</p>
-
-<p>黄金分割比在斐波那契数列的通项公式中出现。</p>
-
-<p>不过这个地方，我没搞懂，不知道这是不是这幅图作者的笔误？个人认为应该是 $(2\phi+1)^2$ 而不是 $(2\phi-1)^2$</p>
-
-<h2 id="section-6">6点</h2>
-
-<p>不用说了，阶乘。</p>
-
-<h2 id="section-7">7点</h2>
-
-<p>表示6.999999999…其中9的头上一横，表示循环节是9。</p>
-
-<p>那么，6.9999….为什么等于7呢？恩，还是无穷递缩等比级数的视角来考虑，就老少皆宜了。</p>
-
-<p>6.9999…= 6 + 0.9 + 0.09 + 0.009 + 0.0009 + …</p>
-
-<p>后面的那个，</p>
-
-<p>0.9 + 0.09 + 0.009 + 0.0009 + …</p>
-
-<p>首项为0.9，公比为0.1，收敛于1。</p>
-
-<p>因此6.9999… = 7</p>
-
-<h2 id="section-8">8点</h2>
-
-<p>代表1000（二进制），因为只有第一个是亮的，其他是暗的。（亮为1，暗为0，bitmap的感觉。可能是盲文），因此为8。</p>
-
-<h2 id="section-9">9点</h2>
-
-<p>四进制。21（四进制） = 2 * 4 + 1 = 9。</p>
-
-<h2 id="section-10">10点</h2>
-
-<p>组合数，5! /(2! * 3!) = 10</p>
-
-<h2 id="section-11">11点</h2>
-
-<p>十六进制，A是10，B是11，C是12。注意，注意，这里是0x0B，不是0x08。哈哈。</p>
-
-<p>点评：知识点有点重复，比如进制就有好几个。给个好评吧，但不是五星的。</p>
-
-<h2 id="section-12">致谢</h2>
-
-<p>感谢朋友刘梓溪、贾顾森、黎鸣告诉我如何解读其中的3点钟。</p>
-
-<p>本文发出后，阿里花隆同学指出了文中的一个笔误。非常感谢。</p>
 ]]></content>
   </entry>
   

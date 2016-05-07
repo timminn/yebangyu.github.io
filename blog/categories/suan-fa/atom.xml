@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-05T22:09:38+08:00</updated>
+  <updated>2016-05-07T10:30:41+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,334 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Treap：一种高效的高级数据结构]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/05/07/treappkskiplist/"/>
+    <updated>2016-05-07T10:00:12+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/05/07/treappkskiplist</id>
+    <content type="html"><![CDATA[<h2 id="section">写在最前</h2>
+
+<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+
+<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+
+<h2 id="treap">Treap</h2>
+
+<p>Yedis也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。这两种都是概率性的高级数据结构，具体性能依赖于随机数的选择。</p>
+
+<p>那么，什么是Treap呢？</p>
+
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/TreapAlphaKey.svg/440px-TreapAlphaKey.svg.png" alt="Treap" /></p>
+
+<p>(图片来源于WikiMedia)</p>
+
+<p>简单说来，Treap是这样的树：Treap中的每个节点至少包含key和优先级两个字段，其中key满足搜索树性质，优先级满足堆序性。如上图所示，数字是优先级字段，字母是key字段。其中优先级构成了一个大根堆。</p>
+
+<p>也就是说，在Treap中，key组成了一个二叉搜索树，优先级组成了一个堆。所谓Treap = Tree + Heap。</p>
+
+<!--more-->
+
+<p>插入一个节点时，随机生成一个优先级。这时候可能堆序性被破坏，而这可以通过旋转来恢复。由于只可能有左右单旋转两种情形，因此它的代码编写比AVL树、Red-Black Tree要简单的多，并且可以证明旋转的期望次数小于2。</p>
+
+<p>在Treap上的删除、插入、查找的期望时间复杂度都是O($lgn$)。</p>
+
+<h2 id="treap-pk-skiplist">Treap PK SkipList</h2>
+
+<h3 id="treap-1">Treap实现</h3>
+
+<p>```c++
+/*
+ * treap.h
+*/
+#ifndef YEDIS_TREAP_H_
+#define YEDIS_TREAP_H_
+#include <stdlib.h>
+#include <time.h>
+#define YEDIS_INT32_MAX 2147483647
+#define nullptr 0</time.h></stdlib.h></p>
+
+<p>struct YedisTreapNode
+{
+  int key;//binary search tree
+  int value;
+  YedisTreapNode *left;
+  YedisTreapNode *right;
+  int priority;//max heap
+};</p>
+
+<p>class YedisTreap
+{
+public:
+  int init();
+  YedisTreapNode *find(const int key);
+  int insert(const int key, const int value);
+private:
+  int insert_(const int key, const int value,YedisTreapNode *&amp;treap);
+  YedisTreapNode *left_rotation_(YedisTreapNode *k1, YedisTreapNode *k2);
+  YedisTreapNode *right_rotation_(YedisTreapNode *k1, YedisTreapNode *k2);
+private:
+  YedisTreapNode *root_;
+  YedisTreapNode *sentinel_;
+};</p>
+
+<h1 id="define-insertsubtree1-substree2-">define INSERT(subtree1, substree2) \</h1>
+<p>insert_(key, value, treap-&gt;subtree1); \
+   if (treap-&gt;subtree1-&gt;priority &gt; treap-&gt;priority) { \
+     treap = substree2##<em>rotation</em>(treap, treap-&gt;subtree1); \
+   }</p>
+
+<p>int YedisTreap::init()
+ {
+   int ret = 0;
+   sentinel_ = root_ = nullptr;
+   YedisTreapNode <em>tmp = nullptr;
+   if (0 == (tmp = static_cast&lt;YedisTreapNode</em>&gt;(malloc(sizeof(YedisTreapNode))))) {
+     ret = -1;
+   } else {
+     tmp-&gt;key = 0;
+     tmp-&gt;value = 0;
+     tmp-&gt;left = tmp-&gt;right = nullptr;
+     tmp-&gt;priority = YEDIS_INT32_MAX;
+     sentinel_ = tmp;
+   }
+   return 0;
+ }
+ int YedisTreap::insert(const int key, const int value)
+ {
+   int ret = 0;
+   if (nullptr == sentinel_) {
+     ret = -2;
+   } else if (nullptr == root_) {
+     YedisTreapNode <em>tmp = static_cast&lt;YedisTreapNode</em>&gt;(malloc(sizeof(YedisTreapNode)));
+     if (nullptr == tmp) {
+       ret = -1;
+     } else {
+       tmp-&gt;key = key;
+       tmp-&gt;value = value;
+       tmp-&gt;left = tmp-&gt;right = nullptr;
+       tmp-&gt;priority = key;
+       sentinel_-&gt;left = tmp;
+       root_ = tmp;
+     }
+   } else {
+     ret = insert_(key, value, root_);
+   }
+   return ret;
+ }
+ int YedisTreap::insert_(const int key, const int value, YedisTreapNode <em>&amp;treap)
+ {
+   int ret = 0;
+   if (nullptr == treap) {
+     if (nullptr == (treap = static_cast&lt;YedisTreapNode</em>&gt;(malloc(sizeof(YedisTreapNode))))) {
+       ret = -1;
+     } else {
+       treap-&gt;key = key;
+       treap-&gt;value = value;
+       treap-&gt;left = treap-&gt;right = nullptr;
+       srand((int)time(NULL));
+       treap-&gt;priority = (int)rand();
+     }
+   } else if(treap-&gt;key &gt; key) {
+     INSERT(left, right);
+   } else if(treap-&gt;key &lt; key) {
+     INSERT(right, left);
+   } else if (treap-&gt;priority &amp; 1) {
+     INSERT(right, left);//duplicate elements
+   } else {
+     INSERT(left, right);//duplicate elements
+   }
+   return ret;
+ }
+ YedisTreapNode *YedisTreap::left_rotation_(YedisTreapNode *k1, YedisTreapNode *k2)
+ {
+   k1-&gt;right = k2-&gt;left;
+   k2-&gt;left = k1;
+   return k2;
+ }
+ YedisTreapNode *YedisTreap::right_rotation_(YedisTreapNode *k1, YedisTreapNode *k2)
+ {
+   k1-&gt;left = k2-&gt;right;
+   k2-&gt;right = k1;
+   return k2;
+ }
+ YedisTreapNode *YedisTreap::find(const int key)
+ {
+   YedisTreapNode *tmp = root_;
+   while(tmp) {
+     if (tmp-&gt;key &gt; key) {
+       tmp = tmp-&gt;left;
+     } else if (tmp-&gt;key &lt; key) {
+       tmp = tmp-&gt;right;
+     } else {
+       break;
+     }
+   }
+   return tmp;
+ }</p>
+
+<h1 id="endif--yedistreaph-">endif /* YEDIS_TREAP_H_ */</h1>
+<p>```
+说明：</p>
+
+<p>1，93-95行处理重复key的情形，为了不让某个子树过分倾斜，我们选择根据priority的奇偶性来决定把重复key插入到哪个子树。</p>
+
+<p>2，通过设置一个具有最大优先级的sentinel节点，来简化处理和判断。</p>
+
+<p>3，显然，递归地实现Treap比较方便和容易。</p>
+
+<h3 id="section-1">测试程序</h3>
+
+<p>本次PK的对象Skip List的代码，来自我的朋友<a href="http://weibo.com/fullofbull">我的上铺叫路遥</a>之前写的一个<a href="https://github.com/begeekmyfriend/skiplist/blob/master/skiplist.h">实现</a></p>
+
+<p>测试程序则是在他之前写的<a href="https://github.com/begeekmyfriend/skiplist/blob/master/skiplist_test.c">文件</a>的基础上稍作修改。(主要是修改为更准确的计时方式)。</p>
+
+<p>测试数据则是随机打乱的10,000,000个元素。</p>
+
+<p>对于Treap的测试程序如下：
+<code>
+/*
+ * test_treap.cpp
+*/
+#include "treap.h"
+#include &lt;stdlib.h&gt;
+#include &lt;time.h&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+using namespace std;
+#define N 10000000
+int main()
+{
+  int i;
+  int *key = (int*) malloc(N * sizeof(int));
+  vector&lt;int&gt; tmp;
+  cout&lt;&lt;"generating data for test..."&lt;&lt;endl;
+  for (i = 0; i &lt; N; i++) {
+    tmp.push_back(i);
+  }
+  //通过random_shuffle打乱数据
+  std::random_shuffle(tmp.begin(),tmp.end());
+  for (i = 0; i &lt; N; i++) {
+    key[i] = tmp[i];
+  }
+  cout&lt;&lt;"generating data for test successfully..."&lt;&lt;endl;
+  YedisTreap *p = new YedisTreap();
+  p-&gt;init();
+  timespec t1,t2;
+  cout&lt;&lt;"starting to insert data to treap"&lt;&lt;endl;
+  clock_gettime(CLOCK_MONOTONIC, &amp;t1);
+  for (i = 0; i &lt; N; i++) {
+    p-&gt;insert(key[i], key[i]);
+  }
+  clock_gettime(CLOCK_MONOTONIC, &amp;t2);
+  long long cost1 = (t2.tv_sec - t1.tv_sec) * 1000000000 + t2.tv_nsec - t1.tv_nsec;
+  cout&lt;&lt;"Insertion takes "&lt;&lt;cost1&lt;&lt;"ns"&lt;&lt;endl;
+  cout&lt;&lt;"starting to search data in treap"&lt;&lt;endl;
+  clock_gettime(CLOCK_MONOTONIC, &amp;t1);
+  for (i = 0; i &lt; N; i++) {
+    YedisTreapNode *node = p-&gt;find(key[i]);
+    if (!node) cout&lt;&lt;"so bad"&lt;&lt;endl;
+  }
+  clock_gettime(CLOCK_MONOTONIC, &amp;t2);
+  long long cost2 = (t2.tv_sec - t1.tv_sec) * 1000000000 + t2.tv_nsec - t1.tv_nsec;
+  cout&lt;&lt;"Searching takes "&lt;&lt;cost2&lt;&lt;"ns"&lt;&lt;endl;
+  return 0;
+}
+</code>
+Skip List的测试程序如下：</p>
+
+<p><code>c++
+/*
+ * test_skiplist.cpp
+*/
+#include&lt;stdio.h&gt;
+#include&lt;stdlib.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;time.h&gt;
+#include &lt;iostream&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include "skiplist.h"
+using namespace std;
+#define N 10000000
+int main()
+{
+  int i;
+  int *key = (int*) malloc(N * sizeof(int));
+  vector&lt;int&gt; tmp;
+  cout&lt;&lt;"generating data for test..."&lt;&lt;endl;
+  for (i = 0; i &lt; N; i++) {
+    tmp.push_back(i);
+  }
+  std::random_shuffle(tmp.begin(),tmp.end());
+  for (i = 0; i &lt; N; i++) {
+    key[i] = tmp[i];
+  }
+  cout&lt;&lt;"generating data for test successfully..."&lt;&lt;endl;
+  struct skiplist *list = skiplist_new();
+  cout&lt;&lt;"starting to insert data to skip list"&lt;&lt;endl;
+  timespec t1,t2;
+  clock_gettime(CLOCK_MONOTONIC, &amp;t1);
+  for (i = 0; i &lt; N; i++) {
+    skiplist_insert(list, key[i], key[i]);
+  }
+  clock_gettime(CLOCK_MONOTONIC, &amp;t2);
+  long long cost1 = (t2.tv_sec - t1.tv_sec) * 1000000000 + t2.tv_nsec - t1.tv_nsec;
+  cout&lt;&lt;"Insertion takes "&lt;&lt;cost1&lt;&lt;"ns"&lt;&lt;endl;
+  cout&lt;&lt;"starting to search data in skip list"&lt;&lt;endl;
+  clock_gettime(CLOCK_MONOTONIC, &amp;t1);
+  for (i = 0; i &lt; N; i++) {
+    struct skipnode *node = skiplist_search(list, key[i]);
+    if (!node) cout&lt;&lt;"so bad"&lt;&lt;endl;
+  }
+  clock_gettime(CLOCK_MONOTONIC, &amp;t2);
+  long long cost2 = (t2.tv_sec - t1.tv_sec) * 1000000000 + t2.tv_nsec - t1.tv_nsec;
+  cout&lt;&lt;"Searching takes "&lt;&lt;cost2&lt;&lt;"ns"&lt;&lt;endl;
+  skiplist_delete(list);
+  return 0;
+}
+</code>
+编译链接这两个测试程序时，请记得加<code>-lrt</code>选项。</p>
+
+<h3 id="section-2">测试结果</h3>
+
+<p>测试环境是Ubuntu 14.04 64位系统 + 16GB内存 + gcc4.8</p>
+
+<p>未开启优化：</p>
+
+<p>SkipList：插入，27783017437ns = 27s，查找，30369272721ns = 30s</p>
+
+<p>Treap：插入，36651505605ns = 36s，查找，15831823811ns = 15s</p>
+
+<p>开启O3优化后：</p>
+
+<p>SkipList：插入，25877643715ns = 25s，查找，28741237934ns = 28s</p>
+
+<p>Treap：插入，35317025584ns = 35s，查找，14883111063ns = 14s</p>
+
+<p>可以看出在查找上，Treap的性能确实是可圈可点的。</p>
+
+<h2 id="further-thinking">Further Thinking</h2>
+
+<p>1，为什么Treap的查找会这么高效？</p>
+
+<p>针对本次测试数据，对find函数进行统计分析，发现查找的平均深度是29，而lg(10000000） = 23.2。也就是说本次测试时平均深度是$1.26lgn$。BTW，根据分析，AVL树的最大深度不会超过$1.44lgn$，对于Red-Black Tree，这个值大概在$2lg(n+1)$。</p>
+
+<p>2，如何优化Treap的插入性能？</p>
+
+<p>可能可以实施的点包括优化随机数生成程序、将递归改为非递归实现、优化分支预测等。具体怎么做？无从下手？建议您阅读我的<a href="http://www.yebangyu.org/blog/2016/04/22/optimization/">这篇</a>博客。</p>
+
+<h2 id="section-3">参考文献</h2>
+
+<p>1，Mark Allen Weiss的《Data Structures &amp; Algorithm Analysis in C++》中介绍了Treap，这也是我第一次接触和知道Treap的地方。</p>
+
+<p>2，《Introduction to Algorithms》中在某个章节里，以习题的形式介绍了Treap。</p>
+
+<p>3，之前陈利人童鞋在微博上推荐了某大学的某学生写的Treap资料，他们都说好。我没看，也没兴趣。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[深入解析快速排序(Quick Sort)]]></title>
