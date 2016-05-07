@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-07T10:30:41+08:00</updated>
+  <updated>2016-05-07T10:43:43+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -84,7 +84,7 @@ private:
 };</p>
 
 <h1 id="define-insertsubtree1-substree2-">define INSERT(subtree1, substree2) \</h1>
-<p>insert_(key, value, treap-&gt;subtree1); \
+<p>ret = insert_(key, value, treap-&gt;subtree1); \
    if (treap-&gt;subtree1-&gt;priority &gt; treap-&gt;priority) { \
      treap = substree2##<em>rotation</em>(treap, treap-&gt;subtree1); \
    }</p>

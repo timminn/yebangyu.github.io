@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-07T10:30:41+08:00</updated>
+  <updated>2016-05-07T10:43:43+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -213,7 +213,7 @@
 </span><span class="line"><span class="p">};</span>
 </span><span class="line">
 </span><span class="line"><span class="cp">#define INSERT(subtree1, substree2) \</span>
-</span><span class="line"><span class="cp">   insert_(key, value, treap-&gt;subtree1); \</span>
+</span><span class="line"><span class="cp">   ret = insert_(key, value, treap-&gt;subtree1); \</span>
 </span><span class="line"><span class="cp">   if (treap-&gt;subtree1-&gt;priority &gt; treap-&gt;priority) { \</span>
 </span><span class="line"><span class="cp">     treap = substree2##_rotation_(treap, treap-&gt;subtree1); \</span>
 </span><span class="line"><span class="cp">   }</span>
