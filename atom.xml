@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-08T11:25:09+08:00</updated>
+  <updated>2016-05-08T11:57:54+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -214,7 +214,7 @@
 </span><span class="line">
 </span><span class="line"><span class="cp">#define INSERT(subtree1, substree2) \</span>
 </span><span class="line"><span class="cp">   ret = insert_(key, value, treap-&gt;subtree1); \</span>
-</span><span class="line"><span class="cp">   if (treap-&gt;subtree1-&gt;priority &gt; treap-&gt;priority) { \</span>
+</span><span class="line"><span class="cp">   if (!ret &amp;&amp; treap-&gt;subtree1-&gt;priority &gt; treap-&gt;priority) { \</span>
 </span><span class="line"><span class="cp">     treap = substree2##_rotation_(treap, treap-&gt;subtree1); \</span>
 </span><span class="line"><span class="cp">   }</span>
 </span><span class="line">
@@ -311,7 +311,7 @@
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 <p>说明：</p>
 
-<p>1，96-100行处理重复key的情形，为了不让某个子树过分倾斜，我们选择根据priority的奇偶性来决定把重复key插入到哪个子树。</p>
+<p>1，96-100行处理重复key的情形，为了不让某棵子树过分倾斜，我们选择根据priority的奇偶性来决定把重复key插入到哪棵子树。</p>
 
 <p>2，通过设置一个具有最大优先级的sentinel节点，来简化处理和判断。</p>
 
@@ -561,6 +561,8 @@
 <p>2，《Introduction to Algorithms》中在某个章节里，以习题的形式介绍了Treap。</p>
 
 <p>3，之前陈利人童鞋在微博上推荐了某大学的某学生写的Treap资料，他们都说好。我没看，也没兴趣。</p>
+
+<p>4，<a href="http://www.cepis.org/upgrade/files/full-2004-V.pdf">A Disquisition on The Performance Behaviour of Binary Search Tree Data Structures</a> 这篇论文对常见的平衡树进行了全面的实验性分析，强烈推荐。</p>
 
 ]]></content>
   </entry>
