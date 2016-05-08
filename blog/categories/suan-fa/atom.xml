@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-07T10:43:43+08:00</updated>
+  <updated>2016-05-08T11:25:09+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -182,7 +182,7 @@ private:
 <p>```
 说明：</p>
 
-<p>1，93-95行处理重复key的情形，为了不让某个子树过分倾斜，我们选择根据priority的奇偶性来决定把重复key插入到哪个子树。</p>
+<p>1，96-100行处理重复key的情形，为了不让某个子树过分倾斜，我们选择根据priority的奇偶性来决定把重复key插入到哪个子树。</p>
 
 <p>2，通过设置一个具有最大优先级的sentinel节点，来简化处理和判断。</p>
 
