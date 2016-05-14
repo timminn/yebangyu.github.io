@@ -4,7 +4,7 @@
   <title><![CDATA[Category: yedis | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/yedis/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-14T19:21:43+08:00</updated>
+  <updated>2016-05-14T19:27:17+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -56,7 +56,7 @@
 
 <p>2，rank的思路也比较自然：从根开始，如果score小于节点的score，那么继续访问该节点的左子树；如果大于节点的score，说明该节点和该节点左子树的所有节点都小于score，因此score的rank应该加上左子树的大小，然后访问该节点的右子树。</p>
 
-<p>所以，YedisTreapNode中包含了size字段。注意，该字段的值在统计时，包含了该节点本身。</p>
+<p>所以，YedisTreapNode中包含了size字段。注意，在计算某个节点的size字段时，除了左右子树，也把该节点本身考虑在内。</p>
 
 <p>3，显然，递归地实现Treap比较方便和容易。</p>
 
@@ -78,15 +78,15 @@
 
 <p>对于200W个整数有序插入的测试结果：</p>
 
-<p>Redis：insert，362263271ns = 27s，rank，172763924ns = 30s</p>
+<p>Redis：insert，362263271ns = 0.36s，rank，172763924ns = 0.17s</p>
 
-<p>Yedis：insert，300028059ns = 36s，rank，106218516ns = 15s</p>
+<p>Yedis：insert，300028059ns = 0.30s，rank，106218516ns = 0.11s</p>
 
 <p>对于200W个整数随机打乱后插入的测试结果：</p>
 
-<p>Redis：insert，1682160424ns = 25s，rank，1729983233ns = 28s</p>
+<p>Redis：insert，1682160424ns = 1.68s，rank，1729983233ns = 1.73s</p>
 
-<p>Yedis：insert，1484001788ns = 35s，rank，1182535652ns = 14s</p>
+<p>Yedis：insert，1484001788ns = 1.48s，rank，1182535652ns = 1.18s</p>
 
 <p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。</p>
 
