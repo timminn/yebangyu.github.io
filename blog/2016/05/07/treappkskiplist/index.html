@@ -172,12 +172,6 @@ MathJax.Hub.Config({
 
 <p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。</p>
 
-<h2 id="further-thinking">Further Thinking</h2>
-
-<p>为什么Yedis会这么高效？</p>
-
-<p>针对这些平均深度是29，而lg(10000000） = 23.2。也就是说本次测试时平均深度是$1.26lgn$。BTW，根据分析，AVL树的最大深度不会超过$1.44lgn$，对于Red-Black Tree，这个值大概在$2lg(n+1)$。</p>
-
 <h2 id="section-3">参考文献</h2>
 
 <p>1，Mark Allen Weiss的《Data Structures &amp; Algorithm Analysis in C++》中介绍了Treap，这也是我第一次接触和知道Treap的地方。</p>
