@@ -4,7 +4,7 @@
   <title><![CDATA[Category: yedis | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/yedis/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-14T17:50:58+08:00</updated>
+  <updated>2016-05-14T18:55:37+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,102 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Treap：Yedis中的高级数据结构]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/05/07/treappkskiplist/"/>
+    <updated>2016-05-07T10:00:12+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/05/07/treappkskiplist</id>
+    <content type="html"><![CDATA[<h2 id="section">写在最前</h2>
+
+<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+
+<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+
+<h2 id="treap">Treap</h2>
+
+<p>和Redis一样，Yedis也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
+
+<p>那么，什么是Treap呢？</p>
+
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/TreapAlphaKey.svg/440px-TreapAlphaKey.svg.png" alt="Treap" /></p>
+
+<p>(图片来源于WikiMedia)</p>
+
+<p>简单说来，Treap是这样的树：Treap中的每个节点至少包含key和优先级两个字段，其中key满足搜索树性质，优先级满足堆序性。如上图所示，数字是优先级字段，字母是key字段。其中优先级构成了一个大根堆。</p>
+
+<p>也就是说，在Treap中，key组成了一个二叉搜索树，优先级组成了一个堆。所谓Treap = Tree + Heap。</p>
+
+<!--more-->
+
+<p>插入一个节点时，随机生成一个优先级。这时候可能堆序性被破坏，而这可以通过旋转来恢复。由于只可能有左右单旋转两种情形，因此它的代码编写比AVL树、Red-Black Tree要简单的多，并且可以证明旋转的期望次数小于2。</p>
+
+<p>在Treap上的删除、插入、查找的期望时间复杂度都是O($lgn$)。</p>
+
+<h2 id="treap-pk-skiplist">Treap PK SkipList</h2>
+
+<h3 id="treap-1">Treap实现</h3>
+
+<p>Yedis中的treap实现在<code>src/ds/yedis_treap.cpp</code>中，可以从<a href="https://github.com/yebangyu/Yedis/blob/master/src/ds/yedis_treap.cpp">这里</a>下载。</p>
+
+<p>说明：</p>
+
+<p>1，对于score相同的节点，我们通过它们的ele的字典序来决定序。</p>
+
+<p>2，rank的思路也比较自然：从根开始，如果score小于节点的score，那么继续访问该节点的左子树；如果大于节点的score，说明该节点和该节点左子树的所有节点都小于score，因此score的rank应该加上左子树的大小，然后访问该节点的右子树。</p>
+
+<p>所以，YedisTreapNode中包含了size字段。注意，该字段的值在统计时，包含了该节点本身。</p>
+
+<p>3，显然，递归地实现Treap比较方便和容易。</p>
+
+<h3 id="section-1">测试程序</h3>
+
+<p>我们将Yedis和Redis进行比较。其中Redis的代码来自于它的SkipList实现，不改变它性能的基础上，稍作简化和整理。</p>
+
+<p>测试程序可以从这里下载：</p>
+
+<p><a href="https://github.com/yebangyu/Yedis/blob/master/src/test/test_yedis_treap.cpp">Yedis</a></p>
+
+<p><a href="https://github.com/yebangyu/Yedis/blob/master/src/test/test_redis_rank.cpp">Redis</a></p>
+
+<p>编译链接这两个测试程序时，请记得加<code>-lrt</code>选项。</p>
+
+<h3 id="section-2">测试结果</h3>
+
+<p>测试环境是Ubuntu 14.04 64位系统 + 8GB内存 + gcc4.8，开启-O2优化选项。</p>
+
+<p>对于200W个整数有序插入的测试结果：</p>
+
+<p>Redis：insert，362263271ns = 27s，rank，172763924ns = 30s</p>
+
+<p>Yedis：insert，300028059ns = 36s，rank，106218516ns = 15s</p>
+
+<p>对于200W个整数随机打乱后插入的测试结果：</p>
+
+<p>Redis：insert，1682160424ns = 25s，rank，1729983233ns = 28s</p>
+
+<p>Yedis：insert，1484001788ns = 35s，rank，1182535652ns = 14s</p>
+
+<p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。</p>
+
+<h2 id="further-thinking">Further Thinking</h2>
+
+<p>为什么Yedis会这么高效？</p>
+
+<p>针对这些平均深度是29，而lg(10000000） = 23.2。也就是说本次测试时平均深度是$1.26lgn$。BTW，根据分析，AVL树的最大深度不会超过$1.44lgn$，对于Red-Black Tree，这个值大概在$2lg(n+1)$。</p>
+
+<h2 id="section-3">参考文献</h2>
+
+<p>1，Mark Allen Weiss的《Data Structures &amp; Algorithm Analysis in C++》中介绍了Treap，这也是我第一次接触和知道Treap的地方。</p>
+
+<p>2，《Introduction to Algorithms》中在某个章节里，以习题的形式介绍了Treap。</p>
+
+<p>3，之前陈利人童鞋在微博上推荐了某大学的某学生写的Treap资料，他们都说好。我没看，也没兴趣。</p>
+
+<p>4，<a href="http://www.cepis.org/upgrade/files/full-2004-V.pdf">A Disquisition on The Performance Behaviour of Binary Search Tree Data Structures</a> 这篇论文对常见的平衡树进行了全面的实验性分析，强烈推荐。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Yedis源码解析之itoa实现]]></title>
