@@ -4,7 +4,7 @@
   <title><![CDATA[Category: yedis | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/yedis/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-14T18:55:37+08:00</updated>
+  <updated>2016-05-14T19:12:11+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -24,7 +24,7 @@
 
 <p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
 
-<h2 id="treap">Treap</h2>
+<h2 id="what-is-treap">What is Treap</h2>
 
 <p>和Redis一样，Yedis也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
 
@@ -44,9 +44,9 @@
 
 <p>在Treap上的删除、插入、查找的期望时间复杂度都是O($lgn$)。</p>
 
-<h2 id="treap-pk-skiplist">Treap PK SkipList</h2>
+<h2 id="yedis-pk-redis">Yedis PK Redis</h2>
 
-<h3 id="treap-1">Treap实现</h3>
+<h3 id="yedistreap">Yedis中的Treap实现</h3>
 
 <p>Yedis中的treap实现在<code>src/ds/yedis_treap.cpp</code>中，可以从<a href="https://github.com/yebangyu/Yedis/blob/master/src/ds/yedis_treap.cpp">这里</a>下载。</p>
 
