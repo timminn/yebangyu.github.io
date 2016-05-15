@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-15T20:48:46+08:00</updated>
+  <updated>2016-05-15T20:53:33+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,7 +18,7 @@
     <link href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/"/>
     <updated>2016-05-15T20:21:10+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/05/15/stringinyedis</id>
-    <content type="html"><![CDATA[<p>在Yedis中有两种字符串(或者更准确的说，字节流)实现: <code>YedisString</code>和<code>YedisNormalString</code>。代码都在<code>src/ds/yedis_string.h</code>和<code>src/ds/yedis_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
+    <content type="html"><![CDATA[<p>在Yedis中有两种字符串(或者更准确的说，字节流)实现: YedisString和YedisNormalString。代码都在<code>src/ds/yedis_string.h</code>和<code>src/ds/yedis_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
 
 <h2 id="yedisnormalstring">YedisNormalString</h2>
 
@@ -46,7 +46,9 @@
 </span><span class="line">  char *data_;
 </span><span class="line">  char buffer_data_[0];
 </span><span class="line">};</span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>如果字符串长度小于48(48是怎么得来的？Yedis使用jemalloc来分配内存，以64字节为一个块单位来分配内存。64位系统里，<code>len_</code>和<code>data_</code>各占用8个字节，cache line的大小一般为64字节，因此64 - 8 - 8 = 48。再次提醒，这里需要存储<code>\0</code>)，则会使用embedded string，也就是说，此时字符串的内容会和对象分配在一块连续的内存中。由于局部性原理，在读取时，YedisNormalString和字符串内容都会读到cache中，减少了cache miss，大大提高了性能。不管字符串长度如何，不管是否使用柔型数组技术来提高cache 命中，<code>data_</code>都会被设置为执行字符串的首地址。因此，通过<code>data_</code>总可以访问到字符串。</p>
+<p>如果字符串长度小于48(48是怎么得来的？Yedis使用jemalloc来分配内存，以64字节为一个块单位来分配内存。64位系统里，<code>len_</code>和<code>data_</code>各占用8个字节，cache line的大小一般为64字节，因此64 - 8 - 8 = 48。再次提醒，这里需要存储<code>\0</code>)，则会使用embedded string，也就是说，此时字符串的内容会和<code>len_</code>、<code>data_</code>分配在一块连续的内存中。由于局部性原理，在读取时，YedisNormalString和字符串内容都会读到cache中，减少了cache miss，大大提高了性能。</p>
+
+<p>不管字符串长度如何，不管是否使用柔型数组技术来提高cache 命中，<code>data_</code>都会被设置为执行字符串的首地址。因此，通过<code>data_</code>总可以访问到字符串。</p>
 
 <h2 id="yedisstring">YedisString</h2>
 
