@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>2015-12-16 近期好书推荐 - Yebangyu's Blog</title>
+  <title>Yedis源码解析之string实现 - Yebangyu's Blog</title>
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="书籍推荐 Recommender Systems Handbook Distributed Systems An Algorithmic Approach The Go Programming Language">
-  <meta name="keywords" content="书籍推荐 Recommender Systems Handbook Distributed Systems An Algorithmic Approach The Go Programming Language">
+  <meta name="description" content="本文详细分析了Yedis中的字符串设计思想和思路，与Redis相比不分伯仲哦。">
+  <meta name="keywords" content="Yedis Redis String 字符串实现">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://www.yebangyu.org/blog/2015/12/16/readinglist/">
+  <link rel="canonical" href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Yebangyu's Blog" type="application/atom+xml">
@@ -84,7 +84,7 @@ MathJax.Hub.Config({
   
   <header>
     
-      <h1 class="entry-title">2015-12-16 近期好书推荐</h1>
+      <h1 class="entry-title">Yedis源码解析之string实现</h1>
     
     
       <p class="meta">
@@ -93,34 +93,48 @@ MathJax.Hub.Config({
 
 
 
-<time class='entry-date' datetime='2015-12-16T23:05:35+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:05 pm</span></time>
+<time class='entry-date' datetime='2016-05-15T20:21:10+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>8:21 pm</span></time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><p>推荐几本近期阅读的好书。</p>
+<div class="entry-content"><p>在Yedis中有两种字符串(或者更准确的说，字节流)实现: <code>YedisString</code>和<code>YedisNormalString</code>。代码都在<code>src/ds/yedis_string.h</code>和<code>src/ds/yedis_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
 
-<h2 id="recommender-systems-handbook">Recommender Systems Handbook</h2>
+<h2 id="yedisnormalstring">YedisNormalString</h2>
+
+<p>以<code>\0</code>结尾的字符串实现，也就是说YedisNormalString中的字符串都是以 <code>\0</code>结尾的。因此，对其施加任何类似于<code>strcmp</code>等传统C字符串函数都是安全的。</p>
+
+<p>在实现时，针对短字符串，为了进一步优化效率，使用了<a href="http://www.yebangyu.org/blog/2016/03/25/fuckthefever/">柔性数组</a>技术来提高cache命中。</p>
 
 <!--more-->
 
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/recommendersystemhandbook2nd.jpg" alt="rsh" /></p>
+<div class="bogus-wrapper"><notextile><figure class="code"><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+</pre></td><td class="code"><pre><code class=""><span class="line">class YedisNormalString
+</span><span class="line">{
+</span><span class="line">//......
+</span><span class="line">private:
+</span><span class="line">  static const int64_t CHAR_LEN_THRESHOLD = 48;
+</span><span class="line">  int64_t len_;
+</span><span class="line">  char *data_;
+</span><span class="line">  char buffer_data_[0];
+</span><span class="line">};</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>如果字符串长度小于48(48是怎么得来的？Yedis使用jemalloc来分配内存，以64字节为一个块单位来分配内存。64位系统里，<code>len_</code>和<code>data_</code>各占用8个字节，cache line的大小一般为64字节，因此64 - 8 - 8 = 48。再次提醒，这里需要存储<code>\0</code>)，则会使用embedded string，也就是说，此时字符串的内容会和对象分配在一块连续的内存中。由于局部性原理，在读取时，YedisNormalString和字符串内容都会读到cache中，减少了cache miss，大大提高了性能。不管字符串长度如何，不管是否使用柔型数组技术来提高cache 命中，<code>data_</code>都会被设置为执行字符串的首地址。因此，通过<code>data_</code>总可以访问到字符串。</p>
 
-<p>这本书最近出第二版了，和第一版相比新增了不少内容，我最感兴趣的是其中的第11章，<strong>Recommender Systems in Industry: A Netflix Case Study</strong>，<strong>Xavier Amatriain</strong>大牛所写。</p>
+<h2 id="yedisstring">YedisString</h2>
 
-<h2 id="distributed-systems--an-algorithmic-approach">Distributed Systems : An Algorithmic Approach</h2>
+<p>在YedisString中的字符串存储，都不以<code>\0</code>结尾。因此，不能对其施加<code>strlen</code>等传统C字符串函数。</p>
 
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/distributedsystem.jpg" alt="dsaaa" /></p>
-
-<p>这本书去年出的第二版(第一版没看过)，貌似增加了<strong>paxos</strong>等不少内容。这本书强烈推荐，和其他分布式系统书籍相比，它不扯淡，也不是百科全书一样各种列词条全而不深，这本书实实在在的讲了一些内容，非常适合作为分布式系统的入门书。</p>
-
-<h2 id="the-go-programming-language">The Go Programming Language</h2>
-
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/thegoprogramminglanguage.jpg" alt="tgpl" /></p>
-
-<p><strong>Go</strong>语言编程入门书，作者之一<strong>Brian W. Kernighan</strong>，不用多介绍了吧。估计不久就要被列为<strong>Go</strong>语言的圣经了。为嘛学<strong>Go</strong>？个人对其中的并行特性比较感兴趣。</p>
+<p>YedisString中特别考虑了append函数的实现。为了减少内存分配，每次在append时，都会首先判断当前缓冲区是否够用，如果够用直接append；否则，这时候需要重新分配内存。注意，这时候我们会多分配一倍的内存，以防止下次append时不必要的内存分配动作。当然，这可能会造成内存浪费，但是对于优化时间消耗具有重要意义。</p>
 
 </div>
 
@@ -137,12 +151,12 @@ MathJax.Hub.Config({
 
 
 
-<time class='entry-date' datetime='2015-12-16T23:05:35+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>16</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>11:05 pm</span></time>
+<time class='entry-date' datetime='2016-05-15T20:21:10+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>8:21 pm</span></time>
       
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/qi-ta/'>其他</a>
+    <a class='category' href='/blog/categories/yedis/'>yedis</a>
   
 </span>
 
@@ -158,10 +172,8 @@ MathJax.Hub.Config({
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2015/12/14/introduction-to-hazard-pointer/" title="Previous Post: Lock Free中的Hazard Pointer(中)">&laquo; Lock Free中的Hazard Pointer(中)</a>
+        <a class="basic-alignment left" href="/blog/2016/05/07/treappkskiplist/" title="Previous Post: Yedis源码解析之rank实现">&laquo; Yedis源码解析之rank实现</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2015/12/19/cuckoo-hashing/" title="Next Post: Introduction To Cuckoo Hashing">Introduction To Cuckoo Hashing &raquo;</a>
       
     </p>
   </footer>

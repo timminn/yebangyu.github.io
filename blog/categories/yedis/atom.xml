@@ -4,7 +4,7 @@
   <title><![CDATA[Category: yedis | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/yedis/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-14T19:27:17+08:00</updated>
+  <updated>2016-05-15T20:48:46+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -14,7 +14,44 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Treap：Yedis中的高级数据结构]]></title>
+    <title type="html"><![CDATA[Yedis源码解析之string实现]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/"/>
+    <updated>2016-05-15T20:21:10+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/05/15/stringinyedis</id>
+    <content type="html"><![CDATA[<p>在Yedis中有两种字符串(或者更准确的说，字节流)实现: <code>YedisString</code>和<code>YedisNormalString</code>。代码都在<code>src/ds/yedis_string.h</code>和<code>src/ds/yedis_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
+
+<h2 id="yedisnormalstring">YedisNormalString</h2>
+
+<p>以<code>\0</code>结尾的字符串实现，也就是说YedisNormalString中的字符串都是以 <code>\0</code>结尾的。因此，对其施加任何类似于<code>strcmp</code>等传统C字符串函数都是安全的。</p>
+
+<p>在实现时，针对短字符串，为了进一步优化效率，使用了<a href="http://www.yebangyu.org/blog/2016/03/25/fuckthefever/">柔性数组</a>技术来提高cache命中。</p>
+
+<!--more-->
+
+<p><code>
+class YedisNormalString
+{
+//......
+private:
+  static const int64_t CHAR_LEN_THRESHOLD = 48;
+  int64_t len_;
+  char *data_;
+  char buffer_data_[0];
+};
+</code>
+如果字符串长度小于48(48是怎么得来的？Yedis使用jemalloc来分配内存，以64字节为一个块单位来分配内存。64位系统里，<code>len_</code>和<code>data_</code>各占用8个字节，cache line的大小一般为64字节，因此64 - 8 - 8 = 48。再次提醒，这里需要存储<code>\0</code>)，则会使用embedded string，也就是说，此时字符串的内容会和对象分配在一块连续的内存中。由于局部性原理，在读取时，YedisNormalString和字符串内容都会读到cache中，减少了cache miss，大大提高了性能。不管字符串长度如何，不管是否使用柔型数组技术来提高cache 命中，<code>data_</code>都会被设置为执行字符串的首地址。因此，通过<code>data_</code>总可以访问到字符串。</p>
+
+<h2 id="yedisstring">YedisString</h2>
+
+<p>在YedisString中的字符串存储，都不以<code>\0</code>结尾。因此，不能对其施加<code>strlen</code>等传统C字符串函数。</p>
+
+<p>YedisString中特别考虑了append函数的实现。为了减少内存分配，每次在append时，都会首先判断当前缓冲区是否够用，如果够用直接append；否则，这时候需要重新分配内存。注意，这时候我们会多分配一倍的内存，以防止下次append时不必要的内存分配动作。当然，这可能会造成内存浪费，但是对于优化时间消耗具有重要意义。</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Yedis源码解析之rank实现]]></title>
     <link href="http://www.yebangyu.org/blog/2016/05/07/treappkskiplist/"/>
     <updated>2016-05-07T10:00:12+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/05/07/treappkskiplist</id>
@@ -24,11 +61,11 @@
 
 <p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
 
-<h2 id="what-is-treap">What is Treap</h2>
-
 <p>和Redis一样，Yedis也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
 
 <p>那么，什么是Treap呢？</p>
+
+<h2 id="what-is-treap">What is Treap</h2>
 
 <p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/TreapAlphaKey.svg/440px-TreapAlphaKey.svg.png" alt="Treap" /></p>
 
@@ -88,7 +125,7 @@
 
 <p>Yedis：insert，1484001788ns = 1.48s，rank，1182535652ns = 1.18s</p>
 
-<p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。</p>
+<p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。实际上，Yedis还可以做得更快，达到Redis的两倍不是问题。真的？天呐，如何做到？请看下次分析。</p>
 
 <h2 id="section-3">参考文献</h2>
 

@@ -5,7 +5,7 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Treap：Yedis中的高级数据结构 - Yebangyu's Blog</title>
+  <title>Yedis源码解析之rank实现 - Yebangyu's Blog</title>
   <meta name="author" content="Yebangyu">
 
   
@@ -84,7 +84,7 @@ MathJax.Hub.Config({
   
   <header>
     
-      <h1 class="entry-title">Treap：Yedis中的高级数据结构</h1>
+      <h1 class="entry-title">Yedis源码解析之rank实现</h1>
     
     
       <p class="meta">
@@ -106,11 +106,11 @@ MathJax.Hub.Config({
 
 <p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
 
-<h2 id="what-is-treap">What is Treap</h2>
-
 <p>和Redis一样，Yedis也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
 
 <p>那么，什么是Treap呢？</p>
+
+<h2 id="what-is-treap">What is Treap</h2>
 
 <p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/TreapAlphaKey.svg/440px-TreapAlphaKey.svg.png" alt="Treap" /></p>
 
@@ -170,7 +170,7 @@ MathJax.Hub.Config({
 
 <p>Yedis：insert，1484001788ns = 1.48s，rank，1182535652ns = 1.18s</p>
 
-<p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。</p>
+<p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。实际上，Yedis还可以做得更快，达到Redis的两倍不是问题。真的？天呐，如何做到？请看下次分析。</p>
 
 <h2 id="section-3">参考文献</h2>
 
@@ -221,6 +221,8 @@ MathJax.Hub.Config({
         <a class="basic-alignment left" href="/blog/2016/05/01/hanwudi/" title="Previous Post: 论汉武帝独尊儒术">&laquo; 论汉武帝独尊儒术</a>
       
       
+        <a class="basic-alignment right" href="/blog/2016/05/15/stringinyedis/" title="Next Post: Yedis源码解析之string实现">Yedis源码解析之string实现 &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -235,7 +237,11 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2016/05/07/treappkskiplist/">Treap：Yedis中的高级数据结构</a>
+        <a href="/blog/2016/05/15/stringinyedis/">Yedis源码解析之string实现</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/07/treappkskiplist/">Yedis源码解析之rank实现</a>
       </li>
     
       <li class="post">
@@ -248,10 +254,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/04/10/stringliteralincpp/">String Literal In C++</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/04/04/itoa-in-yedis/">Yedis源码解析之itoa实现</a>
       </li>
     
   </ul>
@@ -278,7 +280,7 @@ MathJax.Hub.Config({
  <ul id="categories">
   <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (9)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
-<li class='category'><a href='/blog/categories/yedis/'>yedis (3)</a></li>
+<li class='category'><a href='/blog/categories/yedis/'>yedis (4)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (12)</a></li>

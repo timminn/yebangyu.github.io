@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-14T19:27:17+08:00</updated>
+  <updated>2016-05-15T20:48:46+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -14,7 +14,51 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Treap：Yedis中的高级数据结构]]></title>
+    <title type="html"><![CDATA[Yedis源码解析之string实现]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/"/>
+    <updated>2016-05-15T20:21:10+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/05/15/stringinyedis</id>
+    <content type="html"><![CDATA[<p>在Yedis中有两种字符串(或者更准确的说，字节流)实现: <code>YedisString</code>和<code>YedisNormalString</code>。代码都在<code>src/ds/yedis_string.h</code>和<code>src/ds/yedis_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
+
+<h2 id="yedisnormalstring">YedisNormalString</h2>
+
+<p>以<code>\0</code>结尾的字符串实现，也就是说YedisNormalString中的字符串都是以 <code>\0</code>结尾的。因此，对其施加任何类似于<code>strcmp</code>等传统C字符串函数都是安全的。</p>
+
+<p>在实现时，针对短字符串，为了进一步优化效率，使用了<a href="http://www.yebangyu.org/blog/2016/03/25/fuckthefever/">柔性数组</a>技术来提高cache命中。</p>
+
+<!--more-->
+
+<div class="bogus-wrapper"><notextile><figure class="code"><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+</pre></td><td class="code"><pre><code class=""><span class="line">class YedisNormalString
+</span><span class="line">{
+</span><span class="line">//......
+</span><span class="line">private:
+</span><span class="line">  static const int64_t CHAR_LEN_THRESHOLD = 48;
+</span><span class="line">  int64_t len_;
+</span><span class="line">  char *data_;
+</span><span class="line">  char buffer_data_[0];
+</span><span class="line">};</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>如果字符串长度小于48(48是怎么得来的？Yedis使用jemalloc来分配内存，以64字节为一个块单位来分配内存。64位系统里，<code>len_</code>和<code>data_</code>各占用8个字节，cache line的大小一般为64字节，因此64 - 8 - 8 = 48。再次提醒，这里需要存储<code>\0</code>)，则会使用embedded string，也就是说，此时字符串的内容会和对象分配在一块连续的内存中。由于局部性原理，在读取时，YedisNormalString和字符串内容都会读到cache中，减少了cache miss，大大提高了性能。不管字符串长度如何，不管是否使用柔型数组技术来提高cache 命中，<code>data_</code>都会被设置为执行字符串的首地址。因此，通过<code>data_</code>总可以访问到字符串。</p>
+
+<h2 id="yedisstring">YedisString</h2>
+
+<p>在YedisString中的字符串存储，都不以<code>\0</code>结尾。因此，不能对其施加<code>strlen</code>等传统C字符串函数。</p>
+
+<p>YedisString中特别考虑了append函数的实现。为了减少内存分配，每次在append时，都会首先判断当前缓冲区是否够用，如果够用直接append；否则，这时候需要重新分配内存。注意，这时候我们会多分配一倍的内存，以防止下次append时不必要的内存分配动作。当然，这可能会造成内存浪费，但是对于优化时间消耗具有重要意义。</p>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Yedis源码解析之rank实现]]></title>
     <link href="http://www.yebangyu.org/blog/2016/05/07/treappkskiplist/"/>
     <updated>2016-05-07T10:00:12+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/05/07/treappkskiplist</id>
@@ -24,11 +68,11 @@
 
 <p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
 
-<h2 id="what-is-treap">What is Treap</h2>
-
 <p>和Redis一样，Yedis也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
 
 <p>那么，什么是Treap呢？</p>
+
+<h2 id="what-is-treap">What is Treap</h2>
 
 <p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/TreapAlphaKey.svg/440px-TreapAlphaKey.svg.png" alt="Treap" /></p>
 
@@ -88,7 +132,7 @@
 
 <p>Yedis：insert，1484001788ns = 1.48s，rank，1182535652ns = 1.18s</p>
 
-<p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。</p>
+<p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。实际上，Yedis还可以做得更快，达到Redis的两倍不是问题。真的？天呐，如何做到？请看下次分析。</p>
 
 <h2 id="section-3">参考文献</h2>
 
@@ -2878,255 +2922,6 @@ L2：r2=x
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
 <p>这里说的都是<strong>wall clock</strong>，如果想获得<strong>cpu</strong>执行时间，以及了解<code>clock_gettime</code>参数的解释和可能的取值，可以<strong>man</strong>一下。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[诡异的程序性能问题]]></title>
-    <link href="http://www.yebangyu.org/blog/2015/12/30/falsesharing/"/>
-    <updated>2015-12-30T23:06:12+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2015/12/30/falsesharing</id>
-    <content type="html"><![CDATA[<p>本文所使用的环境是<strong>Ubuntu 14.04 32bit</strong>系统，<strong>Intel I5</strong>处理器，<strong>X86</strong>体系结构</p>
-
-<h2 id="section">提出问题</h2>
-
-<p>如果我说下面的程序存在性能问题，您信吗？</p>
-
-<!--more-->
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-<span class="line-number">15</span>
-<span class="line-number">16</span>
-<span class="line-number">17</span>
-<span class="line-number">18</span>
-<span class="line-number">19</span>
-<span class="line-number">20</span>
-<span class="line-number">21</span>
-<span class="line-number">22</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;thread&gt;</span>
-</span><span class="line"><span class="kt">int32_t</span> <span class="n">global</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">};</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="o">++</span><span class="n">global</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">g</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="o">++</span><span class="n">global</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">thread1</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
-</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">thread2</span><span class="p">(</span><span class="n">g</span><span class="p">);</span>
-</span><span class="line">  <span class="n">thread1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class="line">  <span class="n">thread2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>这个程序，在我的电脑上，运行时间为：</p>
-
-<pre><code>real	0m0.822s
-user	0m1.596s
-sys     0m0.000s
-</code></pre>
-
-<h2 id="section-1">分析问题</h2>
-
-<p>有人说，两个线程分别操作不同的计数器，这么完美的程序，会有性能问题？</p>
-
-<p>答案是：有。</p>
-
-<p>恩，原因在于大名鼎鼎的<strong>false sharing</strong>。如果您看过我以前写的<a href="http://www.yebangyu.org/blog/2015/10/18/hardwareanditshabit/">这篇</a>博客，应该还记得:现在的计算机一般由一个内存、一个<strong>CPU</strong>组成，而包含多个<strong>CPU Cores</strong>和<strong>Cache</strong>。如这幅图所示：</p>
-
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/cpuand%20cache.png" alt="memorycache" /></p>
-
-<p><strong>cacheline</strong>是<strong>cache</strong>块单位，一个<strong>cacheline</strong>大小一般在<strong>32</strong>到<strong>256</strong>字节左右。<strong>cacheline</strong>是这张图中不同模块的数据交互元素。</p>
-
-<p>在上面程序中，<strong>global</strong>是两个<strong>4</strong>字节变量构成的数组，大小为<strong>8</strong>字节，很可能被放到同一个<strong>cacheline</strong>里。当运行在<strong>CPU1 Core</strong>上的线程<strong>thread1</strong>修改了<strong>global[0]</strong>时，会让运行在<strong>CPU2 Core</strong>上对应<strong>global[0]</strong>和<strong>global[1]</strong>的<strong>cacheline</strong>失效，因此运行在<strong>CPU2 Core</strong>上的线程<strong>thread2</strong>修改<strong>global[1]</strong>时会发生<strong>cache miss</strong>，接着它访问内存，修改<strong>global[1]</strong>，这也会让<strong>CPU1 Core</strong>中的<strong>cacheline</strong>失效。很明显，这里面会有大量的<strong>cache miss</strong>和为了缓存一致性而花费的通信开销。</p>
-
-<p>因此这种<strong>false sharing</strong>发生在多核、多线程环境中。单核或者单线程不会有<strong>false sharing</strong>问题。</p>
-
-<p>遗憾的是，程序里存在这样的问题，并不容易通过肉眼发现。</p>
-
-<p>幸运的是，这种问题一旦知道，就比较好解决。</p>
-
-<h2 id="section-2">解决问题</h2>
-
-<p>解决方法一：让这两个计数器间隔足够大，让它们不要在同一个<strong>cacheline</strong>里，不就行了么？</p>
-
-<p>恩，定义一个<strong>global[10000]</strong>，然后线程<strong>1</strong>利用<strong>global[0]</strong>，线程<strong>2</strong>利用<strong>global[9999]</strong>，应该就可以了。</p>
-
-<p>什么？这么愚蠢的方法都想得出来？接着往下看。</p>
-
-<p>解决方法二：假如<strong>global</strong>不是一个数组呢？而是包含多个变量的结构体呢(这种情形也很常见)？上面的方法就不灵了吧？</p>
-
-<p>恩，上面的方法不灵了，而且上面的方法太笨。网上有很多资料告诉您怎么定义变量让其<strong>cacheline aligned</strong>，这也是那些博客千篇一律的做法。还有没有其他方法？有。接着往下看。</p>
-
-<p>解决方法三：重点来了。</p>
-
-<p>我们其实可以在线程里使用局部变量！</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-<span class="line-number">15</span>
-<span class="line-number">16</span>
-<span class="line-number">17</span>
-<span class="line-number">18</span>
-<span class="line-number">19</span>
-<span class="line-number">20</span>
-<span class="line-number">21</span>
-<span class="line-number">22</span>
-<span class="line-number">23</span>
-<span class="line-number">24</span>
-<span class="line-number">25</span>
-<span class="line-number">26</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;thread&gt;</span>
-</span><span class="line"><span class="kt">int32_t</span> <span class="n">global</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="kt">int</span> <span class="n">counter1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="o">++</span><span class="n">counter1</span><span class="p">;</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="n">global</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">counter1</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">g</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="kt">int</span> <span class="n">counter2</span> <span class="o">=</span><span class="mi">0</span><span class="p">;</span>
-</span><span class="line">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="o">++</span><span class="n">counter2</span><span class="p">;</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="n">global</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">counter2</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">thread1</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
-</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">thread2</span><span class="p">(</span><span class="n">g</span><span class="p">);</span>
-</span><span class="line">  <span class="n">thread1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class="line">  <span class="n">thread2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-<p><strong>counter1</strong>和<strong>counter2</strong>在自己的线程栈上，<strong>cacheline</strong>位于对应的<strong>CPU core</strong>里，大家相安无事。只有执行第<strong>9</strong>行和第<strong>17</strong>行时代价可能高点。</p>
-
-<p>这个程序，在我的电脑上运行时间为：</p>
-
-<pre><code>real	0m0.293s
-user	0m0.580s
-sys     0m0.000s
-</code></pre>
-
-<p>解决方法四：</p>
-
-<p><strong>global</strong>神马变量？全局变量。<strong>counter1/counter2</strong>神马变量？局部变量。</p>
-
-<p>有没有一种东东，既有全局的性质，又有局部的效果（线程私有）呢？</p>
-
-<p>恩，如果您看过我以前写的<a href="http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure/">这篇</a>博客，就不会对<strong>__thread</strong>感到陌生。对！提供强大<strong>scalability</strong>的利器，就是它了！</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-<span class="line-number">15</span>
-<span class="line-number">16</span>
-<span class="line-number">17</span>
-<span class="line-number">18</span>
-<span class="line-number">19</span>
-<span class="line-number">20</span>
-<span class="line-number">21</span>
-<span class="line-number">22</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;thread&gt;</span>
-</span><span class="line"><span class="n">__thread</span> <span class="kt">int</span> <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="o">++</span><span class="n">counter</span><span class="p">;</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">g</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="o">++</span><span class="n">counter</span><span class="p">;</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">thread1</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
-</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">thread2</span><span class="p">(</span><span class="n">g</span><span class="p">);</span>
-</span><span class="line">  <span class="n">thread1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class="line">  <span class="n">thread2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<p>这个程序在我的电脑上的运行时间为：</p>
-
-<pre><code>real	0m0.325s
-user	0m0.644s
-sys     0m0.000s
-</code></pre>
-
-<p>不过其他线程如何读取到每个计数线程的<strong>counter</strong>呢？不难，但是也不是那么简单，背后涉及到很多问题（其实本文最大的目的是通过<strong>false sharing</strong>，揭示<strong>partition</strong>这种并发编程里最大的设计原则）。我们下次专门聊。</p>
-
-<h2 id="section-3">附录</h2>
-
-<p>1，编译以上多线程程序的时候，请使用：</p>
-
-<pre><code>g++ -pthread -std=c++11 xxx.cpp
-</code></pre>
-
-<p>如果没有指定<code>-pthread</code>，那么程序可以编译链接通过，运行时报错：</p>
-
-<p>terminate called after throwing an instance of ‘std::system_error’</p>
-
-<p>what():  Enable multithreading to use std::thread: Operation not permitted</p>
-
-<p>Aborted (core dumped)</p>
-
-<p>2，程序计时我用的是 <code>time ./a.out</code>的方式。</p>
-
-<h2 id="section-4">致谢</h2>
-
-<p>本文发出后，微博网友@Debin_IIE指出了一个笔误。非常感谢。</p>
 ]]></content>
   </entry>
   
