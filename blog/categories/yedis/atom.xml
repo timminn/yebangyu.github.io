@@ -4,7 +4,7 @@
   <title><![CDATA[Category: yedis | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/yedis/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-15T20:55:22+08:00</updated>
+  <updated>2016-05-15T20:58:05+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,7 +18,13 @@
     <link href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/"/>
     <updated>2016-05-15T20:21:10+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/05/15/stringinyedis</id>
-    <content type="html"><![CDATA[<p>在Yedis中有两种字符串(或者更准确的说，字节流)实现: YedisString和YedisNormalString。代码都在<code>src/ds/yedis_string.h</code>和<code>src/ds/yedis_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
+    <content type="html"><![CDATA[<h2 id="section">写在最前</h2>
+
+<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+
+<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+
+<p>在Yedis中有两种字符串(或者更准确的说，字节流)实现: YedisString和YedisNormalString。代码都在<code>src/ds/yedis_string.h</code>和<code>src/ds/yedis_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
 
 <h2 id="yedisnormalstring">YedisNormalString</h2>
 
