@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-26T20:17:37+08:00</updated>
+  <updated>2016-05-26T20:19:55+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -97,8 +97,8 @@ class YedisTicketSpinLock
     bool lock()
     {
       uint64_t my_id = FETCH_AND_ADD(&amp;next_id_, 1);
-	  CPU_BARRIER();
-      while(my_id != ACCESS_ONCE(service_id_));
+      CPU_BARRIER();
+      while(my_id != ACCESS_ONCE(service_id_)) {}
       return true;
     }
     void unlock()

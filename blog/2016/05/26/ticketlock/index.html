@@ -225,8 +225,8 @@ MathJax.Hub.Config({
 </span><span class="line">    <span class="kt">bool</span> <span class="n">lock</span><span class="p">()</span>
 </span><span class="line">    <span class="p">{</span>
 </span><span class="line">      <span class="kt">uint64_t</span> <span class="n">my_id</span> <span class="o">=</span> <span class="n">FETCH_AND_ADD</span><span class="p">(</span><span class="o">&amp;</span><span class="n">next_id_</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
-</span><span class="line">	  <span class="n">CPU_BARRIER</span><span class="p">();</span>
-</span><span class="line">      <span class="k">while</span><span class="p">(</span><span class="n">my_id</span> <span class="o">!=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">service_id_</span><span class="p">));</span>
+</span><span class="line">      <span class="n">CPU_BARRIER</span><span class="p">();</span>
+</span><span class="line">      <span class="k">while</span><span class="p">(</span><span class="n">my_id</span> <span class="o">!=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">service_id_</span><span class="p">))</span> <span class="p">{}</span>
 </span><span class="line">      <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
 </span><span class="line">    <span class="p">}</span>
 </span><span class="line">    <span class="kt">void</span> <span class="n">unlock</span><span class="p">()</span>
