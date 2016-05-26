@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="写在最前 Yedis是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。 Github请访问这里 ，Python客户端请点击这里 在Yedis中有两种字符串(或者更准确的说，字节流)实现: &hellip;">
+  <meta name="description" content="简单回顾 上回 我们介绍了peterson算法来实现spin lock，算法简单，实现简单，但是值得注意和留心的点很多。 粗略说来，peterson算法的主要缺点在于： 1，很难推广到n个线程(n&gt;=3)。原始的算法针对两个线程，如果想应用在多个线程的场景里，需要做一定的修改。 2， &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,52 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/05/26/ticketlock/">Ticket Lock</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-05-26T19:25:15+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:25 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2 id="section">简单回顾</h2>
+
+<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">上回</a> 我们介绍了peterson算法来实现spin lock，算法简单，实现简单，但是值得注意和留心的点很多。</p>
+
+<p>粗略说来，peterson算法的主要缺点在于：</p>
+
+<p>1，很难推广到n个线程(n&gt;=3)。原始的算法针对两个线程，如果想应用在多个线程的场景里，需要做一定的修改。</p>
+
+<p>2，peterson算法的动机是仅仅使用load和store来实现互斥访问。然而，我们知道，现代体系结构下，CPU和编译器会对读写操作进行乱序，仅仅依靠读写操作而不使用memory barrier就编写正确的程序非常困难。</p>
+
+<h2 id="ticket-lock">Ticket Lock</h2>
+
+<p>在介绍Ticket Lock之前，我们首先分析一个妇孺皆知、地球人都知道的实现spin lock的方法（伪代码）：</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/05/26/ticketlock/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -504,46 +550,6 @@ MathJax.Hub.Config({
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/04/petersonalgorithm/">Peterson算法实现spin lock</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-04T22:26:51+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:26 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>对spin lock和mutex不熟悉的朋友，可以看<a href="http://www.yebangyu.org/blog/2016/01/24/spinlock-and-mutex/">上篇</a>博客。</p>
-
-<h2 id="section">提出问题</h2>
-
-<p>如何仅仅通过load和store实现spin lock呢？</p>
-
-<p>本文只考虑、只针对只有两个线程的情形。假设这两个线程的id分别为0和1。编程环境为X86体系结构 + Intel CPU + gcc</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/04/petersonalgorithm/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -559,6 +565,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/05/26/ticketlock/">Ticket Lock</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/05/15/stringinyedis/">Yedis源码解析之string实现</a>
       </li>
     
@@ -572,10 +582,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/04/22/optimization/">Introduction To Performance Optimization</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/04/10/stringliteralincpp/">String Literal In C++</a>
       </li>
     
   </ul>
@@ -605,7 +611,7 @@ MathJax.Hub.Config({
 <li class='category'><a href='/blog/categories/yedis/'>yedis (4)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
-<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (12)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (13)</a></li>
 <li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (1)</a></li>
 <li class='category'><a href='/blog/categories/suan-fa/'>算法 (4)</a></li>
 <li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>

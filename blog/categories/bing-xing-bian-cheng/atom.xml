@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-05-21T21:48:44+08:00</updated>
+  <updated>2016-05-26T20:07:02+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,146 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Ticket Lock]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/"/>
+    <updated>2016-05-26T19:25:15+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/05/26/ticketlock</id>
+    <content type="html"><![CDATA[<h2 id="section">简单回顾</h2>
+
+<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">上回</a> 我们介绍了peterson算法来实现spin lock，算法简单，实现简单，但是值得注意和留心的点很多。</p>
+
+<p>粗略说来，peterson算法的主要缺点在于：</p>
+
+<p>1，很难推广到n个线程(n&gt;=3)。原始的算法针对两个线程，如果想应用在多个线程的场景里，需要做一定的修改。</p>
+
+<p>2，peterson算法的动机是仅仅使用load和store来实现互斥访问。然而，我们知道，现代体系结构下，CPU和编译器会对读写操作进行乱序，仅仅依靠读写操作而不使用memory barrier就编写正确的程序非常困难。</p>
+
+<h2 id="ticket-lock">Ticket Lock</h2>
+
+<p>在介绍Ticket Lock之前，我们首先分析一个妇孺皆知、地球人都知道的实现spin lock的方法（伪代码）：</p>
+
+<!--more-->
+
+<p><code>c++
+int flag = 0;
+void lock()
+{
+  while (!cas(flag, 0, 1));
+  //get lock ! now , flag == 1
+}
+void unlock()
+{
+  flag = 0;
+}
+</code>
+上面代码的第四行使用一个CAS原子操作：判断如果flag是否为0，如果为0，将它的值设置为1。判断和设置，所谓的test和set是一个原子操作，返回ture；如果不为0，则不设置，返回false。</p>
+
+<p>这就是大名鼎鼎的<code>test-and-set</code>来实现spin lock。想想看，这种实现方式有什么缺点？</p>
+
+<p>缺点一：不保证公平性，不满足FIFO先来先服务。假如有两个线程在第4行上spin，那么当持有锁的线程释放锁之后，这两个线程谁会成功拿到锁和谁先来spin没有任何直接关系。</p>
+
+<p>缺点二：我们知道，不管CAS操作是否成功，都会产生大量的因为需要保证cache coherency而产生的message，降低性能。因此有一种改进方式：在CAS之前，先读取flag的值，当flag的值为0的时候，再尝试CAS。如下图的伪代码所示：</p>
+
+<p><code>c++
+int flag = 0;
+void lock()
+{
+  while(true) {
+    if (flag == 0) {
+      if (cas(flag, 0, 1)) {
+        break;
+      }
+    }
+  }
+  //get lock ! now , flag == 1
+}
+void unlock()
+{
+  flag = 0;
+}
+</code></p>
+
+<p>改进后的算法叫做<code>test-and-test-and-set</code>，然而即使经过改进，上面的两个问题依旧存在。在很多场景下，我们希望：</p>
+
+<p>1，保证公平性。</p>
+
+<p>2，原子操作少些，少些，再少些。</p>
+
+<p>这就涉及到我们要谈到的Ticket Lock。</p>
+
+<p>想想我们去银行排队办业务：先拿个号，然后排队，叫到你的号就是服务你的时候了。没叫到你？老老实实等着吧（这里不考虑关系户走后门插队）。</p>
+
+<p><a href="https://github.com/yebangyu/Yedis/blob/master/src/concurrency/yedis_ticket_spin_lock.h">Yedis</a>中实现了ticket spin lock，这里摘抄如下：</p>
+
+<p><code>
+class YedisTicketSpinLock
+{
+  public:
+    YedisTicketSpinLock()
+    {
+      next_id_ = 0;
+      service_id_ = 0;
+    }
+    bool lock()
+    {
+      uint64_t my_id = FETCH_AND_ADD(&amp;next_id_, 1);
+	  CPU_BARRIER();
+      while(my_id != ACCESS_ONCE(service_id_));
+      return true;
+    }
+    void unlock()
+    {
+      INC_ATOMIC(&amp;service_id_, 1);
+    }
+  private:
+    uint64_t next_id_;
+    uint64_t service_id_;
+};
+</code>
+第11行：获得自己的号，同时把号码递增。其中<code>fetch_and_add</code>是一个原子操作:</p>
+
+<p><code>c++
+int fech_and_add(int *p, int inc)
+{
+  int origin = *p;
+  *p += inc;
+  return origin;
+}
+</code>
+顺便说一下，也有所谓的<code>add_and_fech</code>：
+<code>c++
+int add_and_fetch(int *p, int inc)
+{
+  *p += inc;
+  return *p;
+}
+</code>
+区别就在于返回原来的值还是返回更新后的值</p>
+
+<p>第13行：判断是否到自己的号了，否则就一直等待。</p>
+
+<p>第18行：叫下一个人，和下一个人说，轮到你了。</p>
+
+<p>关于<code>CPU_BARRIER</code>、<code>FETCH_AND_ADD</code>、<code>ACCESS_ONCE</code>和<code>INC_ATOMIC</code>的实现，请参考<a href="https://github.com/yebangyu/Yedis/blob/master/src/base/yedis_define.h">Yedis</a>中的相关代码。</p>
+
+<p>公平性：不难看出，先来排队的人将优先获得服务。</p>
+
+<p>性能：不难看出，和之前的不断CAS的版本相比，ticket lock算法中，一次lock调用只有一次原子操作开销。</p>
+
+<p>哈哈，如果过号呢？现实生活里，去银行排队可能因为时间太长不爽闪人了，银行叫人如果连叫三遍还没看到你就会叫下一个人了。</p>
+
+<p>在这里，假如持有锁的线程crash了，来不及调用unlock，那么所有等待锁的线程都将一直spin，除非，哦，除非海量的线程来排队不断自增<code>next_id_</code>导致<code>next_id_</code>溢出回滚，然后重新等于<code>service_id_</code>。</p>
+
+<p>如果持有锁的线程没有crash，它正常释放锁，而叫到的下一个线程之前crash了，那么也会导致所有排队的线程拿不到锁。</p>
+
+<p>顺便说一下，(部分)Linux Kernel的spin lock就是用ticket lock实现的。更多细节可以参考<a href="https://www.ibm.com/developerworks/cn/linux/l-cn-spinlock/">这里</a>。</p>
+
+<p>那么ticket lock是否完美呢？有什么惊人的缺点呢？请看下集。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Peterson算法实现spin lock]]></title>
@@ -669,86 +809,6 @@ sys	0m14.936s
 <p>当然，一切都离不开实际的测试和分析。</p>
 
 <p>下次，我们将研究更多、更高效的spinlock实现。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Concurrent and Parallel]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/01/17/concurrenyandparallism/"/>
-    <updated>2016-01-17T09:49:00+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/01/17/concurrenyandparallism</id>
-    <content type="html"><![CDATA[<p>什么是并发(<strong>Concurrency，Concurrent</strong>)，什么是并行(<strong>parallism，Parallel</strong>)？这两者有什么区别？本文收录一下我听过的、我见过的、我看过的一些人的看法。仅供参考：</p>
-
-<h2 id="paul-butcher">Paul Butcher</h2>
-
-<p><strong>Paul Butcher</strong>在他的《<strong>Seven Concurrency Models in Seven Weeks</strong>
-》里开篇就谈到：</p>
-
-<!--more-->
-
-<p>An alternative way of thinking about this is that concurrency is an aspect of
-the problem domain—your program needs to handle multiple simultaneous
-(or near-simultaneous) events. Parallelism, by contrast, is an aspect of the
-solution domain—you want to make your program faster by processing different
-portions of the problem in parallel</p>
-
-<p>也就是说，并发是<strong>问题域</strong>，并行是<strong>解决域</strong>。问题是并发的，解决方法是并行的。</p>
-
-<h2 id="rob-pike">Rob Pike</h2>
-
-<p><strong>Rob</strong>是<strong>Go</strong>语言之父，《<strong>The Unix Programming Environment</strong>》 和 《<strong>The Practice of Programming</strong>》（最近正在重读这本小册子）的作者。他有一个经典的解释：</p>
-
-<p>Concurrency is about dealing with lots of things at once.</p>
-
-<p>Parallelism is about doing lots of things at once.</p>
-
-<p>嘿嘿，这个有点意思，不过只能意会了。</p>
-
-<h2 id="paul-e-mckenney">Paul E. McKenney</h2>
-
-<p>又是一个<strong>Paul</strong>。不过这个<strong>Paul</strong>大叔是<strong>IBM</strong>的研究人员，写了一本非常幽默并且有深度的书：《<strong>Is Parallel Programming Hard, And, If So, What Can You Do About It?</strong>》（最近一直在细读，并且做读书笔记，感兴趣的朋友可以参考我的相关<a href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/">博客</a>。） 在这本书（<strong>v2015.01.31a</strong>版本）的第<strong>319</strong>页，有一个附录，介绍 <strong>What is the Difference Between</strong>
-“<strong>Concurrent</strong>” <strong>and</strong> “<strong>Parallel</strong>”?时说：</p>
-
-<p>From a classic computing perspective, “concurrent” and
-“parallel” are clearly synonyms. However, this has not
-stopped many people from drawing distinctions between
-the two</p>
-
-<p>说明<strong>Paul</strong>大叔认为，其实这两者是一回事，有些人非得区分。好吧，那就区分吧。这些人是如何区分呢？有两个<strong>perspective</strong>：</p>
-
-<p>The first perspective treats “parallel” as an abbreviation
-for “data parallel,” and treats “concurrent” as pretty
-much everything else</p>
-
-<p>也就是说，<strong>concurrency</strong>有很强的<strong>interdependencies</strong>，它们之间可能要做各种通信，基于比如说<strong>locks</strong>啊，<strong>transactions</strong>啊，等等同步机制。相比，<strong>parallel</strong>中组件的相互依赖就很少。新浪微博网友 <a href="http://weibo.com/u/1085583241">@小恶魔提利昂</a>就持这种观点，他说：“并发任务处理的时候，会在并发处理时候可以交换信息，有CSP式的，也可以内存共享式的，但是在外部看到的效果是若干核或若干线程/协程同时对应这些并发任务。并行处理的话，同时处理的任务要做到上下文环境都是隔离的。”</p>
-
-<p>Now, this second perspective can be thought of as making
-the workload match the available scheduler, with parallel
-workloads able to operate on a simple scheduler
-and concurrent workloads requiring more sophisticated
-schedulers.</p>
-
-<p>恩，第二个角度就是需不需要复杂的<strong>scheduler</strong>。</p>
-
-<p>但是<strong>Paul</strong>大叔说，这两个视角很可能是不可兼得或者说矛盾滴。此话怎讲？</p>
-
-<p>考虑每个<strong>CPU</strong>一个线程的基于<strong>lock</strong>通信的程序。是<strong>Concurrency</strong>吗？从第一个角度讲，是的，用<strong>lock</strong>啊，各种同步各种通信啊。从第二个角度看，又不是。</p>
-
-<p>以上就是<strong>Paul McKenney</strong>大致的观点。</p>
-
-<h2 id="yebangyu">yebangyu</h2>
-
-<p><strong>yebangyu</strong>是博主，<strong>yebangyu.org</strong>公司CEO兼站长兼董事长兼老板，苦逼屌丝底层搬砖码农。恩，就是我了。</p>
-
-<p>个人观点：</p>
-
-<p>1，首先，持<strong>Paul McKenney</strong>的观点，没必要区分这两个词。</p>
-
-<p>2，<strong>Concurrency</strong>这个单词含有类“occur”的词根，表示发生，<strong>con</strong>代表共同、一起，指共同发生的意思。而<strong>parallel</strong>词根是<strong>para</strong>，表示相同的、类似、平行的、差不多的。因为，也可以认为问题是同时发生的，解决方法是平行处理。</p>
-
-<p>3，写书在取书名的时候需要区分。如果你是讲<strong>MPI、Open MP</strong>这类技术，建议用并行或者说<strong>Parallel Computing</strong>。如果是讲<strong>lock free、multi-thread</strong>这些共享内存编程的，建议用<strong>Concurrency</strong>或者<strong>Concurrency Programming</strong>。</p>
-
-<p>那么，<strong>Go</strong>语言这种<strong>CSP</strong>类型的<strong>Channel</strong>的呢？个人认为，都可以吧。</p>
 ]]></content>
   </entry>
   

@@ -1,0 +1,441 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Ticket Lock - Yebangyu's Blog</title>
+  <meta name="author" content="Yebangyu">
+
+  
+  <meta name="description" content="本文详细介绍了ticket lock来实现spin lock">
+  <meta name="keywords" content="ticket lock spin lock peterson algorithm">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Yebangyu's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.useso.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.useso.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.useso.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Yebangyu's Blog</a></h1>
+  
+    <h2>Fond of Machine Learning, Distributed System and Performance Optimization.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.baidu.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="www.yebangyu.org">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About Me</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Ticket Lock</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-05-26T19:25:15+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:25 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2 id="section">简单回顾</h2>
+
+<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">上回</a> 我们介绍了peterson算法来实现spin lock，算法简单，实现简单，但是值得注意和留心的点很多。</p>
+
+<p>粗略说来，peterson算法的主要缺点在于：</p>
+
+<p>1，很难推广到n个线程(n&gt;=3)。原始的算法针对两个线程，如果想应用在多个线程的场景里，需要做一定的修改。</p>
+
+<p>2，peterson算法的动机是仅仅使用load和store来实现互斥访问。然而，我们知道，现代体系结构下，CPU和编译器会对读写操作进行乱序，仅仅依靠读写操作而不使用memory barrier就编写正确的程序非常困难。</p>
+
+<h2 id="ticket-lock">Ticket Lock</h2>
+
+<p>在介绍Ticket Lock之前，我们首先分析一个妇孺皆知、地球人都知道的实现spin lock的方法（伪代码）：</p>
+
+<!--more-->
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">lock</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">cas</span><span class="p">(</span><span class="n">flag</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+</span><span class="line">  <span class="c1">//get lock ! now , flag == 1</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">unlock</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>上面代码的第四行使用一个CAS原子操作：判断如果flag是否为0，如果为0，将它的值设置为1。判断和设置，所谓的test和set是一个原子操作，返回ture；如果不为0，则不设置，返回false。</p>
+
+<p>这就是大名鼎鼎的<code>test-and-set</code>来实现spin lock。想想看，这种实现方式有什么缺点？</p>
+
+<p>缺点一：不保证公平性，不满足FIFO先来先服务。假如有两个线程在第4行上spin，那么当持有锁的线程释放锁之后，这两个线程谁会成功拿到锁和谁先来spin没有任何直接关系。</p>
+
+<p>缺点二：我们知道，不管CAS操作是否成功，都会产生大量的因为需要保证cache coherency而产生的message，降低性能。因此有一种改进方式：在CAS之前，先读取flag的值，当flag的值为0的时候，再尝试CAS。如下图的伪代码所示：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">lock</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">while</span><span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">flag</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="k">if</span> <span class="p">(</span><span class="n">cas</span><span class="p">(</span><span class="n">flag</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="p">{</span>
+</span><span class="line">        <span class="k">break</span><span class="p">;</span>
+</span><span class="line">      <span class="p">}</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="c1">//get lock ! now , flag == 1</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="kt">void</span> <span class="nf">unlock</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>改进后的算法叫做<code>test-and-test-and-set</code>，然而即使经过改进，上面的两个问题依旧存在。在很多场景下，我们希望：</p>
+
+<p>1，保证公平性。</p>
+
+<p>2，原子操作少些，少些，再少些。</p>
+
+<p>这就涉及到我们要谈到的Ticket Lock。</p>
+
+<p>想想我们去银行排队办业务：先拿个号，然后排队，叫到你的号就是服务你的时候了。没叫到你？老老实实等着吧（这里不考虑关系户走后门插队）。</p>
+
+<p><a href="https://github.com/yebangyu/Yedis/blob/master/src/concurrency/yedis_ticket_spin_lock.h">Yedis</a>中实现了ticket spin lock，这里摘抄如下：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">YedisTicketSpinLock</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">public</span><span class="o">:</span>
+</span><span class="line">    <span class="n">YedisTicketSpinLock</span><span class="p">()</span>
+</span><span class="line">    <span class="p">{</span>
+</span><span class="line">      <span class="n">next_id_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">      <span class="n">service_id_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">    <span class="kt">bool</span> <span class="n">lock</span><span class="p">()</span>
+</span><span class="line">    <span class="p">{</span>
+</span><span class="line">      <span class="kt">uint64_t</span> <span class="n">my_id</span> <span class="o">=</span> <span class="n">FETCH_AND_ADD</span><span class="p">(</span><span class="o">&amp;</span><span class="n">next_id_</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class="line">	  <span class="n">CPU_BARRIER</span><span class="p">();</span>
+</span><span class="line">      <span class="k">while</span><span class="p">(</span><span class="n">my_id</span> <span class="o">!=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">service_id_</span><span class="p">));</span>
+</span><span class="line">      <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">    <span class="kt">void</span> <span class="n">unlock</span><span class="p">()</span>
+</span><span class="line">    <span class="p">{</span>
+</span><span class="line">      <span class="n">INC_ATOMIC</span><span class="p">(</span><span class="o">&amp;</span><span class="n">service_id_</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">  <span class="k">private</span><span class="o">:</span>
+</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">next_id_</span><span class="p">;</span>
+</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">service_id_</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>第11行：获得自己的号，同时把号码递增。其中<code>fetch_and_add</code>是一个原子操作:</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">fech_and_add</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">inc</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">origin</span> <span class="o">=</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
+</span><span class="line">  <span class="o">*</span><span class="n">p</span> <span class="o">+=</span> <span class="n">inc</span><span class="p">;</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">origin</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>顺便说一下，也有所谓的<code>add_and_fech</code>：</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">add_and_fetch</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">inc</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="o">*</span><span class="n">p</span> <span class="o">+=</span> <span class="n">inc</span><span class="p">;</span>
+</span><span class="line">  <span class="k">return</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>区别就在于返回原来的值还是返回更新后的值</p>
+
+<p>第13行：判断是否到自己的号了，否则就一直等待。</p>
+
+<p>第18行：叫下一个人，和下一个人说，轮到你了。</p>
+
+<p>关于<code>CPU_BARRIER</code>、<code>FETCH_AND_ADD</code>、<code>ACCESS_ONCE</code>和<code>INC_ATOMIC</code>的实现，请参考<a href="https://github.com/yebangyu/Yedis/blob/master/src/base/yedis_define.h">Yedis</a>中的相关代码。</p>
+
+<p>公平性：不难看出，先来排队的人将优先获得服务。</p>
+
+<p>性能：不难看出，和之前的不断CAS的版本相比，ticket lock算法中，一次lock调用只有一次原子操作开销。</p>
+
+<p>哈哈，如果过号呢？现实生活里，去银行排队可能因为时间太长不爽闪人了，银行叫人如果连叫三遍还没看到你就会叫下一个人了。</p>
+
+<p>在这里，假如持有锁的线程crash了，来不及调用unlock，那么所有等待锁的线程都将一直spin，除非，哦，除非海量的线程来排队不断自增<code>next_id_</code>导致<code>next_id_</code>溢出回滚，然后重新等于<code>service_id_</code>。</p>
+
+<p>如果持有锁的线程没有crash，它正常释放锁，而叫到的下一个线程之前crash了，那么也会导致所有排队的线程拿不到锁。</p>
+
+<p>顺便说一下，(部分)Linux Kernel的spin lock就是用ticket lock实现的。更多细节可以参考<a href="https://www.ibm.com/developerworks/cn/linux/l-cn-spinlock/">这里</a>。</p>
+
+<p>那么ticket lock是否完美呢？有什么惊人的缺点呢？请看下集。</p>
+
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Yebangyu</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-05-26T19:25:15+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:25 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/bing-xing-bian-cheng/'>并行编程</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/05/15/stringinyedis/" title="Previous Post: Yedis源码解析之string实现">&laquo; Yedis源码解析之string实现</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/05/26/ticketlock/">Ticket Lock</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/15/stringinyedis/">Yedis源码解析之string实现</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/07/treappkskiplist/">Yedis源码解析之rank实现</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/05/01/hanwudi/">论汉武帝独尊儒术</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/04/22/optimization/">Introduction To Performance Optimization</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>Friends' Link</h1>
+  <ul>
+    <li>
+	  <li><a href="http://www.chongh.wiki/">Diting0x</a></li>
+	  <li><a href="http://www.xiaolili.net/">wangli</a></li>
+	  <li><a href="http://www.skykewei.top">dukewei</a></li>
+	  <li><a href="http://irwenqiang.github.io">chenwenqiang</a></li>
+      <li><a href="http://www.armsword.com">duruofei</a></li>
+    </li>
+  </ul>
+</section><section>
+  <h1>Yebangyu</h1>
+  <p>福建人。热爱历史、K歌、NBA</p>
+  <p>帝都码农</p>
+  <p>历史学家，专治秦汉史</p>
+</section>
+<section>
+ <h1>Categories</h1>
+ <ul id="categories">
+  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (9)</a></li>
+<li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
+<li class='category'><a href='/blog/categories/yedis/'>yedis (4)</a></li>
+<li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
+<li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (13)</a></li>
+<li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (1)</a></li>
+<li class='category'><a href='/blog/categories/suan-fa/'>算法 (4)</a></li>
+<li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>
+
+ </ul>
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+<p>
+  Copyright &copy; 2016 - Yebangyu -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1257548193'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1257548193' type='text/javascript'%3E%3C/script%3E"));</script>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
