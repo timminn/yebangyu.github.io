@@ -4,7 +4,7 @@
   <title><![CDATA[Category: soupen | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/soupen/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-02T22:53:42+08:00</updated>
+  <updated>2016-06-02T22:58:03+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -295,8 +295,6 @@ tmp = tmp / 10 + offset[remainder];
     <content type="html"><![CDATA[<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
 <p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a>。</p>
-
-<p>Soupen名称由来：Soupen = Yebangyu + Redis</p>
 
 <h2 id="section">动机</h2>
 
