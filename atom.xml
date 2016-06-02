@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-02T22:42:28+08:00</updated>
+  <updated>2016-06-02T22:53:42+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -107,7 +107,7 @@
 
 <p>想想我们去银行排队办业务：先拿个号，然后排队，叫到你的号就是服务你的时候了。没叫到你？老老实实等着吧（这里不考虑关系户走后门插队）。</p>
 
-<p><a href="https://github.com/yebangyu/Yedis/blob/master/src/concurrency/yedis_ticket_spin_lock.h">Yedis</a>中实现了ticket spin lock，这里摘抄如下：</p>
+<p><a href="https://github.com/yebangyu/Soupen/blob/master/src/concurrency/soupen_ticket_spin_lock.h">Soupen</a>中实现了ticket spin lock，这里摘抄如下：</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -132,10 +132,10 @@
 <span class="line-number">21</span>
 <span class="line-number">22</span>
 <span class="line-number">23</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">YedisTicketSpinLock</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">SoupenTicketSpinLock</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="k">public</span><span class="o">:</span>
-</span><span class="line">    <span class="n">YedisTicketSpinLock</span><span class="p">()</span>
+</span><span class="line">    <span class="n">SoupenTicketSpinLock</span><span class="p">()</span>
 </span><span class="line">    <span class="p">{</span>
 </span><span class="line">      <span class="n">next_id_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </span><span class="line">      <span class="n">service_id_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -189,7 +189,7 @@
 
 <p>第18行：叫下一个人，和下一个人说，轮到你了。</p>
 
-<p>关于<code>CPU_BARRIER</code>、<code>FETCH_AND_ADD</code>、<code>ACCESS_ONCE</code>和<code>INC_ATOMIC</code>的实现，请参考<a href="https://github.com/yebangyu/Yedis/blob/master/src/base/yedis_define.h">Yedis</a>中的相关代码。</p>
+<p>关于<code>CPU_BARRIER</code>、<code>FETCH_AND_ADD</code>、<code>ACCESS_ONCE</code>和<code>INC_ATOMIC</code>的实现，请参考<a href="https://github.com/yebangyu/Soupen/blob/master/src/base/soupen_define.h">Soupen</a>中的相关代码。</p>
 
 <p>公平性：不难看出，先来排队的人将优先获得服务。</p>
 
@@ -209,21 +209,21 @@
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Yedis源码解析之string实现]]></title>
+    <title type="html"><![CDATA[Soupen源码解析之string实现]]></title>
     <link href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/"/>
     <updated>2016-05-15T20:21:10+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/05/15/stringinyedis</id>
     <content type="html"><![CDATA[<h2 id="section">写在最前</h2>
 
-<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
 
-<p>在Yedis中有两种字符串(或者更准确的说，字节流)实现: YedisString和YedisNormalString。代码都在<code>src/ds/yedis_string.h</code>和<code>src/ds/yedis_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
+<p>在Soupen中有两种字符串(或者更准确的说，字节流)实现: SoupenString和SoupenNormalString。代码都在<code>src/ds/soupen_string.h</code>和<code>src/ds/soupen_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
 
-<h2 id="yedisnormalstring">YedisNormalString</h2>
+<h2 id="soupennormalstring">SoupenNormalString</h2>
 
-<p>以<code>\0</code>结尾的字符串实现，也就是说YedisNormalString中的字符串都是以 <code>\0</code>结尾的。因此，对其施加任何类似于<code>strcmp</code>等传统C字符串函数都是安全的。</p>
+<p>以<code>\0</code>结尾的字符串实现，也就是说SoupenNormalString中的字符串都是以 <code>\0</code>结尾的。因此，对其施加任何类似于<code>strcmp</code>等传统C字符串函数都是安全的。</p>
 
 <p>在实现时，针对短字符串，为了进一步优化效率，使用了<a href="http://www.yebangyu.org/blog/2016/03/25/fuckthefever/">柔性数组</a>技术来提高cache命中。</p>
 
@@ -238,7 +238,7 @@
 <span class="line-number">7</span>
 <span class="line-number">8</span>
 <span class="line-number">9</span>
-</pre></td><td class="code"><pre><code class=""><span class="line">class YedisNormalString
+</pre></td><td class="code"><pre><code class=""><span class="line">class SoupenNormalString
 </span><span class="line">{
 </span><span class="line">//......
 </span><span class="line">private:
@@ -247,31 +247,31 @@
 </span><span class="line">  char *data_;
 </span><span class="line">  char buffer_data_[0];
 </span><span class="line">};</span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>如果字符串长度小于48(48是怎么得来的？Yedis使用jemalloc来分配内存，以64字节为一个块单位来分配内存。64位系统里，<code>len_</code>和<code>data_</code>各占用8个字节，cache line的大小一般为64字节，因此64 - 8 - 8 = 48。再次提醒，这里需要存储<code>\0</code>)，则会使用embedded string，也就是说，此时字符串的内容会和<code>len_</code>、<code>data_</code>分配在一块连续的内存中。由于局部性原理，在读取时，它们都会读到cache中，减少了cache miss，大大提高了性能。</p>
+<p>如果字符串长度小于48(48是怎么得来的？Soupen使用jemalloc来分配内存，以64字节为一个块单位来分配内存。64位系统里，<code>len_</code>和<code>data_</code>各占用8个字节，cache line的大小一般为64字节，因此64 - 8 - 8 = 48。再次提醒，这里需要存储<code>\0</code>)，则会使用embedded string，也就是说，此时字符串的内容会和<code>len_</code>、<code>data_</code>分配在一块连续的内存中。由于局部性原理，在读取时，它们都会读到cache中，减少了cache miss，大大提高了性能。</p>
 
 <p>不管字符串长度如何，不管是否使用<a href="http://www.yebangyu.org/blog/2016/03/25/fuckthefever/">柔性数组</a>技术来提高cache 命中，<code>data_</code>都会被设置为指向字符串的首地址。因此，外部总可以通过<code>data_</code>访问到字符串，</p>
 
-<h2 id="yedisstring">YedisString</h2>
+<h2 id="soupenstring">SoupenString</h2>
 
-<p>在YedisString中的字符串存储，都不以<code>\0</code>结尾。因此，不能对其施加<code>strlen</code>等传统C字符串函数。</p>
+<p>在SoupenString中的字符串存储，都不以<code>\0</code>结尾。因此，不能对其施加<code>strlen</code>等传统C字符串函数。</p>
 
-<p>YedisString中特别考虑了append函数的实现。为了减少内存分配，每次在append时，都会首先判断当前缓冲区是否够用，如果够用直接append；否则，这时候需要重新分配内存。注意，这时候我们会多分配一倍的内存，以防止下次append时不必要的内存分配动作。当然，这可能会造成内存浪费，但是对于优化时间消耗具有重要意义。</p>
+<p>SoupenString中特别考虑了append函数的实现。为了减少内存分配，每次在append时，都会首先判断当前缓冲区是否够用，如果够用直接append；否则，这时候需要重新分配内存。注意，这时候我们会多分配一倍的内存，以防止下次append时不必要的内存分配动作。当然，这可能会造成内存浪费，但是对于优化时间消耗具有重要意义。</p>
 
 ]]></content>
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Yedis源码解析之rank实现]]></title>
+    <title type="html"><![CDATA[Soupen源码解析之rank实现]]></title>
     <link href="http://www.yebangyu.org/blog/2016/05/07/treappkskiplist/"/>
     <updated>2016-05-07T10:00:12+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/05/07/treappkskiplist</id>
     <content type="html"><![CDATA[<h2 id="section">写在最前</h2>
 
-<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
 
-<p>和Redis一样，Yedis也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
+<p>和Redis一样，Soupen也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
 
 <p>那么，什么是Treap呢？</p>
 
@@ -291,11 +291,11 @@
 
 <p>在Treap上的删除、插入、查找的期望时间复杂度都是O($lgn$)。</p>
 
-<h2 id="yedis-pk-redis">Yedis PK Redis</h2>
+<h2 id="soupen-pk-redis">Soupen PK Redis</h2>
 
-<h3 id="yedistreap">Yedis中的Treap实现</h3>
+<h3 id="soupentreap">Soupen中的Treap实现</h3>
 
-<p>Yedis中的treap实现在<code>src/ds/yedis_treap.cpp</code>中，可以从<a href="https://github.com/yebangyu/Yedis/blob/master/src/ds/yedis_treap.cpp">这里</a>下载。</p>
+<p>Soupen中的treap实现在<code>src/ds/soupen_treap.cpp</code>中，可以从<a href="https://github.com/yebangyu/Soupen/blob/master/src/ds/soupen_treap.cpp">这里</a>下载。</p>
 
 <p>说明：</p>
 
@@ -303,19 +303,19 @@
 
 <p>2，rank的思路也比较自然：从根开始，如果score小于节点的score，那么继续访问该节点的左子树；如果大于节点的score，说明该节点和该节点左子树的所有节点都小于score，因此score的rank应该加上左子树的大小，然后访问该节点的右子树。</p>
 
-<p>所以，YedisTreapNode中包含了size字段。注意，在计算某个节点的size字段时，除了左右子树，也把该节点本身考虑在内。</p>
+<p>所以，SoupenTreapNode中包含了size字段。注意，在计算某个节点的size字段时，除了左右子树，也把该节点本身考虑在内。</p>
 
 <p>3，显然，递归地实现Treap比较方便和容易。</p>
 
 <h3 id="section-1">测试程序</h3>
 
-<p>我们将Yedis和Redis进行比较。其中Redis的代码来自于它的SkipList实现，不改变它性能的基础上，稍作简化和整理。</p>
+<p>我们将Soupen和Redis进行比较。其中Redis的代码来自于它的SkipList实现，不改变它性能的基础上，稍作简化和整理。</p>
 
 <p>测试程序可以从这里下载：</p>
 
-<p><a href="https://github.com/yebangyu/Yedis/blob/master/src/test/test_yedis_treap.cpp">Yedis</a></p>
+<p><a href="https://github.com/yebangyu/Soupen/blob/master/src/test/test_soupen_treap.cpp">Soupen</a></p>
 
-<p><a href="https://github.com/yebangyu/Yedis/blob/master/src/test/test_redis_rank.cpp">Redis</a></p>
+<p><a href="https://github.com/yebangyu/Soupen/blob/master/src/test/test_redis_rank.cpp">Redis</a></p>
 
 <p>编译链接这两个测试程序时，请记得加<code>-lrt</code>选项。</p>
 
@@ -327,15 +327,15 @@
 
 <p>Redis：insert，362263271ns = 0.36s，rank，172763924ns = 0.17s</p>
 
-<p>Yedis：insert，300028059ns = 0.30s，rank，106218516ns = 0.11s</p>
+<p>Soupen：insert，300028059ns = 0.30s，rank，106218516ns = 0.11s</p>
 
 <p>对于200W个整数随机打乱后插入的测试结果：</p>
 
 <p>Redis：insert，1682160424ns = 1.68s，rank，1729983233ns = 1.73s</p>
 
-<p>Yedis：insert，1484001788ns = 1.48s，rank，1182535652ns = 1.18s</p>
+<p>Soupen：insert，1484001788ns = 1.48s，rank，1182535652ns = 1.18s</p>
 
-<p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。实际上，Yedis还可以做得更快，达到Redis的两倍不是问题。真的？天呐，如何做到？请看下次分析。</p>
+<p>可以看出不管在insert还是rank上，Soupen的性能都是要完胜Redis的。实际上，Soupen还可以做得更快，达到Redis的两倍不是问题。真的？天呐，如何做到？请看下次分析。</p>
 
 <h2 id="section-3">参考文献</h2>
 
@@ -476,7 +476,7 @@
 
 <p>哈希表：<strong>O(1)</strong>期望查找时间让它常常成为除了数组之外的首选，尤其是当查找非常关键时。只知道<strong>Separate Chaining</strong>和<strong>Open Addressing</strong>？那您<strong>out</strong>了。建议您阅读我的<a href="http://www.yebangyu.org/blog/2015/12/19/cuckoo-hashing/">这篇</a>讲解<strong>cuckoo hashing</strong>的博客。</p>
 
-<p>跳表：说到<strong>O(lgn)</strong>的<strong>insert、find、del</strong>，很多人想到二叉搜索树，由于非平衡的二叉搜索树有退化为<strong>O(n)</strong>的风险，因此很多场景需要平衡树。<strong>B</strong>树？红黑树？太<strong>heavy</strong>了。有时候，您需要跳表，真的，很需要。它足够简单，而且很多时候就能满足您的需求。除此之外，<strong>Treap</strong>也是一种随机的数据结构，我实现的大规模分布式数据库<a href="https://github.com/yebangyu/Yedis">Yedis</a>里就有提供相应的实现，以后会放出。</p>
+<p>跳表：说到<strong>O(lgn)</strong>的<strong>insert、find、del</strong>，很多人想到二叉搜索树，由于非平衡的二叉搜索树有退化为<strong>O(n)</strong>的风险，因此很多场景需要平衡树。<strong>B</strong>树？红黑树？太<strong>heavy</strong>了。有时候，您需要跳表，真的，很需要。它足够简单，而且很多时候就能满足您的需求。除此之外，<strong>Treap</strong>也是一种随机的数据结构，我实现的大规模分布式数据库<a href="https://github.com/yebangyu/Soupen">Soupen</a>里就有提供相应的实现，以后会放出。</p>
 
 <p><strong>Sunday</strong>算法：字符串匹配里，<strong>KMP</strong>算法是大名鼎鼎了。谁让<strong>Knuth</strong>是大佬呢？可是，您是否知道<strong>Sunday</strong>算法？<strong>Sunday</strong>算法什么时候会比<strong>KMP</strong>高效而且高效地多？</p>
 
@@ -621,15 +621,15 @@
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Yedis源码解析之itoa实现]]></title>
+    <title type="html"><![CDATA[Soupen源码解析之itoa实现]]></title>
     <link href="http://www.yebangyu.org/blog/2016/04/04/itoa-in-yedis/"/>
     <updated>2016-04-04T12:37:06+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/04/04/itoa-in-yedis</id>
     <content type="html"><![CDATA[<h2 id="section">写在最前</h2>
 
-<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
 
 <h2 id="section-1">提出问题</h2>
 
@@ -778,7 +778,7 @@
 
 <h2 id="section-3">解决问题</h2>
 
-<p>Yedis中实现了itoa，代码在<code>src/server/yedis_order.cpp</code></p>
+<p>Soupen中实现了itoa，代码在<code>src/server/soupen_order.cpp</code></p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -840,19 +840,19 @@
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[Yedis: A High Performance Nosql]]></title>
+    <title type="html"><![CDATA[Soupen: A High Performance Nosql]]></title>
     <link href="http://www.yebangyu.org/blog/2016/03/31/yedis01/"/>
     <updated>2016-03-31T23:53:16+08:00</updated>
     <id>http://www.yebangyu.org/blog/2016/03/31/yedis01</id>
-    <content type="html"><![CDATA[<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+    <content type="html"><![CDATA[<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a>。</p>
+<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a>。</p>
 
-<p>Yedis名称由来：Yedis = Yebangyu + Redis</p>
+<p>Soupen名称由来：Soupen = Yebangyu + Redis</p>
 
 <h2 id="section">动机</h2>
 
-<p>开发Yedis的主要原因是想通过这个项目，进一步提高和熟悉C++服务器端开发相关的技术和知识。</p>
+<p>开发Soupen的主要原因是想通过这个项目，进一步提高和熟悉C++服务器端开发相关的技术和知识。</p>
 
 <h2 id="section-1">特性</h2>
 
@@ -860,7 +860,7 @@
 
 <!--more-->
 
-<p>目标：Redis有的，Yedis都有。Redis没有的，但是很实用的，Yedis也有，比如说Cuckoo Hashing Map等。再比如说Treap，这玩意其实用来实现倒排索引非常高效，细节请参考Sigir2013的论文。</p>
+<p>目标：Redis有的，Soupen都有。Redis没有的，但是很实用的，Soupen也有，比如说Cuckoo Hashing Map等。再比如说Treap，这玩意其实用来实现倒排索引非常高效，细节请参考Sigir2013的论文。</p>
 
 <p>但是不打算兼容它，API和协议也和它不同。</p>
 
@@ -915,7 +915,7 @@
 
 <p><img src="http://7xnljs.com1.z0.glb.clouddn.com/client.png" alt="client" /></p>
 
-<p>不过，Yedis是写着玩的，别太当真。</p>
+<p>不过，Soupen是写着玩的，别太当真。</p>
 ]]></content>
   </entry>
   
@@ -1187,7 +1187,7 @@
 </span><span class="line">  <span class="n">INLINE</span> <span class="kt">bool</span> <span class="k">operator</span><span class="p">()</span> <span class="p">(</span><span class="k">const</span> <span class="n">T</span> <span class="o">&amp;</span><span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="n">T</span> <span class="o">&amp;</span><span class="n">b</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">;}</span>
 </span><span class="line"><span class="p">};</span>
 </span><span class="line"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">threshold</span> <span class="o">=</span> <span class="mi">20</span><span class="o">&gt;</span>
-</span><span class="line"><span class="k">class</span> <span class="nc">YedisSort</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">SoupenSort</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line"><span class="k">public</span><span class="o">:</span>
 </span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="n">sort</span><span class="p">(</span><span class="n">T</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">size</span><span class="p">);</span>
@@ -1197,14 +1197,14 @@
 </span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">get_pivot</span><span class="p">(</span><span class="n">T</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">left</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">right</span><span class="p">,</span> <span class="k">const</span> <span class="n">CompareOperator</span> <span class="o">&amp;</span><span class="n">co</span><span class="p">);</span>
 </span><span class="line"><span class="p">};</span>
 </span><span class="line"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">threshold</span><span class="o">&gt;</span>
-</span><span class="line"><span class="n">INLINE</span> <span class="kt">void</span> <span class="n">YedisSort</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="n">threshold</span><span class="o">&gt;::</span><span class="n">sort</span><span class="p">(</span><span class="n">T</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">size</span><span class="p">)</span>
+</span><span class="line"><span class="n">INLINE</span> <span class="kt">void</span> <span class="n">SoupenSort</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="n">threshold</span><span class="o">&gt;::</span><span class="n">sort</span><span class="p">(</span><span class="n">T</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">size</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="n">CompareOperator</span> <span class="n">co</span><span class="p">;</span>
 </span><span class="line">  <span class="n">sort_</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">size</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">co</span><span class="p">);</span>
 </span><span class="line"><span class="p">}</span>
 </span><span class="line">
 </span><span class="line"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">threshold</span><span class="o">&gt;</span>
-</span><span class="line"><span class="kt">void</span> <span class="n">YedisSort</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="n">threshold</span><span class="o">&gt;::</span><span class="n">sort_</span><span class="p">(</span><span class="n">T</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">left</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">right</span><span class="p">,</span> <span class="k">const</span> <span class="n">CompareOperator</span> <span class="o">&amp;</span><span class="n">co</span><span class="p">)</span>
+</span><span class="line"><span class="kt">void</span> <span class="n">SoupenSort</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="n">threshold</span><span class="o">&gt;::</span><span class="n">sort_</span><span class="p">(</span><span class="n">T</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">left</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">right</span><span class="p">,</span> <span class="k">const</span> <span class="n">CompareOperator</span> <span class="o">&amp;</span><span class="n">co</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="k">if</span><span class="p">(</span><span class="n">right</span> <span class="o">-</span> <span class="n">left</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">    <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">pivot</span> <span class="o">=</span> <span class="n">get_pivot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">,</span> <span class="n">co</span><span class="p">);</span>
@@ -1234,7 +1234,7 @@
 </span><span class="line"><span class="p">}</span>
 </span><span class="line">
 </span><span class="line"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">threshold</span><span class="o">&gt;</span>
-</span><span class="line"><span class="n">INLINE</span> <span class="kt">void</span> <span class="n">YedisSort</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="n">threshold</span><span class="o">&gt;::</span><span class="n">insertion_sort</span><span class="p">(</span><span class="n">T</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">left</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">right</span><span class="p">,</span> <span class="k">const</span> <span class="n">CompareOperator</span> <span class="o">&amp;</span><span class="n">co</span><span class="p">)</span>
+</span><span class="line"><span class="n">INLINE</span> <span class="kt">void</span> <span class="n">SoupenSort</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="n">threshold</span><span class="o">&gt;::</span><span class="n">insertion_sort</span><span class="p">(</span><span class="n">T</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">left</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">right</span><span class="p">,</span> <span class="k">const</span> <span class="n">CompareOperator</span> <span class="o">&amp;</span><span class="n">co</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="kt">int64_t</span> <span class="n">begin</span> <span class="o">=</span> <span class="n">left</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
 </span><span class="line">  <span class="kt">int64_t</span> <span class="n">end</span> <span class="o">=</span> <span class="n">right</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
@@ -1251,7 +1251,7 @@
 </span><span class="line"><span class="p">}</span>
 </span><span class="line">
 </span><span class="line"><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="p">,</span> <span class="k">typename</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">threshold</span><span class="o">&gt;</span>
-</span><span class="line"><span class="n">INLINE</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">YedisSort</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="n">threshold</span><span class="o">&gt;::</span><span class="n">get_pivot</span><span class="p">(</span><span class="n">T</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">left</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">right</span><span class="p">,</span> <span class="k">const</span> <span class="n">CompareOperator</span> <span class="o">&amp;</span><span class="n">co</span><span class="p">)</span>
+</span><span class="line"><span class="n">INLINE</span> <span class="k">const</span> <span class="n">T</span><span class="o">&amp;</span> <span class="n">SoupenSort</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">CompareOperator</span><span class="p">,</span> <span class="n">threshold</span><span class="o">&gt;::</span><span class="n">get_pivot</span><span class="p">(</span><span class="n">T</span> <span class="o">*</span><span class="n">data</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">left</span><span class="p">,</span> <span class="kt">int64_t</span> <span class="n">right</span><span class="p">,</span> <span class="k">const</span> <span class="n">CompareOperator</span> <span class="o">&amp;</span><span class="n">co</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="kt">int64_t</span> <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">left</span> <span class="o">+</span> <span class="n">right</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
 </span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">co</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">mid</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="n">left</span><span class="p">]))</span> <span class="p">{</span>
@@ -1269,11 +1269,11 @@
 </span><span class="line">  <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">right</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>我们把以上实现的快速排序称为YedisSort。是的，90行不到。</p>
+<p>我们把以上实现的快速排序称为SoupenSort。是的，90行不到。</p>
 
 <h2 id="section-6">测试结果</h2>
 
-<p>测试程序已经放到了github上，可以从<a href="https://github.com/yebangyu/Yedis/blob/master/src/bad/test.cpp">这里</a>下载。</p>
+<p>测试程序已经放到了github上，可以从<a href="https://github.com/yebangyu/Soupen/blob/master/src/bad/test.cpp">这里</a>下载。</p>
 
 <p>我们pk的对象包括STL中的sort，以及C语言里大名鼎鼎的qsort。</p>
 
@@ -1287,7 +1287,7 @@
 
 <p>sort: 1.06</p>
 
-<p>YedisSort: 1.20</p>
+<p>SoupenSort: 1.20</p>
 
 <p>qsort: 2.08</p>
 
@@ -1295,7 +1295,7 @@
 
 <p>sort: 3.29</p>
 
-<p>YedisSort: 2.93</p>
+<p>SoupenSort: 2.93</p>
 
 <p>qsort: 2.91</p>
 
@@ -1305,7 +1305,7 @@
 
 <p>sort: 0.23</p>
 
-<p>YedisSort: 0.27</p>
+<p>SoupenSort: 0.27</p>
 
 <p>qsort: 0.59</p>
 
@@ -1313,15 +1313,15 @@
 
 <p>sort: 2.60</p>
 
-<p>YedisSort: 1.56</p>
+<p>SoupenSort: 1.56</p>
 
 <p>qsort: 0.76</p>
 
 <p>什么结论？</p>
 
-<p>没开优化，那么所需时间 qsort &lt; YedisSort &lt; sort</p>
+<p>没开优化，那么所需时间 qsort &lt; SoupenSort &lt; sort</p>
 
-<p>开了优化，那么所需时间 sort &lt; YedisSort &lt; qsort</p>
+<p>开了优化，那么所需时间 sort &lt; SoupenSort &lt; qsort</p>
 
 <p>为什么sort可以这么叼？据说它综合了插入排序、快速排序和堆排序。这让我想起了推荐和广告比赛里，有些队伍利用Ensemble Learning没节操地堆了几百个model。。。</p>
 
@@ -1367,7 +1367,7 @@
 
 <p>3，快速排序所需的栈空间是多少？能否进一步优化？</p>
 
-<p>4，YedisSort的时间复杂度是多少？O($n^2$)还是O($nlgn$)？如果是前者，那么，什么情况下是二次的？</p>
+<p>4，SoupenSort的时间复杂度是多少？O($n^2$)还是O($nlgn$)？如果是前者，那么，什么情况下是二次的？</p>
 ]]></content>
   </entry>
   

@@ -133,7 +133,7 @@ MathJax.Hub.Config({
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/05/15/stringinyedis/">Yedis源码解析之string实现</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/05/15/stringinyedis/">Soupen源码解析之string实现</a></h1>
     
     
       <p class="meta">
@@ -151,15 +151,15 @@ MathJax.Hub.Config({
 
   <div class="entry-content"><h2 id="section">写在最前</h2>
 
-<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
 
-<p>在Yedis中有两种字符串(或者更准确的说，字节流)实现: YedisString和YedisNormalString。代码都在<code>src/ds/yedis_string.h</code>和<code>src/ds/yedis_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
+<p>在Soupen中有两种字符串(或者更准确的说，字节流)实现: SoupenString和SoupenNormalString。代码都在<code>src/ds/soupen_string.h</code>和<code>src/ds/soupen_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
 
-<h2 id="yedisnormalstring">YedisNormalString</h2>
+<h2 id="soupennormalstring">SoupenNormalString</h2>
 
-<p>以<code>\0</code>结尾的字符串实现，也就是说YedisNormalString中的字符串都是以 <code>\0</code>结尾的。因此，对其施加任何类似于<code>strcmp</code>等传统C字符串函数都是安全的。</p>
+<p>以<code>\0</code>结尾的字符串实现，也就是说SoupenNormalString中的字符串都是以 <code>\0</code>结尾的。因此，对其施加任何类似于<code>strcmp</code>等传统C字符串函数都是安全的。</p>
 
 <p>在实现时，针对短字符串，为了进一步优化效率，使用了<a href="http://www.yebangyu.org/blog/2016/03/25/fuckthefever/">柔性数组</a>技术来提高cache命中。</p>
 
@@ -179,7 +179,7 @@ MathJax.Hub.Config({
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/05/07/treappkskiplist/">Yedis源码解析之rank实现</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/05/07/treappkskiplist/">Soupen源码解析之rank实现</a></h1>
     
     
       <p class="meta">
@@ -197,11 +197,11 @@ MathJax.Hub.Config({
 
   <div class="entry-content"><h2 id="section">写在最前</h2>
 
-<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
 
-<p>和Redis一样，Yedis也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
+<p>和Redis一样，Soupen也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
 
 <p>那么，什么是Treap呢？</p>
 
@@ -367,7 +367,7 @@ MathJax.Hub.Config({
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/04/04/itoa-in-yedis/">Yedis源码解析之itoa实现</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/04/04/itoa-in-yedis/">Soupen源码解析之itoa实现</a></h1>
     
     
       <p class="meta">
@@ -385,9 +385,9 @@ MathJax.Hub.Config({
 
   <div class="entry-content"><h2 id="section">写在最前</h2>
 
-<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
 
 <h2 id="section-1">提出问题</h2>
 
@@ -415,7 +415,7 @@ MathJax.Hub.Config({
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/03/31/yedis01/">Yedis: A High Performance Nosql</a></h1>
+      <h1 class="entry-title"><a href="/blog/2016/03/31/yedis01/">Soupen: A High Performance Nosql</a></h1>
     
     
       <p class="meta">
@@ -431,15 +431,15 @@ MathJax.Hub.Config({
   </header>
 
 
-  <div class="entry-content"><p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+  <div class="entry-content"><p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a>。</p>
+<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a>。</p>
 
-<p>Yedis名称由来：Yedis = Yebangyu + Redis</p>
+<p>Soupen名称由来：Soupen = Yebangyu + Redis</p>
 
 <h2 id="section">动机</h2>
 
-<p>开发Yedis的主要原因是想通过这个项目，进一步提高和熟悉C++服务器端开发相关的技术和知识。</p>
+<p>开发Soupen的主要原因是想通过这个项目，进一步提高和熟悉C++服务器端开发相关的技术和知识。</p>
 
 <h2 id="section-1">特性</h2>
 
@@ -569,11 +569,11 @@ MathJax.Hub.Config({
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/15/stringinyedis/">Yedis源码解析之string实现</a>
+        <a href="/blog/2016/05/15/stringinyedis/">Soupen源码解析之string实现</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/07/treappkskiplist/">Yedis源码解析之rank实现</a>
+        <a href="/blog/2016/05/07/treappkskiplist/">Soupen源码解析之rank实现</a>
       </li>
     
       <li class="post">
@@ -607,8 +607,8 @@ MathJax.Hub.Config({
  <h1>Categories</h1>
  <ul id="categories">
   <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (9)</a></li>
+<li class='category'><a href='/blog/categories/soupen/'>soupen (4)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
-<li class='category'><a href='/blog/categories/yedis/'>yedis (4)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (13)</a></li>

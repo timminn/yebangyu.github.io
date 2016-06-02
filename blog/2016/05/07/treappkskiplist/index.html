@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Yedis源码解析之rank实现 - Yebangyu's Blog</title>
+  <title>Soupen源码解析之rank实现 - Yebangyu's Blog</title>
   <meta name="author" content="Yebangyu">
 
   
   <meta name="description" content="本文介绍了Treap和Skip List在查找、插入、删除上的性能对比">
-  <meta name="keywords" content="Yedis Treap Skip List 跳表 性能 查找 插入">
+  <meta name="keywords" content="Soupen Treap Skip List 跳表 性能 查找 插入">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -84,7 +84,7 @@ MathJax.Hub.Config({
   
   <header>
     
-      <h1 class="entry-title">Yedis源码解析之rank实现</h1>
+      <h1 class="entry-title">Soupen源码解析之rank实现</h1>
     
     
       <p class="meta">
@@ -102,11 +102,11 @@ MathJax.Hub.Config({
 
 <div class="entry-content"><h2 id="section">写在最前</h2>
 
-<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
 
-<p>和Redis一样，Yedis也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
+<p>和Redis一样，Soupen也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
 
 <p>那么，什么是Treap呢？</p>
 
@@ -126,11 +126,11 @@ MathJax.Hub.Config({
 
 <p>在Treap上的删除、插入、查找的期望时间复杂度都是O($lgn$)。</p>
 
-<h2 id="yedis-pk-redis">Yedis PK Redis</h2>
+<h2 id="soupen-pk-redis">Soupen PK Redis</h2>
 
-<h3 id="yedistreap">Yedis中的Treap实现</h3>
+<h3 id="soupentreap">Soupen中的Treap实现</h3>
 
-<p>Yedis中的treap实现在<code>src/ds/yedis_treap.cpp</code>中，可以从<a href="https://github.com/yebangyu/Yedis/blob/master/src/ds/yedis_treap.cpp">这里</a>下载。</p>
+<p>Soupen中的treap实现在<code>src/ds/soupen_treap.cpp</code>中，可以从<a href="https://github.com/yebangyu/Soupen/blob/master/src/ds/soupen_treap.cpp">这里</a>下载。</p>
 
 <p>说明：</p>
 
@@ -138,19 +138,19 @@ MathJax.Hub.Config({
 
 <p>2，rank的思路也比较自然：从根开始，如果score小于节点的score，那么继续访问该节点的左子树；如果大于节点的score，说明该节点和该节点左子树的所有节点都小于score，因此score的rank应该加上左子树的大小，然后访问该节点的右子树。</p>
 
-<p>所以，YedisTreapNode中包含了size字段。注意，在计算某个节点的size字段时，除了左右子树，也把该节点本身考虑在内。</p>
+<p>所以，SoupenTreapNode中包含了size字段。注意，在计算某个节点的size字段时，除了左右子树，也把该节点本身考虑在内。</p>
 
 <p>3，显然，递归地实现Treap比较方便和容易。</p>
 
 <h3 id="section-1">测试程序</h3>
 
-<p>我们将Yedis和Redis进行比较。其中Redis的代码来自于它的SkipList实现，不改变它性能的基础上，稍作简化和整理。</p>
+<p>我们将Soupen和Redis进行比较。其中Redis的代码来自于它的SkipList实现，不改变它性能的基础上，稍作简化和整理。</p>
 
 <p>测试程序可以从这里下载：</p>
 
-<p><a href="https://github.com/yebangyu/Yedis/blob/master/src/test/test_yedis_treap.cpp">Yedis</a></p>
+<p><a href="https://github.com/yebangyu/Soupen/blob/master/src/test/test_soupen_treap.cpp">Soupen</a></p>
 
-<p><a href="https://github.com/yebangyu/Yedis/blob/master/src/test/test_redis_rank.cpp">Redis</a></p>
+<p><a href="https://github.com/yebangyu/Soupen/blob/master/src/test/test_redis_rank.cpp">Redis</a></p>
 
 <p>编译链接这两个测试程序时，请记得加<code>-lrt</code>选项。</p>
 
@@ -162,15 +162,15 @@ MathJax.Hub.Config({
 
 <p>Redis：insert，362263271ns = 0.36s，rank，172763924ns = 0.17s</p>
 
-<p>Yedis：insert，300028059ns = 0.30s，rank，106218516ns = 0.11s</p>
+<p>Soupen：insert，300028059ns = 0.30s，rank，106218516ns = 0.11s</p>
 
 <p>对于200W个整数随机打乱后插入的测试结果：</p>
 
 <p>Redis：insert，1682160424ns = 1.68s，rank，1729983233ns = 1.73s</p>
 
-<p>Yedis：insert，1484001788ns = 1.48s，rank，1182535652ns = 1.18s</p>
+<p>Soupen：insert，1484001788ns = 1.48s，rank，1182535652ns = 1.18s</p>
 
-<p>可以看出不管在insert还是rank上，Yedis的性能都是要完胜Redis的。实际上，Yedis还可以做得更快，达到Redis的两倍不是问题。真的？天呐，如何做到？请看下次分析。</p>
+<p>可以看出不管在insert还是rank上，Soupen的性能都是要完胜Redis的。实际上，Soupen还可以做得更快，达到Redis的两倍不是问题。真的？天呐，如何做到？请看下次分析。</p>
 
 <h2 id="section-3">参考文献</h2>
 
@@ -202,7 +202,7 @@ MathJax.Hub.Config({
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/yedis/'>yedis</a>
+    <a class='category' href='/blog/categories/soupen/'>soupen</a>
   
 </span>
 
@@ -221,7 +221,7 @@ MathJax.Hub.Config({
         <a class="basic-alignment left" href="/blog/2016/05/01/hanwudi/" title="Previous Post: 论汉武帝独尊儒术">&laquo; 论汉武帝独尊儒术</a>
       
       
-        <a class="basic-alignment right" href="/blog/2016/05/15/stringinyedis/" title="Next Post: Yedis源码解析之string实现">Yedis源码解析之string实现 &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2016/05/15/stringinyedis/" title="Next Post: Soupen源码解析之string实现">Soupen源码解析之string实现 &raquo;</a>
       
     </p>
   </footer>
@@ -241,11 +241,11 @@ MathJax.Hub.Config({
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/15/stringinyedis/">Yedis源码解析之string实现</a>
+        <a href="/blog/2016/05/15/stringinyedis/">Soupen源码解析之string实现</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/07/treappkskiplist/">Yedis源码解析之rank实现</a>
+        <a href="/blog/2016/05/07/treappkskiplist/">Soupen源码解析之rank实现</a>
       </li>
     
       <li class="post">
@@ -279,8 +279,8 @@ MathJax.Hub.Config({
  <h1>Categories</h1>
  <ul id="categories">
   <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (9)</a></li>
+<li class='category'><a href='/blog/categories/soupen/'>soupen (4)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
-<li class='category'><a href='/blog/categories/yedis/'>yedis (4)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (13)</a></li>

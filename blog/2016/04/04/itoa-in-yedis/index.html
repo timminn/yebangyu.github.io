@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Yedis源码解析之itoa实现 - Yebangyu's Blog</title>
+  <title>Soupen源码解析之itoa实现 - Yebangyu's Blog</title>
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="本文分析了Yedis中的atoi即整数转字符串函数的精妙实现">
-  <meta name="keywords" content="yedis itoa 整数转字符串">
+  <meta name="description" content="本文分析了Soupen中的atoi即整数转字符串函数的精妙实现">
+  <meta name="keywords" content="soupen itoa 整数转字符串">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -84,7 +84,7 @@ MathJax.Hub.Config({
   
   <header>
     
-      <h1 class="entry-title">Yedis源码解析之itoa实现</h1>
+      <h1 class="entry-title">Soupen源码解析之itoa实现</h1>
     
     
       <p class="meta">
@@ -102,9 +102,9 @@ MathJax.Hub.Config({
 
 <div class="entry-content"><h2 id="section">写在最前</h2>
 
-<p><a href="https://github.com/yebangyu/Yedis">Yedis</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Github请访问<a href="https://github.com/yebangyu/Yedis">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Yedis/blob/master/src/client/yedis_client.py">这里</a></p>
+<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
 
 <h2 id="section-1">提出问题</h2>
 
@@ -253,7 +253,7 @@ MathJax.Hub.Config({
 
 <h2 id="section-3">解决问题</h2>
 
-<p>Yedis中实现了itoa，代码在<code>src/server/yedis_order.cpp</code></p>
+<p>Soupen中实现了itoa，代码在<code>src/server/soupen_order.cpp</code></p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -331,7 +331,7 @@ MathJax.Hub.Config({
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/yedis/'>yedis</a>
+    <a class='category' href='/blog/categories/soupen/'>soupen</a>
   
 </span>
 
@@ -347,7 +347,7 @@ MathJax.Hub.Config({
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2016/03/31/yedis01/" title="Previous Post: Yedis: A High Performance Nosql">&laquo; Yedis: A High Performance Nosql</a>
+        <a class="basic-alignment left" href="/blog/2016/03/31/yedis01/" title="Previous Post: Soupen: A High Performance Nosql">&laquo; Soupen: A High Performance Nosql</a>
       
       
         <a class="basic-alignment right" href="/blog/2016/04/10/stringliteralincpp/" title="Next Post: String Literal In C++">String Literal In C++ &raquo;</a>
@@ -370,11 +370,11 @@ MathJax.Hub.Config({
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/15/stringinyedis/">Yedis源码解析之string实现</a>
+        <a href="/blog/2016/05/15/stringinyedis/">Soupen源码解析之string实现</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/07/treappkskiplist/">Yedis源码解析之rank实现</a>
+        <a href="/blog/2016/05/07/treappkskiplist/">Soupen源码解析之rank实现</a>
       </li>
     
       <li class="post">
@@ -408,8 +408,8 @@ MathJax.Hub.Config({
  <h1>Categories</h1>
  <ul id="categories">
   <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (9)</a></li>
+<li class='category'><a href='/blog/categories/soupen/'>soupen (4)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
-<li class='category'><a href='/blog/categories/yedis/'>yedis (4)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (13)</a></li>

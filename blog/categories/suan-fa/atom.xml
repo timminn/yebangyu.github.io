@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-02T22:42:28+08:00</updated>
+  <updated>2016-06-02T22:53:42+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -87,7 +87,7 @@ public:
   INLINE bool operator() (const T &amp;a, const T &amp;b) const { return a &lt; b;}
 };
 template&lt;typename T, typename CompareOperator, int64_t threshold = 20&gt;
-class YedisSort
+class SoupenSort
 {
 public:
   static void sort(T *data, int64_t size);
@@ -97,14 +97,14 @@ private:
   static const T&amp; get_pivot(T *data, int64_t left, int64_t right, const CompareOperator &amp;co);
 };
 template&lt;typename T, typename CompareOperator, int64_t threshold&gt;
-INLINE void YedisSort&lt;T, CompareOperator, threshold&gt;::sort(T *data, int64_t size)
+INLINE void SoupenSort&lt;T, CompareOperator, threshold&gt;::sort(T *data, int64_t size)
 {
   CompareOperator co;
   sort_(data, 0, size - 1, co);
 }</typename></p>
 
 <p>template&lt;typename T, typename CompareOperator, int64_t threshold&gt;
-void YedisSort&lt;T, CompareOperator, threshold&gt;::sort_(T *data, int64_t left, int64_t right, const CompareOperator &amp;co)
+void SoupenSort&lt;T, CompareOperator, threshold&gt;::sort_(T *data, int64_t left, int64_t right, const CompareOperator &amp;co)
 {
   if(right - left &gt; threshold) {
     const T&amp; pivot = get_pivot(data, left, right, co);
@@ -134,7 +134,7 @@ void YedisSort&lt;T, CompareOperator, threshold&gt;::sort_(T *data, int64_t left
 }</p>
 
 <p>template&lt;typename T, typename CompareOperator, int64_t threshold&gt;
-INLINE void YedisSort&lt;T, CompareOperator, threshold&gt;::insertion_sort(T *data, int64_t left, int64_t right, const CompareOperator &amp;co)
+INLINE void SoupenSort&lt;T, CompareOperator, threshold&gt;::insertion_sort(T *data, int64_t left, int64_t right, const CompareOperator &amp;co)
 {
   int64_t begin = left + 1;
   int64_t end = right + 1;
@@ -151,7 +151,7 @@ INLINE void YedisSort&lt;T, CompareOperator, threshold&gt;::insertion_sort(T *da
 }</p>
 
 <p>template&lt;typename T, typename CompareOperator, int64_t threshold&gt;
-INLINE const T&amp; YedisSort&lt;T, CompareOperator, threshold&gt;::get_pivot(T *data, int64_t left, int64_t right, const CompareOperator &amp;co)
+INLINE const T&amp; SoupenSort&lt;T, CompareOperator, threshold&gt;::get_pivot(T *data, int64_t left, int64_t right, const CompareOperator &amp;co)
 {
   int64_t mid = (left + right) / 2;
   if (co(data[mid], data[left])) {
@@ -169,11 +169,11 @@ INLINE const T&amp; YedisSort&lt;T, CompareOperator, threshold&gt;::get_pivot(T 
   return data[right - 1];
 }
 ```
-我们把以上实现的快速排序称为YedisSort。是的，90行不到。</p>
+我们把以上实现的快速排序称为SoupenSort。是的，90行不到。</p>
 
 <h2 id="section-6">测试结果</h2>
 
-<p>测试程序已经放到了github上，可以从<a href="https://github.com/yebangyu/Yedis/blob/master/src/bad/test.cpp">这里</a>下载。</p>
+<p>测试程序已经放到了github上，可以从<a href="https://github.com/yebangyu/Soupen/blob/master/src/bad/test.cpp">这里</a>下载。</p>
 
 <p>我们pk的对象包括STL中的sort，以及C语言里大名鼎鼎的qsort。</p>
 
@@ -187,7 +187,7 @@ INLINE const T&amp; YedisSort&lt;T, CompareOperator, threshold&gt;::get_pivot(T 
 
 <p>sort: 1.06</p>
 
-<p>YedisSort: 1.20</p>
+<p>SoupenSort: 1.20</p>
 
 <p>qsort: 2.08</p>
 
@@ -195,7 +195,7 @@ INLINE const T&amp; YedisSort&lt;T, CompareOperator, threshold&gt;::get_pivot(T 
 
 <p>sort: 3.29</p>
 
-<p>YedisSort: 2.93</p>
+<p>SoupenSort: 2.93</p>
 
 <p>qsort: 2.91</p>
 
@@ -205,7 +205,7 @@ INLINE const T&amp; YedisSort&lt;T, CompareOperator, threshold&gt;::get_pivot(T 
 
 <p>sort: 0.23</p>
 
-<p>YedisSort: 0.27</p>
+<p>SoupenSort: 0.27</p>
 
 <p>qsort: 0.59</p>
 
@@ -213,15 +213,15 @@ INLINE const T&amp; YedisSort&lt;T, CompareOperator, threshold&gt;::get_pivot(T 
 
 <p>sort: 2.60</p>
 
-<p>YedisSort: 1.56</p>
+<p>SoupenSort: 1.56</p>
 
 <p>qsort: 0.76</p>
 
 <p>什么结论？</p>
 
-<p>没开优化，那么所需时间 qsort &lt; YedisSort &lt; sort</p>
+<p>没开优化，那么所需时间 qsort &lt; SoupenSort &lt; sort</p>
 
-<p>开了优化，那么所需时间 sort &lt; YedisSort &lt; qsort</p>
+<p>开了优化，那么所需时间 sort &lt; SoupenSort &lt; qsort</p>
 
 <p>为什么sort可以这么叼？据说它综合了插入排序、快速排序和堆排序。这让我想起了推荐和广告比赛里，有些队伍利用Ensemble Learning没节操地堆了几百个model。。。</p>
 
@@ -253,7 +253,7 @@ while(true) {
 
 <p>3，快速排序所需的栈空间是多少？能否进一步优化？</p>
 
-<p>4，YedisSort的时间复杂度是多少？O($n^2$)还是O($nlgn$)？如果是前者，那么，什么情况下是二次的？</p>
+<p>4，SoupenSort的时间复杂度是多少？O($n^2$)还是O($nlgn$)？如果是前者，那么，什么情况下是二次的？</p>
 ]]></content>
   </entry>
   
@@ -673,7 +673,7 @@ while(true) {
 
 <h2 id="section">实现</h2>
 
-<p>实现了Bucketized Cuckoo Hashmap，有需要的可以参考<a href="https://github.com/yebangyu/Yedis/blob/master/src/ds/yedis_cuckoo_hashmap.h">这里</a></p>
+<p>实现了Bucketized Cuckoo Hashmap，有需要的可以参考<a href="https://github.com/yebangyu/Soupen/blob/master/src/ds/soupen_cuckoo_hashmap.h">这里</a></p>
 
 <h2 id="section-1">其他</h2>
 

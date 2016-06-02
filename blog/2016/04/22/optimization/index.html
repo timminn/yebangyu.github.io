@@ -159,7 +159,7 @@ MathJax.Hub.Config({
 
 <p>哈希表：<strong>O(1)</strong>期望查找时间让它常常成为除了数组之外的首选，尤其是当查找非常关键时。只知道<strong>Separate Chaining</strong>和<strong>Open Addressing</strong>？那您<strong>out</strong>了。建议您阅读我的<a href="http://www.yebangyu.org/blog/2015/12/19/cuckoo-hashing/">这篇</a>讲解<strong>cuckoo hashing</strong>的博客。</p>
 
-<p>跳表：说到<strong>O(lgn)</strong>的<strong>insert、find、del</strong>，很多人想到二叉搜索树，由于非平衡的二叉搜索树有退化为<strong>O(n)</strong>的风险，因此很多场景需要平衡树。<strong>B</strong>树？红黑树？太<strong>heavy</strong>了。有时候，您需要跳表，真的，很需要。它足够简单，而且很多时候就能满足您的需求。除此之外，<strong>Treap</strong>也是一种随机的数据结构，我实现的大规模分布式数据库<a href="https://github.com/yebangyu/Yedis">Yedis</a>里就有提供相应的实现，以后会放出。</p>
+<p>跳表：说到<strong>O(lgn)</strong>的<strong>insert、find、del</strong>，很多人想到二叉搜索树，由于非平衡的二叉搜索树有退化为<strong>O(n)</strong>的风险，因此很多场景需要平衡树。<strong>B</strong>树？红黑树？太<strong>heavy</strong>了。有时候，您需要跳表，真的，很需要。它足够简单，而且很多时候就能满足您的需求。除此之外，<strong>Treap</strong>也是一种随机的数据结构，我实现的大规模分布式数据库<a href="https://github.com/yebangyu/Soupen">Soupen</a>里就有提供相应的实现，以后会放出。</p>
 
 <p><strong>Sunday</strong>算法：字符串匹配里，<strong>KMP</strong>算法是大名鼎鼎了。谁让<strong>Knuth</strong>是大佬呢？可是，您是否知道<strong>Sunday</strong>算法？<strong>Sunday</strong>算法什么时候会比<strong>KMP</strong>高效而且高效地多？</p>
 
@@ -270,11 +270,11 @@ MathJax.Hub.Config({
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/15/stringinyedis/">Yedis源码解析之string实现</a>
+        <a href="/blog/2016/05/15/stringinyedis/">Soupen源码解析之string实现</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/07/treappkskiplist/">Yedis源码解析之rank实现</a>
+        <a href="/blog/2016/05/07/treappkskiplist/">Soupen源码解析之rank实现</a>
       </li>
     
       <li class="post">
@@ -308,8 +308,8 @@ MathJax.Hub.Config({
  <h1>Categories</h1>
  <ul id="categories">
   <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (9)</a></li>
+<li class='category'><a href='/blog/categories/soupen/'>soupen (4)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
-<li class='category'><a href='/blog/categories/yedis/'>yedis (4)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (13)</a></li>

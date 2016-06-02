@@ -189,7 +189,7 @@ MathJax.Hub.Config({
 
 <p>想想我们去银行排队办业务：先拿个号，然后排队，叫到你的号就是服务你的时候了。没叫到你？老老实实等着吧（这里不考虑关系户走后门插队）。</p>
 
-<p><a href="https://github.com/yebangyu/Yedis/blob/master/src/concurrency/yedis_ticket_spin_lock.h">Yedis</a>中实现了ticket spin lock，这里摘抄如下：</p>
+<p><a href="https://github.com/yebangyu/Soupen/blob/master/src/concurrency/soupen_ticket_spin_lock.h">Soupen</a>中实现了ticket spin lock，这里摘抄如下：</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -214,10 +214,10 @@ MathJax.Hub.Config({
 <span class="line-number">21</span>
 <span class="line-number">22</span>
 <span class="line-number">23</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">YedisTicketSpinLock</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">SoupenTicketSpinLock</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="k">public</span><span class="o">:</span>
-</span><span class="line">    <span class="n">YedisTicketSpinLock</span><span class="p">()</span>
+</span><span class="line">    <span class="n">SoupenTicketSpinLock</span><span class="p">()</span>
 </span><span class="line">    <span class="p">{</span>
 </span><span class="line">      <span class="n">next_id_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </span><span class="line">      <span class="n">service_id_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
@@ -271,7 +271,7 @@ MathJax.Hub.Config({
 
 <p>第18行：叫下一个人，和下一个人说，轮到你了。</p>
 
-<p>关于<code>CPU_BARRIER</code>、<code>FETCH_AND_ADD</code>、<code>ACCESS_ONCE</code>和<code>INC_ATOMIC</code>的实现，请参考<a href="https://github.com/yebangyu/Yedis/blob/master/src/base/yedis_define.h">Yedis</a>中的相关代码。</p>
+<p>关于<code>CPU_BARRIER</code>、<code>FETCH_AND_ADD</code>、<code>ACCESS_ONCE</code>和<code>INC_ATOMIC</code>的实现，请参考<a href="https://github.com/yebangyu/Soupen/blob/master/src/base/soupen_define.h">Soupen</a>中的相关代码。</p>
 
 <p>公平性：不难看出，先来排队的人将优先获得服务。</p>
 
@@ -323,7 +323,7 @@ MathJax.Hub.Config({
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2016/05/15/stringinyedis/" title="Previous Post: Yedis源码解析之string实现">&laquo; Yedis源码解析之string实现</a>
+        <a class="basic-alignment left" href="/blog/2016/05/15/stringinyedis/" title="Previous Post: Soupen源码解析之string实现">&laquo; Soupen源码解析之string实现</a>
       
       
     </p>
@@ -344,11 +344,11 @@ MathJax.Hub.Config({
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/15/stringinyedis/">Yedis源码解析之string实现</a>
+        <a href="/blog/2016/05/15/stringinyedis/">Soupen源码解析之string实现</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2016/05/07/treappkskiplist/">Yedis源码解析之rank实现</a>
+        <a href="/blog/2016/05/07/treappkskiplist/">Soupen源码解析之rank实现</a>
       </li>
     
       <li class="post">
@@ -382,8 +382,8 @@ MathJax.Hub.Config({
  <h1>Categories</h1>
  <ul id="categories">
   <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (9)</a></li>
+<li class='category'><a href='/blog/categories/soupen/'>soupen (4)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
-<li class='category'><a href='/blog/categories/yedis/'>yedis (4)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (13)</a></li>
