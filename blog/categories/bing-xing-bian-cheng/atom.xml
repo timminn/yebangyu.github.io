@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-02T22:58:03+08:00</updated>
+  <updated>2016-06-04T18:23:51+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -79,6 +79,8 @@ void unlock()
 
 <p>2，原子操作少些，少些，再少些。</p>
 
+<p>3，没有饥饿。</p>
+
 <p>这就涉及到我们要谈到的Ticket Lock。</p>
 
 <p>想想我们去银行排队办业务：先拿个号，然后排队，叫到你的号就是服务你的时候了。没叫到你？老老实实等着吧（这里不考虑关系户走后门插队）。</p>
@@ -139,6 +141,8 @@ int add_and_fetch(int *p, int inc)
 <p>公平性：不难看出，先来排队的人将优先获得服务。</p>
 
 <p>性能：不难看出，和之前的不断CAS的版本相比，ticket lock算法中，一次lock调用只有一次原子操作开销。</p>
+
+<p>饥饿：不难看出，每个线程都可以按照自己的排队顺序拿到锁，不会发生饥饿现象。</p>
 
 <p>哈哈，如果过号呢？现实生活里，去银行排队可能因为时间太长不爽闪人了，银行叫人如果连叫三遍还没看到你就会叫下一个人了。</p>
 

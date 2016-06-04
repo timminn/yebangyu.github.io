@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-02T22:58:03+08:00</updated>
+  <updated>2016-06-04T18:23:51+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,120 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[String与Copy On Write]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/06/04/copy-on-write-in-string-and-soupen/"/>
+    <updated>2016-06-04T18:13:27+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/06/04/copy-on-write-in-string-and-soupen</id>
+    <content type="html"><![CDATA[<h2 id="copy-on-write">什么是Copy On Write</h2>
+
+<p>Copy On Write(COW)作为一种优化技术被广泛使用，在string的实现中也不例外。考虑如下的代码：
+<code>c++
+string s("1234");
+string t = s;
+cout&lt;&lt;t[1]&lt;&lt;endl;
+</code>
+第二行，通过调用copy constructor（注意，这里调用的是copy constructor，而不是copy assignment，因为它是从无到有构造对象，而不是设置已有对象）构造对象t，第三行对t中的某个元素进行只读操作。</p>
+
+<p>如果让你实现copy constructor，你会怎么做呢？教科书里的、简单的实现大概是这样：</p>
+
+<p><code>c++
+class string
+{
+  private:
+    char *data_;
+};
+string(const string &amp;other)
+{
+  data_ = new char[strlen(other.data_) + 1/*加1是考虑\0*/];
+  strcpy(data_, other.data_);
+}
+</code></p>
+
+<p>好了，既然只是对t进行只读，那么就没完全必要分配内存、拷贝字符串等昂贵操作了，而是复用s的字符串空间即可。这就是我们要谈到的string中的cow。</p>
+
+<h2 id="copy-on-write-1">如何实现Copy On Write</h2>
+
+<p>显然，现在是有多个对象绑定或者说涉及或者说引用到某个字符串对象上了。事实上，引用计数（Reference Counting，RC）是实现COW的重要基础。当执行上面最上面代码的第二行时，并不为t分配内存、拷贝字符串，而是相应的字符串的引用计数加1即可。</p>
+
+<p>那么，引用计数应该放在哪里呢？它是string类的普通成员么？不行，这样子每个string对象都有一个引用计数了；成为string类的静态成员变量么？也不行，这样子每个类都只有一个引用计数了。</p>
+
+<p>实际上，我们应该把buffer和引用计数抽离出来，单独放到某处。</p>
+
+<p><code>c++
+struct stringvalue
+{
+    char *data_;
+    int rc_;
+}
+class string
+{
+  private:
+    stringvalue *sv_;
+};
+string(const string &amp;other)
+{
+  sv_ = other.sv_;
+  (other.sv_)-&gt;rc_++;
+}
+</code>
+就这么简单，仅仅是attach，仅仅是增加引用计数。没有memory allocation，没有strcpy或者memcpy了。</p>
+
+<p>如果仅仅是只读操作，那么这没问题任何。但是如果要写了呢？这时候没办法了，必须复制了。这就是所谓lazy evaluation，拖延战术。对应的是eager evaluation。</p>
+
+<p><code>c++
+void set_char(const int idx, char new_char)
+{
+  if (sv_-&gt;rc_ &gt; 1) {
+    //引用计数至少是2。说明除了自己，还有别人也引用到了这个buffer，不得不分配内存了，否则影响到别人了。
+    stringvalue *tmp = sv_;
+    sv_ = new stringvalue();//重新搞一份
+    sv_-&gt;data_ = new char[strlen(tmp-&gt;char_) + 1];
+    strcpy(sv_-&gt;data_, tmp-&gt;char_);
+    sv_-&gt;rc_ = 1;
+    --tmp-&gt;rc_;//把原来的引用计数减1
+    //......
+} else {
+  //......
+}
+</code></p>
+
+<h2 id="copy-on-write-">Copy On Write 会带来什么问题？</h2>
+
+<p>在单线程环境下，使用Copy On Write不容易出问题。不过多线程下，就险象环生了。</p>
+
+<p>如果string内部做同步，那么这无疑增加了string的实现复杂度，并且STL的初衷其实是只考虑单线程环境的。同步操作无疑会带来大量的开销。</p>
+
+<p>如果string内部不做同步，那么问题就来了。</p>
+
+<p>加锁啊，加锁不就完了么？没那么容易。你看：</p>
+
+<p><code>c++
+ string s;//临界资源，全局变量
+ void f()
+ {
+   lock.lock();
+   string t = s;
+   lock.unlock();
+   //这里可能读写操作t
+</code></p>
+
+<p>那么，对t的操作也得加锁，如果有人通过t又复制了一个对象w，那么操作w的时候也得加锁，这太难了。这里，本质困难在于，可能会有很多对象，我们无法控制的对象都绑定到一块buffer上。</p>
+
+<p>不过这样也没什么，毕竟不管有没有使用COW，使用STL时候都不应该对它有多线程安全的幻想。但是使用COW后确实更加危险，因为加锁的难度变大了，甚至都不知道在哪里加了。</p>
+
+<h2 id="copy-on--write-">使用Copy On  Write 么？</h2>
+
+<p>假如你是库设计和实现者，你会用COW么？</p>
+
+<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+
+<p>Soupen也实现了自己的string，并不使用Copy On Write(lazy evaluation)。而是使用eager evaluation，立即分配内存，立即拷贝。在我们的应用中，调用copy constructor后对它进行写（而不是只读）的概率很大，拖拖拉拉各种引用计数加加减减，还不如直接分配+拷贝，反正后面也要做这个工作，何必自寻烦恼。</p>
+
+<p>当然，对于短字符串是可以做优化的，可以参考<a href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/">这里</a>对其的解读。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[String Literal In C++]]></title>
@@ -416,72 +530,6 @@ LinkedListNode *p = new LinkedListNode(2, NULL);
 list.insert(p);
 list.del(p);//ok! delete p will be called
 </code></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Linux下C++程序计时方法]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux/"/>
-    <updated>2016-01-07T23:02:14+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/01/07/timingcprograminlinux</id>
-    <content type="html"><![CDATA[<p>最近简单学习了下<strong>Linux</strong>下<strong>C++</strong>程序计时的一些函数和方法，总结如下。没啥<strong>insight</strong>了。</p>
-
-<p>方法一：</p>
-
-<p>如果是想统计某个程序的运行时间，那么可以使用</p>
-
-<pre><code>time ./a.out
-</code></pre>
-
-<!--more-->
-
-<p>方法二：</p>
-
-<p>如果是想对某个函数或者语句进行计时，那么有别的方法。比如说，<code>gettimeofday</code>函数。直接贴示例代码:</p>
-
-<p><code>c++
-#include &lt;sys/time.h&gt;
-void f()
-{
-  //...
-}
-int main()
-{
-  struct timeval t1, t2;
-  gettimeofday(&amp;t1, NULL);
-  f();
-  gettimeofday(&amp;t2, NULL);
-  //那么函数f运行所花的时间为
-  //deltaT = (t2.tv_sec-t1.tv_sec) * 1000000 + t2.tv_usec-t1.tv_usec 微秒
-  return 0;
-}
-</code></p>
-
-<p><code>gettimeofday</code>只能精确到微秒，并且它受系统时钟的影响(它的原理就是通过读取系统时钟，因此当计时的这段时间里有其他程序修改了系统时钟，那么结果将不准确)。</p>
-
-<p>如果想精确到纳秒呢？继续往下看：</p>
-
-<p>方法三：</p>
-
-<p><code>c++
-#include &lt;time.h&gt;
-void f()
-{
-  //...
-}
-int main()
-{
-  timespec t1, t2;
-  clock_gettime(CLOCK_MONOTONIC, &amp;t1);
-  f();
-  clock_gettime(CLOCK_MONOTONIC, &amp;t2);
-  //那么f所花时间为
-  //deltaT = (t2.tv_sec - t1.tv_sec) * 10^9 + t2.tv_nsec - t1.tv_nsec 纳秒
-  return 0;
-}
-</code></p>
-
-<p>这里说的都是<strong>wall clock</strong>，如果想获得<strong>cpu</strong>执行时间，以及了解<code>clock_gettime</code>参数的解释和可能的取值，可以<strong>man</strong>一下。</p>
 ]]></content>
   </entry>
   

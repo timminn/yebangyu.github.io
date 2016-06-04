@@ -185,6 +185,8 @@ MathJax.Hub.Config({
 
 <p>2，原子操作少些，少些，再少些。</p>
 
+<p>3，没有饥饿。</p>
+
 <p>这就涉及到我们要谈到的Ticket Lock。</p>
 
 <p>想想我们去银行排队办业务：先拿个号，然后排队，叫到你的号就是服务你的时候了。没叫到你？老老实实等着吧（这里不考虑关系户走后门插队）。</p>
@@ -277,6 +279,8 @@ MathJax.Hub.Config({
 
 <p>性能：不难看出，和之前的不断CAS的版本相比，ticket lock算法中，一次lock调用只有一次原子操作开销。</p>
 
+<p>饥饿：不难看出，每个线程都可以按照自己的排队顺序拿到锁，不会发生饥饿现象。</p>
+
 <p>哈哈，如果过号呢？现实生活里，去银行排队可能因为时间太长不爽闪人了，银行叫人如果连叫三遍还没看到你就会叫下一个人了。</p>
 
 <p>在这里，假如持有锁的线程crash了，来不及调用unlock，那么所有等待锁的线程都将一直spin，除非，哦，除非海量的线程来排队不断自增<code>next_id_</code>导致<code>next_id_</code>溢出回滚，然后重新等于<code>service_id_</code>。</p>
@@ -326,6 +330,8 @@ MathJax.Hub.Config({
         <a class="basic-alignment left" href="/blog/2016/05/15/stringinyedis/" title="Previous Post: Soupen源码解析之string实现">&laquo; Soupen源码解析之string实现</a>
       
       
+        <a class="basic-alignment right" href="/blog/2016/06/04/copy-on-write-in-string-and-soupen/" title="Next Post: String与Copy On Write">String与Copy On Write &raquo;</a>
+      
     </p>
   </footer>
 </article>
@@ -338,6 +344,10 @@ MathJax.Hub.Config({
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/06/04/copy-on-write-in-string-and-soupen/">String与Copy On Write</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2016/05/26/ticketlock/">Ticket Lock</a>
@@ -353,10 +363,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/05/01/hanwudi/">论汉武帝独尊儒术</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/04/22/optimization/">Introduction To Performance Optimization</a>
       </li>
     
   </ul>
@@ -381,7 +387,7 @@ MathJax.Hub.Config({
 <section>
  <h1>Categories</h1>
  <ul id="categories">
-  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (9)</a></li>
+  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (10)</a></li>
 <li class='category'><a href='/blog/categories/soupen/'>soupen (4)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>

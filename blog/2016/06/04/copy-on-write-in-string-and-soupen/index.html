@@ -5,18 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Yebangyu's Blog</title>
+  <title>String与Copy On Write - Yebangyu's Blog</title>
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="什么是Copy On Write Copy On Write(COW)作为一种优化技术被广泛使用，在string的实现中也不例外。考虑如下的代码：
-1
-2
-3
-string s(&quot;1234&quot;);
-string t = s;
-cout&lt;&lt;t[1]&lt;&lt; &hellip;">
-  
+  <meta name="description" content="介绍了STL中的string实现以及copy on write技术，并讲解了soupen中string的优化和实现">
+  <meta name="keywords" content="string copy on write stl soupen">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -24,7 +18,7 @@ cout&lt;&lt;t[1]&lt;&lt; &hellip;">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://www.yebangyu.org/">
+  <link rel="canonical" href="http://www.yebangyu.org/blog/2016/06/04/copy-on-write-in-string-and-soupen/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Yebangyu's Blog" type="application/atom+xml">
@@ -85,15 +79,12 @@ MathJax.Hub.Config({
 </nav>
   <div id="main">
     <div id="content">
-      <div class="blog-index">
+      <div>
+<article class="hentry" role="article">
   
-  
-  
-    <article>
-      
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2016/06/04/copy-on-write-in-string-and-soupen/">String与Copy On Write</a></h1>
+      <h1 class="entry-title">String与Copy On Write</h1>
     
     
       <p class="meta">
@@ -109,7 +100,7 @@ MathJax.Hub.Config({
   </header>
 
 
-  <div class="entry-content"><h2 id="copy-on-write">什么是Copy On Write</h2>
+<div class="entry-content"><h2 id="copy-on-write">什么是Copy On Write</h2>
 
 <p>Copy On Write(COW)作为一种优化技术被广泛使用，在string的实现中也不例外。考虑如下的代码：</p>
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
@@ -260,440 +251,51 @@ MathJax.Hub.Config({
 
 <p>当然，对于短字符串是可以做优化的，可以参考<a href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/">这里</a>对其的解读。</p>
 </div>
-  
-  
 
 
-    </article>
-  
-  
-    <article>
+  <footer>
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/05/26/ticketlock/">Ticket Lock</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-05-26T19:25:15+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:25 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2 id="section">简单回顾</h2>
-
-<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">上回</a> 我们介绍了peterson算法来实现spin lock，算法简单，实现简单，但是值得注意和留心的点很多。</p>
-
-<p>粗略说来，peterson算法的主要缺点在于：</p>
-
-<p>1，很难推广到n个线程(n&gt;=3)。原始的算法针对两个线程，如果想应用在多个线程的场景里，需要做一定的修改。</p>
-
-<p>2，peterson算法的动机是仅仅使用load和store来实现互斥访问。然而，我们知道，现代体系结构下，CPU和编译器会对读写操作进行乱序，仅仅依靠读写操作而不使用memory barrier就编写正确的程序非常困难。</p>
-
-<h2 id="ticket-lock">Ticket Lock</h2>
-
-<p>在介绍Ticket Lock之前，我们首先分析一个妇孺皆知、地球人都知道的实现spin lock的方法（伪代码）：</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/05/26/ticketlock/">阅读更多 →</a>
-    </footer>
   
 
+<span class="byline author vcard">Posted by <span class="fn">Yebangyu</span></span>
 
-    </article>
-  
-  
-    <article>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/05/15/stringinyedis/">Soupen源码解析之string实现</a></h1>
-    
-    
-      <p class="meta">
-        
 
 
 
 
-<time class='entry-date' datetime='2016-05-15T20:21:10+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>8:21 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2 id="section">写在最前</h2>
-
-<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
-
-<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
-
-<p>在Soupen中有两种字符串(或者更准确的说，字节流)实现: SoupenString和SoupenNormalString。代码都在<code>src/ds/soupen_string.h</code>和<code>src/ds/soupen_string.cpp</code>文件里。两种实现都设计为大小写不敏感。</p>
-
-<h2 id="soupennormalstring">SoupenNormalString</h2>
-
-<p>以<code>\0</code>结尾的字符串实现，也就是说SoupenNormalString中的字符串都是以 <code>\0</code>结尾的。因此，对其施加任何类似于<code>strcmp</code>等传统C字符串函数都是安全的。</p>
-
-<p>在实现时，针对短字符串，为了进一步优化效率，使用了<a href="http://www.yebangyu.org/blog/2016/03/25/fuckthefever/">柔性数组</a>技术来提高cache命中。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/05/15/stringinyedis/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
+<time class='entry-date' datetime='2016-06-04T18:13:27+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>6:13 pm</span></time>
       
-  <header>
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/c-plus-plus/'>c++</a>
+  
+</span>
+
+
+    </p>
     
-      <h1 class="entry-title"><a href="/blog/2016/05/07/treappkskiplist/">Soupen源码解析之rank实现</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-05-07T10:00:12+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>7</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:00 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2 id="section">写在最前</h2>
-
-<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
-
-<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
-
-<p>和Redis一样，Soupen也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
-
-<p>那么，什么是Treap呢？</p>
-
-<h2 id="what-is-treap">What is Treap</h2>
-
-<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/TreapAlphaKey.svg/440px-TreapAlphaKey.svg.png" alt="Treap" /></p>
-
-<p>(图片来源于WikiMedia)</p>
-
-<p>简单说来，Treap是这样的树：Treap中的每个节点至少包含key和优先级两个字段，其中key满足搜索树性质，优先级满足堆序性。如上图所示，数字是优先级字段，字母是key字段。其中优先级构成了一个大根堆。</p>
-
-<p>也就是说，在Treap中，key组成了一个二叉搜索树，优先级组成了一个堆。所谓Treap = Tree + Heap。</p>
-
+      <div class="sharing">
+  
+  
+  
 </div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/05/07/treappkskiplist/">阅读更多 →</a>
-    </footer>
-  
 
-
-    </article>
-  
-  
-    <article>
+    
+    <p class="meta">
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/05/01/hanwudi/">论汉武帝独尊儒术</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-05-01T12:27:57+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>12:27 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>汉武帝为什么独尊儒术？</p>
-
-<p>在讨论这个问题前，先让我们回忆一个非常基本的常识，还是不厌其烦的交待两个人物的关系：汉武帝和窦太后。窦太后是汉文帝的老婆，汉景帝的妈妈，汉武帝的奶奶。</p>
-
-<p><img src="http://www.art-child.com/uploads/allimg/160322/352-16032211321SN.jpg" alt="窦太后" /></p>
-
-<p>汉武帝为什么独尊儒术呢？大家都说，这是因为汉武帝推崇并认可儒家学说。然而，以我个人的浅见，汉武帝其实并不是多么喜欢儒家思想，也不懂儒家学说。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/05/01/hanwudi/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
+        <a class="basic-alignment left" href="/blog/2016/05/26/ticketlock/" title="Previous Post: Ticket Lock">&laquo; Ticket Lock</a>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/04/22/optimization/">Introduction To Performance Optimization</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-04-22T23:13:13+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>11:13 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2 id="section">写在最前</h2>
-
-<p>本文针对<strong>C++</strong>和<strong>linux</strong>环境，但是思想和方法，却对其他语言和环境同样适用。很可供参考的。</p>
-
-<h2 id="section-1">优化前</h2>
-
-<p>1，确定优化是必须要做的。</p>
-
-<p>如果程序已经跑的足够快了，内存使用也足够省了，那么完全没有优化的必要。什么是足够呢？能够满足当前的业务和需求。因此，如果不是绝对必要，不要优化。</p>
-
-<p>这是因为虽然优化不是万恶之源，但是优化可能会带来问题。为了提升一点点性能就得绞尽脑汁、辗转反侧；它可能让之前只需要一两行逻辑很清晰的代码，变成很难理解的高度优化的实现。优化很多时候某种程度上让代码可读性和可维护性变差。</p>
-
-<p>2，确定该做的优化都做了</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/04/22/optimization/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
       
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/04/10/stringliteralincpp/">String Literal In C++</a></h1>
-    
-    
-      <p class="meta">
-        
+    </p>
+  </footer>
+</article>
 
-
-
-
-<time class='entry-date' datetime='2016-04-10T22:05:21+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:05 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近被一个很基本的知识点给咬伤，虽然之前知道这个问题，但是写代码的时候不小心还是容易犯错。简单记录一下。</p>
-
-<h2 id="section">提出问题</h2>
-
-<p>之前，代码里拥有如下数组：</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">COLORS</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;red&quot;</span><span class="p">,</span>
-</span><span class="line">                         <span class="s">&quot;black&quot;</span><span class="p">,</span>
-</span><span class="line">                         <span class="s">&quot;green&quot;</span>
-</span><span class="line">                        <span class="p">};</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<p>现在需要以追加的形式，添加一个yellow的颜色。粗心之下，我写成了：</p>
 
 </div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/04/10/stringliteralincpp/">阅读更多 →</a>
-    </footer>
-  
 
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/04/04/itoa-in-yedis/">Soupen源码解析之itoa实现</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-04-04T12:37:06+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>12:37 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2 id="section">写在最前</h2>
-
-<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
-
-<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
-
-<h2 id="section-1">提出问题</h2>
-
-<p>如何用C/C++实现正确的、可移植的、高效的、对所有整数都work的itoa函数？</p>
-
-<p>原型如下</p>
-
-<p><code>int itoa(char *buffer, int64_t value);</code></p>
-
-<p>将value转为字符串后存在buffer中，返回字符串的长度。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/04/04/itoa-in-yedis/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/31/yedis01/">Soupen: A High Performance Nosql</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-31T23:53:16+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>11:53 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
-
-<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a>。</p>
-
-<h2 id="section">动机</h2>
-
-<p>开发Soupen的主要原因是想通过这个项目，进一步提高和熟悉C++服务器端开发相关的技术和知识。</p>
-
-<h2 id="section-1">特性</h2>
-
-<p>换句话说，它和Redis相比有什么不同？</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/31/yedis01/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/25/fuckthefever/">C99中的柔性数组</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-25T12:00:34+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>25</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>12:00 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>柔性数组是C99引入的feature。</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">struct</span> <span class="n">Data</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
-</span><span class="line">  <span class="kt">int</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-</span><span class="line"><span class="p">};</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<p>其中柔性数组a处于结构体的末尾，并且声明的大小为0。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/25/fuckthefever/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
-  <div class="pagination">
-    
-      <a class="prev" href="/posts/2">&larr; Older</a>
-    
-    <a href="/blog/archives">Blog Archives</a>
-    
-  </div>
-</div>
 <aside class="sidebar">
   
     <section>
@@ -760,6 +362,7 @@ MathJax.Hub.Config({
 
   
 </aside>
+
 
     </div>
   </div>

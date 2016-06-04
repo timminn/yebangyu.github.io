@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-02T22:58:03+08:00</updated>
+  <updated>2016-06-04T18:23:51+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,164 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[String与Copy On Write]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/06/04/copy-on-write-in-string-and-soupen/"/>
+    <updated>2016-06-04T18:13:27+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/06/04/copy-on-write-in-string-and-soupen</id>
+    <content type="html"><![CDATA[<h2 id="copy-on-write">什么是Copy On Write</h2>
+
+<p>Copy On Write(COW)作为一种优化技术被广泛使用，在string的实现中也不例外。考虑如下的代码：</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">string</span> <span class="nf">s</span><span class="p">(</span><span class="s">&quot;1234&quot;</span><span class="p">);</span>
+</span><span class="line"><span class="n">string</span> <span class="n">t</span> <span class="o">=</span> <span class="n">s</span><span class="p">;</span>
+</span><span class="line"><span class="n">cout</span><span class="o">&lt;&lt;</span><span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>第二行，通过调用copy constructor（注意，这里调用的是copy constructor，而不是copy assignment，因为它是从无到有构造对象，而不是设置已有对象）构造对象t，第三行对t中的某个元素进行只读操作。</p>
+
+<p>如果让你实现copy constructor，你会怎么做呢？教科书里的、简单的实现大概是这样：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">string</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">private</span><span class="o">:</span>
+</span><span class="line">    <span class="kt">char</span> <span class="o">*</span><span class="n">data_</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="n">string</span><span class="p">(</span><span class="k">const</span> <span class="n">string</span> <span class="o">&amp;</span><span class="n">other</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">data_</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="p">[</span><span class="n">strlen</span><span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">data_</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="cm">/*加1是考虑\0*/</span><span class="p">];</span>
+</span><span class="line">  <span class="n">strcpy</span><span class="p">(</span><span class="n">data_</span><span class="p">,</span> <span class="n">other</span><span class="p">.</span><span class="n">data_</span><span class="p">);</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>好了，既然只是对t进行只读，那么就没完全必要分配内存、拷贝字符串等昂贵操作了，而是复用s的字符串空间即可。这就是我们要谈到的string中的cow。</p>
+
+<h2 id="copy-on-write-1">如何实现Copy On Write</h2>
+
+<p>显然，现在是有多个对象绑定或者说涉及或者说引用到某个字符串对象上了。事实上，引用计数（Reference Counting，RC）是实现COW的重要基础。当执行上面最上面代码的第二行时，并不为t分配内存、拷贝字符串，而是相应的字符串的引用计数加1即可。</p>
+
+<p>那么，引用计数应该放在哪里呢？它是string类的普通成员么？不行，这样子每个string对象都有一个引用计数了；成为string类的静态成员变量么？也不行，这样子每个类都只有一个引用计数了。</p>
+
+<p>实际上，我们应该把buffer和引用计数抽离出来，单独放到某处。</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">struct</span> <span class="n">stringvalue</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">    <span class="kt">char</span> <span class="o">*</span><span class="n">data_</span><span class="p">;</span>
+</span><span class="line">    <span class="kt">int</span> <span class="n">rc_</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">string</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">private</span><span class="o">:</span>
+</span><span class="line">    <span class="n">stringvalue</span> <span class="o">*</span><span class="n">sv_</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line"><span class="n">string</span><span class="p">(</span><span class="k">const</span> <span class="n">string</span> <span class="o">&amp;</span><span class="n">other</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">sv_</span> <span class="o">=</span> <span class="n">other</span><span class="p">.</span><span class="n">sv_</span><span class="p">;</span>
+</span><span class="line">  <span class="p">(</span><span class="n">other</span><span class="p">.</span><span class="n">sv_</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">rc_</span><span class="o">++</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>就这么简单，仅仅是attach，仅仅是增加引用计数。没有memory allocation，没有strcpy或者memcpy了。</p>
+
+<p>如果仅仅是只读操作，那么这没问题任何。但是如果要写了呢？这时候没办法了，必须复制了。这就是所谓lazy evaluation，拖延战术。对应的是eager evaluation。</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">set_char</span><span class="p">(</span><span class="k">const</span> <span class="kt">int</span> <span class="n">idx</span><span class="p">,</span> <span class="kt">char</span> <span class="n">new_char</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">sv_</span><span class="o">-&gt;</span><span class="n">rc_</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="c1">//引用计数至少是2。说明除了自己，还有别人也引用到了这个buffer，不得不分配内存了，否则影响到别人了。</span>
+</span><span class="line">    <span class="n">stringvalue</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="n">sv_</span><span class="p">;</span>
+</span><span class="line">    <span class="n">sv_</span> <span class="o">=</span> <span class="k">new</span> <span class="n">stringvalue</span><span class="p">();</span><span class="c1">//重新搞一份</span>
+</span><span class="line">    <span class="n">sv_</span><span class="o">-&gt;</span><span class="n">data_</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">char</span><span class="p">[</span><span class="n">strlen</span><span class="p">(</span><span class="n">tmp</span><span class="o">-&gt;</span><span class="n">char_</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">];</span>
+</span><span class="line">    <span class="n">strcpy</span><span class="p">(</span><span class="n">sv_</span><span class="o">-&gt;</span><span class="n">data_</span><span class="p">,</span> <span class="n">tmp</span><span class="o">-&gt;</span><span class="n">char_</span><span class="p">);</span>
+</span><span class="line">    <span class="n">sv_</span><span class="o">-&gt;</span><span class="n">rc_</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class="line">    <span class="o">--</span><span class="n">tmp</span><span class="o">-&gt;</span><span class="n">rc_</span><span class="p">;</span><span class="c1">//把原来的引用计数减1</span>
+</span><span class="line">    <span class="c1">//......</span>
+</span><span class="line"><span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span><span class="line">  <span class="c1">//......</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h2 id="copy-on-write-">Copy On Write 会带来什么问题？</h2>
+
+<p>在单线程环境下，使用Copy On Write不容易出问题。不过多线程下，就险象环生了。</p>
+
+<p>如果string内部做同步，那么这无疑增加了string的实现复杂度，并且STL的初衷其实是只考虑单线程环境的。同步操作无疑会带来大量的开销。</p>
+
+<p>如果string内部不做同步，那么问题就来了。</p>
+
+<p>加锁啊，加锁不就完了么？没那么容易。你看：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"> <span class="n">string</span> <span class="n">s</span><span class="p">;</span><span class="c1">//临界资源，全局变量</span>
+</span><span class="line"> <span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
+</span><span class="line"> <span class="p">{</span>
+</span><span class="line">   <span class="n">lock</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span>
+</span><span class="line">   <span class="n">string</span> <span class="n">t</span> <span class="o">=</span> <span class="n">s</span><span class="p">;</span>
+</span><span class="line">   <span class="n">lock</span><span class="p">.</span><span class="n">unlock</span><span class="p">();</span>
+</span><span class="line">   <span class="c1">//这里可能读写操作t</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>那么，对t的操作也得加锁，如果有人通过t又复制了一个对象w，那么操作w的时候也得加锁，这太难了。这里，本质困难在于，可能会有很多对象，我们无法控制的对象都绑定到一块buffer上。</p>
+
+<p>不过这样也没什么，毕竟不管有没有使用COW，使用STL时候都不应该对它有多线程安全的幻想。但是使用COW后确实更加危险，因为加锁的难度变大了，甚至都不知道在哪里加了。</p>
+
+<h2 id="copy-on--write-">使用Copy On  Write 么？</h2>
+
+<p>假如你是库设计和实现者，你会用COW么？</p>
+
+<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
+
+<p>Soupen也实现了自己的string，并不使用Copy On Write(lazy evaluation)。而是使用eager evaluation，立即分配内存，立即拷贝。在我们的应用中，调用copy constructor后对它进行写（而不是只读）的概率很大，拖拖拉拉各种引用计数加加减减，还不如直接分配+拷贝，反正后面也要做这个工作，何必自寻烦恼。</p>
+
+<p>当然，对于短字符串是可以做优化的，可以参考<a href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/">这里</a>对其的解读。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Ticket Lock]]></title>
@@ -102,6 +260,8 @@
 <p>1，保证公平性。</p>
 
 <p>2，原子操作少些，少些，再少些。</p>
+
+<p>3，没有饥饿。</p>
 
 <p>这就涉及到我们要谈到的Ticket Lock。</p>
 
@@ -194,6 +354,8 @@
 <p>公平性：不难看出，先来排队的人将优先获得服务。</p>
 
 <p>性能：不难看出，和之前的不断CAS的版本相比，ticket lock算法中，一次lock调用只有一次原子操作开销。</p>
+
+<p>饥饿：不难看出，每个线程都可以按照自己的排队顺序拿到锁，不会发生饥饿现象。</p>
 
 <p>哈哈，如果过号呢？现实生活里，去银行排队可能因为时间太长不爽闪人了，银行叫人如果连叫三遍还没看到你就会叫下一个人了。</p>
 
@@ -2929,106 +3091,6 @@ schedulers.</p>
 <p>3，写书在取书名的时候需要区分。如果你是讲<strong>MPI、Open MP</strong>这类技术，建议用并行或者说<strong>Parallel Computing</strong>。如果是讲<strong>lock free、multi-thread</strong>这些共享内存编程的，建议用<strong>Concurrency</strong>或者<strong>Concurrency Programming</strong>。</p>
 
 <p>那么，<strong>Go</strong>语言这种<strong>CSP</strong>类型的<strong>Channel</strong>的呢？个人认为，都可以吧。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Memory Consistency和Cache Coherence]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/01/09/memoryconsistencyandcachecoherence/"/>
-    <updated>2016-01-09T22:52:52+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/01/09/memoryconsistencyandcachecoherence</id>
-    <content type="html"><![CDATA[<h2 id="memory-consistency">Memory Consistency</h2>
-
-<p><strong>Memory Consistency</strong>(<strong>MC</strong>)，有时候又叫做<strong>Memory Consistency Model</strong>或者<strong>Memory Model</strong>。为了理解为什么需要引入这种东西，我们首先看以下程序：</p>
-
-<!--more-->
-
-<pre><code>初始：x=0 y=0
-
-Thread1：
-
-S1：x=1
-
-L1：r1=y
-
-Thread2：
-
-S2：y=2
-
-L2：r2=x
-</code></pre>
-
-<p>其中，<strong>S1、S2、L1、L2</strong>是语句代号（<strong>BTW</strong>，<strong>S</strong>表示<strong>Store</strong>，<strong>L</strong>表示<strong>Load</strong>）；<strong>r1</strong>和<strong>r2</strong>是两个寄存器。<strong>x</strong>和<strong>y</strong>是两个不同的内存变量。</p>
-
-<p>两个线程执行完之后，<strong>r1</strong>和<strong>r2</strong>可能是什么值？</p>
-
-<p>注意到线程是并发、交替执行的，下面是可能的执行顺序和相应结果：</p>
-
-<p><strong>S1 L1 S2 L2</strong> 那么<strong>r1=0 r2=2</strong></p>
-
-<p><strong>S1 S2 L1 L2</strong> 那么<strong>r1=2 r2=1</strong></p>
-
-<p><strong>S2 L2 S1 L1</strong> 那么<strong>r1=2 r2=0</strong></p>
-
-<p>这些都是意料之内、情理之中的。但是在<strong>x86</strong>体系结构下，很可能得到<strong>r1=0 r2=0</strong>这样的结果。是不是大吃一惊？</p>
-
-<p>如果没有<strong>Memory Consistency</strong>，那么程序员对于自己编写的多线程程序会输出什么将一无所知：天知道会输出什么。</p>
-
-<p>因此，<strong>Memory Consistency</strong>就是程序员（编程语言）、编译器、CPU间的一种协议。这个协议保证了程序访问内存时可能得到什么值，会得到什么值。</p>
-
-<h2 id="sequential-consistency">Sequential Consistency</h2>
-
-<p>在<strong>Sequential Consistency</strong>这种<strong>Memory Model</strong>下，刚才讨论的那个程序不可能输出<strong>r1=0 r2=0</strong>这种结果。怎么说？这就牵涉到一个问题：什么是<strong>Sequential Consistency</strong>（<strong>SC</strong>）。</p>
-
-<p>根据<strong>Leslie Lamport</strong>在<strong>1979</strong>年<strong>9</strong>月发表的论文《<strong>How to Make a Multiprocessor Computer That Correctly Executes Multiprocess Programs</strong>》里提出的<strong>SC</strong>的定义：</p>
-
-<p>the result of any execution is the same as if the operations of all the processors were executed in some sequential order, and the operations of each individual processor appear in this sequence in the order specified by its program.</p>
-
-<p>根据这个定义，在<strong>SC</strong>模型下，任何<strong>execution</strong>的执行顺序（我们称为<strong>Memory Order</strong>）必须<strong>respect</strong>每个线程的<strong>Program Order</strong>。什么是<strong>Program Order</strong>？对于以上程序，在<strong>Thread1</strong>中，<strong>S1</strong>先于<strong>L1</strong>（不妨记为<strong>S1&lt;L1</strong>）；在<strong>Thread2</strong>中，<strong>S2</strong>先于<strong>L2</strong>（记为<strong>S2&lt;L2</strong>）。这就是<strong>Program Order</strong>。</p>
-
-<p>请时刻注意，<strong>Program Order</strong>只针对某个线程内的语句而言，不涉及到跨线程。比如<strong>Thread1</strong>中的<strong>S1</strong>和<strong>Thread2</strong>中的<strong>L2</strong>，就无所谓什么<strong>Program Order</strong>了。</p>
-
-<p>好了，现在知道为什么在<strong>SC</strong>下，有些结果可能出现，有些不可能了。</p>
-
-<p><strong>S1 L1 S2 L2 r1=0 r2=2</strong> 没问题，没有违背<strong>S1&lt;L1 S2&lt;L2</strong></p>
-
-<p><strong>S1 S2 L1 L2 r1=1 r2=2</strong> 没问题，没有违背<strong>S1&lt;L1 S2&lt;L2</strong></p>
-
-<p><strong>S2 L2 S1 L1 r1=2 r2=0</strong> 没问题，没有违背<strong>S1&lt;L1 S2&lt;L2</strong></p>
-
-<p>而对于<strong>r1=0 r2=0</strong>，在<strong>SC</strong>下，我们找不到一个能<strong>respect Program Order</strong>的<strong>Memory Order</strong>。因为<strong>r1=0</strong>，说明<strong>L1&lt;S2</strong>，<strong>r2=0</strong>说明<strong>L2&lt;S1</strong>；而<strong>S1&lt;L1，S2&lt;L2</strong>，不难看出这里形成了一个环。</p>
-
-<h2 id="cache-coherence">Cache Coherence</h2>
-
-<p>还是先搬出这张图吧:</p>
-
-<p><img src="http://7xnljs.com1.z0.glb.clouddn.com/cpuand%20cache.png" alt="memorycache" /></p>
-
-<p>(图片来源于<strong>Paul</strong>大叔的《<strong>Is Parallel Programming Hard</strong>》这本书第三章)</p>
-
-<p>多个<strong>CPU cores</strong>，每个<strong>core</strong>上有自己的<strong>Cache</strong>。我们知道，<strong>Cache</strong>是部分内存的映射和缓存，或者说，副本。这就带来一个问题：副本一致性。内存只有一个，每个<strong>cpu cores</strong>却有自己的内存副本，如何保证大家看到的内容是一样的、一致的、正确的呢？这就是<strong>Cache Coherence(CC)</strong>要解决的问题。</p>
-
-<h2 id="cache-coherence--vs-memory-consistency">Cache Coherence  VS Memory Consistency</h2>
-
-<p>从以上分析，我们不难看出，<strong>CC</strong>和<strong>MC</strong>涉及的是两个不同层面的东西，解决的是不同的问题，不可混淆。<strong>CC</strong>解决的是副本一致性问题；<strong>MC</strong>保证的是多线程程序访问内存时可以（可能）读到什么值。</p>
-
-<p>两者有联系吗？有。实现<strong>Memory Consistency</strong>时可能会使用到<strong>Cache Coherence</strong>。细节下次我们接着聊。</p>
-
-<h2 id="section">附录</h2>
-
-<p>1，在并行编程中，我们常常有一个问题，或者需求：比如说上面的那个程序，如何保证线程<strong>2</strong>读到的<strong>x</strong>是线程<strong>1</strong>更新（<strong>x=1</strong>）后的<strong>x</strong>的值呢？</p>
-
-<p>如果不加任何同步设施，仅仅考虑上面的程序，那么答案是：无法保证。因为线程的推进速度不同，哪条指令先被执行也一无所知。这个程序重跑几次，也可能输出不同的结果出来。</p>
-
-<p>也就是说，<strong>Memory Model</strong>保证的是，例如，当线程<strong>2</strong>看到<strong>x</strong>等于<strong>1</strong>的时候，线程<strong>1</strong>是否已经执行了<strong>L1</strong>。也就是说，<strong>Memory Model</strong>确保当一件事情发生时，有其他什么事情<strong>has happened</strong>。在<strong>SC</strong>中，当<strong>L1</strong>发生时，说明或者说暗示着，<strong>S1</strong>已经发生了。</p>
-
-<p>2，为什么<strong>x86</strong>下可能得出<strong>r1=0 r2=0</strong>的结果？</p>
-
-<p>因为<strong>S1</strong>是写一个内存变量而<strong>L1</strong>是读取另一个内存变量（两个变量，或者说两个内存地址），这种情况下的写读可能被<strong>CPU</strong>乱序：先执行<strong>L1</strong>，再执行<strong>S1</strong>。（为了性能，所谓的延后写）</p>
-
-<h2 id="section-1">致谢</h2>
-
-<p>本文发出后，微博网友@linyvxiang 指出了其中的一个笔误，非常感谢。</p>
 ]]></content>
   </entry>
   
