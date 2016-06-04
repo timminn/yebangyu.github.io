@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-04T18:23:51+08:00</updated>
+  <updated>2016-06-04T18:42:41+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -159,13 +159,19 @@
 
 <p>不过这样也没什么，毕竟不管有没有使用COW，使用STL时候都不应该对它有多线程安全的幻想。但是使用COW后确实更加危险，因为加锁的难度变大了，甚至都不知道在哪里加了。</p>
 
+<p>想想看，将c_str()返回的指针强制去掉const，以及operator []的读写在遇到COW实现的string的多线程环境里会有什么问题。</p>
+
 <h2 id="copy-on--write-">使用Copy On  Write 么？</h2>
 
 <p>假如你是库设计和实现者，你会用COW么？</p>
 
 <p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
 
-<p>Soupen也实现了自己的string，并不使用Copy On Write(lazy evaluation)。而是使用eager evaluation，立即分配内存，立即拷贝。在我们的应用中，调用copy constructor后对它进行写（而不是只读）的概率很大，拖拖拉拉各种引用计数加加减减，还不如直接分配+拷贝，反正后面也要做这个工作，何必自寻烦恼。</p>
+<p>Soupen也实现了自己的string，并不使用Copy On Write(lazy evaluation)。而是使用eager evaluation，立即分配内存，立即拷贝。</p>
+
+<p>在我们的应用中，调用copy constructor后对它进行写（而不是只读）的概率很大，拖拖拉拉各种引用计数加加减减，还不如直接分配+拷贝，反正后面也要做这个工作，何必自寻烦恼。</p>
+
+<p>而且Soupen是服务器，不是类库，使用者是自己而不是广大用户，不需要考虑各种各种的情况。</p>
 
 <p>当然，对于短字符串是可以做优化的，可以参考<a href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/">这里</a>对其的解读。</p>
 ]]></content>
