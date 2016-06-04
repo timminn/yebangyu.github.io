@@ -136,11 +136,11 @@ MathJax.Hub.Config({
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>好了，既然只是对t进行只读，那么就没完全必要分配内存、拷贝字符串等昂贵操作了，而是复用s的字符串空间即可。这就是我们要谈到的string中的cow。</p>
+<p>好了，既然只是对t进行只读，那么就没完全必要分配内存、拷贝字符串等昂贵操作了，而是复用s的字符串空间即可。这就是我们要谈到的string中的COW。</p>
 
 <h2 id="copy-on-write-1">如何实现Copy On Write</h2>
 
-<p>显然，现在是有多个对象绑定或者说涉及或者说引用到某个字符串对象上了。事实上，引用计数（Reference Counting，RC）是实现COW的重要基础。当执行上面最上面代码的第二行时，并不为t分配内存、拷贝字符串，而是相应的字符串的引用计数加1即可。</p>
+<p>显然，现在是有多个对象绑定或者说涉及或者说引用到某个字符串缓冲区上了。事实上，正如你能想到的，引用计数（Reference Counting，RC）是实现COW的重要基础。当执行上面最上面代码的第二行时，并不为t分配内存、拷贝字符串，而是相应的字符串的引用计数加1即可。</p>
 
 <p>那么，引用计数应该放在哪里呢？它是string类的普通成员么？不行，这样子每个string对象都有一个引用计数了；成为string类的静态成员变量么？也不行，这样子每个类都只有一个引用计数了。</p>
 
@@ -241,7 +241,7 @@ MathJax.Hub.Config({
 
 <p>不过这样也没什么，毕竟不管有没有使用COW，使用STL时候都不应该对它有多线程安全的幻想。但是使用COW后确实更加危险，因为加锁的难度变大了，甚至都不知道在哪里加了。</p>
 
-<p>想想看，将c_str()返回的指针强制去掉const，以及operator []的读写在遇到COW实现的string的多线程环境里会有什么问题。</p>
+<p>想想看，在多线程环境下，假如string使用了COW优化，将c_str()返回的指针强制去掉const，以及operator []的读写可能会有什么问题。</p>
 
 <h2 id="copy-on--write-">使用Copy On  Write 么？</h2>
 
@@ -251,11 +251,11 @@ MathJax.Hub.Config({
 
 <p>Soupen也实现了自己的string，并不使用Copy On Write(lazy evaluation)。而是使用eager evaluation，立即分配内存，立即拷贝。</p>
 
-<p>在我们的应用中，调用copy constructor后对它进行写（而不是只读）的概率很大，拖拖拉拉各种引用计数加加减减，还不如直接分配+拷贝，反正后面也要做这个工作，何必自寻烦恼。</p>
+<p>在我们的应用中，调用copy constructor后对它进行写（而不是只读）的概率很大，拉拉扯扯各种引用计数加加减减，还不如直接分配+拷贝，反正后面也要做这个工作，何必自寻烦恼。</p>
 
-<p>而且Soupen是服务器，不是类库，使用者是自己而不是广大用户，不需要考虑各种各种的情况。</p>
+<p>而且Soupen是服务器，不是类库，使用者是自己而不是广大用户，不需要考虑各种各样的情况。</p>
 
-<p>当然，对于短字符串是可以做优化的，可以参考<a href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/">这里</a>对其的解读。</p>
+<p>当然，对于短字符串Soupen是做了优化的，可以参考<a href="http://www.yebangyu.org/blog/2016/05/15/stringinyedis/">这里</a>的源码解读。</p>
 </div>
 
 
