@@ -114,6 +114,8 @@ MathJax.Hub.Config({
 
 <p>如果让你实现copy constructor，你会怎么做呢？教科书里的、简单的实现大概是这样：</p>
 
+<!--more-->
+
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
 <span class="line-number">3</span>
@@ -179,7 +181,7 @@ MathJax.Hub.Config({
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 <p>就这么简单，仅仅是attach，仅仅是增加引用计数。没有memory allocation，没有strcpy或者memcpy了。</p>
 
-<p>如果仅仅是只读操作，那么这没问题任何。但是如果要写了呢？这时候没办法了，必须复制了。这就是所谓lazy evaluation，拖延战术。对应的是eager evaluation。</p>
+<p>如果仅仅是只读操作，那么这没任何问题。但是如果要写了呢？这时候没办法了，必须复制了。这就是所谓lazy evaluation，拖延战术(对应的是eager evaluation)。</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>

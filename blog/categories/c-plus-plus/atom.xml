@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-04T20:26:32+08:00</updated>
+  <updated>2016-06-05T22:55:15+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -29,6 +29,8 @@ cout&lt;&lt;t[1]&lt;&lt;endl;
 第二行，通过调用copy constructor（注意，这里调用的是copy constructor，而不是copy assignment，因为它是从无到有构造对象，而不是设置已有对象）构造对象t，第三行对t中的某个元素进行只读操作。</p>
 
 <p>如果让你实现copy constructor，你会怎么做呢？教科书里的、简单的实现大概是这样：</p>
+
+<!--more-->
 
 <p><code>c++
 class string
@@ -72,7 +74,7 @@ string(const string &amp;other)
 </code>
 就这么简单，仅仅是attach，仅仅是增加引用计数。没有memory allocation，没有strcpy或者memcpy了。</p>
 
-<p>如果仅仅是只读操作，那么这没问题任何。但是如果要写了呢？这时候没办法了，必须复制了。这就是所谓lazy evaluation，拖延战术。对应的是eager evaluation。</p>
+<p>如果仅仅是只读操作，那么这没任何问题。但是如果要写了呢？这时候没办法了，必须复制了。这就是所谓lazy evaluation，拖延战术(对应的是eager evaluation)。</p>
 
 <p><code>c++
 void set_char(const int idx, char new_char)
