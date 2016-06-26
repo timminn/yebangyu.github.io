@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-26T15:19:11+08:00</updated>
+  <updated>2016-06-26T15:22:00+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -107,7 +107,7 @@ using namespace std;</mutex></p>
 
 <p>2，sequence_count声明为<code>uint32_t</code>是否可以？</p>
 
-<p>看你的writer更新的频率。假如你的writer一小时才更新一次，那么一天才更新24次，一个月才更新720次，一年才262800次，一百年才26280000次，是没有溢出危险的。如果一微妙更新一次呢？算算看。</p>
+<p>看你的writer更新的频率。假如你的writer每小时才更新一次，那么一天更新24次，一个月更新720次，一年才262800次，一百年才26280000次，是没有溢出危险的。如果每纳秒更新一次呢？算算看。</p>
 
 <p>3，使用sequence lock可能会有什么坑？</p>
 
