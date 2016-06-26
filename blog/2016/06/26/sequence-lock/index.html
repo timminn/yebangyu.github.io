@@ -196,10 +196,10 @@ MathJax.Hub.Config({
 </span><span class="line">  <span class="kt">uint64_t</span> <span class="n">sc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </span><span class="line">  <span class="k">while</span><span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">    <span class="n">sc</span> <span class="o">=</span> <span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span><span class="p">;</span>
-</span><span class="line">	<span class="n">CPU_MEMORY_BARRIER</span><span class="p">();</span>
-</span><span class="line">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">sc</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">	  <span class="k">break</span><span class="p">;</span> <span class="c1">//sc是偶数，说明没有writer，返回</span>
-</span><span class="line">	<span class="p">}</span>
+</span><span class="line">    <span class="n">CPU_MEMORY_BARRIER</span><span class="p">();</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">sc</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">))</span> <span class="p">{</span>
+</span><span class="line">      <span class="k">break</span><span class="p">;</span> <span class="c1">//sc是偶数，说明没有writer，返回</span>
+</span><span class="line">    <span class="p">}</span>
 </span><span class="line">  <span class="p">}</span>
 </span><span class="line">  <span class="k">return</span> <span class="n">sc</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>

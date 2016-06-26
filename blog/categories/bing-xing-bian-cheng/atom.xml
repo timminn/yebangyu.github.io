@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-26T15:22:00+08:00</updated>
+  <updated>2016-06-26T15:30:17+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -67,10 +67,10 @@ using namespace std;</mutex></p>
   uint64_t sc = 0;
   while(true) {
     sc = sl.sequence_count;
-	CPU_MEMORY_BARRIER();
-	if (!sc &amp; 1) {
-	  break; //sc是偶数，说明没有writer，返回
-	} 
+    CPU_MEMORY_BARRIER();
+    if (!(sc &amp; 1)) {
+      break; //sc是偶数，说明没有writer，返回
+    } 
   }
   return sc;
 }</p>
