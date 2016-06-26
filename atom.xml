@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-05T22:55:15+08:00</updated>
+  <updated>2016-06-26T14:33:59+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,161 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Sequence Lock]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/06/26/sequence-lock/"/>
+    <updated>2016-06-26T14:24:59+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/06/26/sequence-lock</id>
+    <content type="html"><![CDATA[<p>在读多写少(Read Mostly)的场景里，我们可能会使用的同步设施包括：</p>
+
+<blockquote>
+  <ul>
+    <li>Mutex</li>
+    <li>Reader Writer Lock</li>
+    <li>Sequence Lock</li>
+    <li>Read Copy Update</li>
+  </ul>
+</blockquote>
+
+<p>前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您读mutex的实现细节有兴趣，建议您阅读我的两篇博客：<a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">这篇</a>和<a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">这篇</a></p>
+
+<p>从今天起，我们介绍后面两种同步设施。今天我们先介绍Sequence Lock。</p>
+
+<!--more-->
+
+<h2 id="section">基本原理</h2>
+
+<p>我们知道，传统的Reader Writer Lock是reader preference的，可能会产生writer starvation。和RWlock不同，sequence lock是writer preference的，writer随时都可以更新临界资源。</p>
+
+<p>sequence lock的精髓在于一个sequence count。当writer在更新时，count为奇数；不存在writer更新时，该count为偶数。</p>
+
+<p>count初始化为一个偶数，比如说0。当writer操作临界资源前，先将count++，这时候count变成奇数；然后writer操作临街资源，完毕后，再count++，这时候count将又变成奇数。</p>
+
+<p>对于reader，每次进入临界区前读取count值，如果为偶数，说明没有writer存在，那么它可以进入临界区；如果为奇数，那么它需要等待，不断重试，读取count直到count为偶数。进入临界区读取临界资源后，你知道，从reader进入临界区到试图离开临界区这段时间里，可能writer进来了，因此reader需要重新读取count，看和它进入临界区时的count是否相等，不等的话说明此次读取失败，需要重试。</p>
+
+<h2 id="section-1">基本实现</h2>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+<span class="line-number">29</span>
+<span class="line-number">30</span>
+<span class="line-number">31</span>
+<span class="line-number">32</span>
+<span class="line-number">33</span>
+<span class="line-number">34</span>
+<span class="line-number">35</span>
+<span class="line-number">36</span>
+<span class="line-number">37</span>
+<span class="line-number">38</span>
+<span class="line-number">39</span>
+<span class="line-number">40</span>
+<span class="line-number">41</span>
+<span class="line-number">42</span>
+<span class="line-number">43</span>
+<span class="line-number">44</span>
+<span class="line-number">45</span>
+<span class="line-number">46</span>
+<span class="line-number">47</span>
+<span class="line-number">48</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;mutex&gt; </span><span class="c1">//c++11的mutex</span>
+</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line"><span class="k">struct</span> <span class="n">SequenceLock</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">volatile</span> <span class="kt">uint64_t</span> <span class="n">sequence_count</span><span class="p">;</span>
+</span><span class="line">  <span class="n">mutex</span> <span class="n">lock</span><span class="p">;</span> <span class="c1">//这把锁是用于writer们互斥的。保证只有一个writer能更新。和reader无关。</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line">
+</span><span class="line"><span class="k">static</span> <span class="kt">void</span> <span class="nf">seqlock_init</span><span class="p">(</span><span class="n">SequenceLock</span> <span class="o">&amp;</span><span class="n">sl</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="c1">//初始化为偶数</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line">
+</span><span class="line"><span class="k">static</span> <span class="kt">uint64_t</span> <span class="nf">read_seqbegin</span><span class="p">(</span><span class="n">SequenceLock</span> <span class="o">&amp;</span><span class="n">sl</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">uint64_t</span> <span class="n">sc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">  <span class="k">while</span><span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">sc</span> <span class="o">=</span> <span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span><span class="p">;</span>
+</span><span class="line">	<span class="n">CPU_MEMORY_BARRIER</span><span class="p">();</span>
+</span><span class="line">	<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">sc</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">	  <span class="k">break</span><span class="p">;</span> <span class="c1">//sc是偶数，说明没有writer，返回</span>
+</span><span class="line">	<span class="p">}</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">sc</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line">
+</span><span class="line"><span class="k">static</span> <span class="kt">bool</span> <span class="nf">reader_need_retry</span><span class="p">(</span><span class="n">SequenceLock</span> <span class="o">&amp;</span><span class="n">sl</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">oldseq</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">uint64_t</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">  <span class="n">CPU_MEMORY_BARRIER</span><span class="p">();</span>
+</span><span class="line">  <span class="n">s</span> <span class="o">=</span> <span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span><span class="p">;</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">s</span> <span class="o">!=</span> <span class="n">oldseq</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line">
+</span><span class="line"><span class="k">static</span> <span class="kt">void</span> <span class="nf">write_seqlock</span><span class="p">(</span><span class="n">SequenceLock</span> <span class="o">&amp;</span><span class="n">sl</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">sl</span><span class="p">.</span><span class="n">lock</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span>
+</span><span class="line">  <span class="o">++</span><span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span><span class="p">;</span><span class="c1">//让count变为奇数，和读者声明自己的存在</span>
+</span><span class="line">  <span class="n">CPU_MEMORY_BARRIER</span><span class="p">();</span>
+</span><span class="line"><span class="p">}</span>
+</span><span class="line">
+</span><span class="line"><span class="k">static</span> <span class="kt">void</span> <span class="nf">write_sequnlock</span><span class="p">(</span><span class="n">SequenceLock</span> <span class="o">&amp;</span><span class="n">sl</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">CPU_MEMORY_BARRIER</span><span class="p">();</span>
+</span><span class="line">  <span class="o">++</span><span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span><span class="p">;</span><span class="c1">//让count恢复为偶数</span>
+</span><span class="line">  <span class="n">sl</span><span class="p">.</span><span class="n">lock</span><span class="p">.</span><span class="n">unlock</span><span class="p">();</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h2 id="section-2">深度思考</h2>
+
+<p>1，sequence lock和reader writer lock相比，有什么区别？</p>
+
+<p>最主要的区别，如上所述，就是writer随时随地可以进行更新，不会出现writer starvation的情况。正因为如此，如果update heavily，那么可能造成reader starvation。然而，正如我们一早所说的，sequence lock用于read mostly的situation。因此，reader starvation几乎不会发生。</p>
+
+<p>2，sequence_count声明为<code>uint32</code>是否可以？</p>
+
+<p>看你的writer更新的频率。假如你的writer一小时才更新一次，那么一天才更新24次，一个月才更新720次，一年才262800次，一百年才26280000次，是没有溢出危险的。如果一微妙更新一次呢？算算看。</p>
+
+<p>3，使用sequence lock可能会有什么坑？</p>
+
+<p>假如我们的临界资源是这样的：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">something</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>reader进入临界区后读取p，存放在自己的变量something *q里，然后返回。之后writer对p进行了free操作；如果reader之后使用<code>*q</code>将发生错误。对于这种情况，需要使用值拷贝语义，或者通过引入<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">hazard pointer</a>等其他机制来避免内存释放问题。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[String与Copy On Write]]></title>
@@ -3019,86 +3174,6 @@ sys	0m14.936s
 <p>3，空间敏感。作为一种概率数据结构，Bloom Filter不存储原始数据（比如说url），这也是它为什么space efficient的本质原因。</p>
 
 <p>有了Standard Bloom Filter和Counting Bloom Filter，似乎可以满足绝大多数需求了，然而，这里面还是有问题。什么问题？请看<a href="http://www.yebangyu.org/blog/2016/01/29/insidethebloomfilter/">下集</a>。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Concurrent and Parallel]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/01/17/concurrenyandparallism/"/>
-    <updated>2016-01-17T09:49:00+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/01/17/concurrenyandparallism</id>
-    <content type="html"><![CDATA[<p>什么是并发(<strong>Concurrency，Concurrent</strong>)，什么是并行(<strong>parallism，Parallel</strong>)？这两者有什么区别？本文收录一下我听过的、我见过的、我看过的一些人的看法。仅供参考：</p>
-
-<h2 id="paul-butcher">Paul Butcher</h2>
-
-<p><strong>Paul Butcher</strong>在他的《<strong>Seven Concurrency Models in Seven Weeks</strong>
-》里开篇就谈到：</p>
-
-<!--more-->
-
-<p>An alternative way of thinking about this is that concurrency is an aspect of
-the problem domain—your program needs to handle multiple simultaneous
-(or near-simultaneous) events. Parallelism, by contrast, is an aspect of the
-solution domain—you want to make your program faster by processing different
-portions of the problem in parallel</p>
-
-<p>也就是说，并发是<strong>问题域</strong>，并行是<strong>解决域</strong>。问题是并发的，解决方法是并行的。</p>
-
-<h2 id="rob-pike">Rob Pike</h2>
-
-<p><strong>Rob</strong>是<strong>Go</strong>语言之父，《<strong>The Unix Programming Environment</strong>》 和 《<strong>The Practice of Programming</strong>》（最近正在重读这本小册子）的作者。他有一个经典的解释：</p>
-
-<p>Concurrency is about dealing with lots of things at once.</p>
-
-<p>Parallelism is about doing lots of things at once.</p>
-
-<p>嘿嘿，这个有点意思，不过只能意会了。</p>
-
-<h2 id="paul-e-mckenney">Paul E. McKenney</h2>
-
-<p>又是一个<strong>Paul</strong>。不过这个<strong>Paul</strong>大叔是<strong>IBM</strong>的研究人员，写了一本非常幽默并且有深度的书：《<strong>Is Parallel Programming Hard, And, If So, What Can You Do About It?</strong>》（最近一直在细读，并且做读书笔记，感兴趣的朋友可以参考我的相关<a href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/">博客</a>。） 在这本书（<strong>v2015.01.31a</strong>版本）的第<strong>319</strong>页，有一个附录，介绍 <strong>What is the Difference Between</strong>
-“<strong>Concurrent</strong>” <strong>and</strong> “<strong>Parallel</strong>”?时说：</p>
-
-<p>From a classic computing perspective, “concurrent” and
-“parallel” are clearly synonyms. However, this has not
-stopped many people from drawing distinctions between
-the two</p>
-
-<p>说明<strong>Paul</strong>大叔认为，其实这两者是一回事，有些人非得区分。好吧，那就区分吧。这些人是如何区分呢？有两个<strong>perspective</strong>：</p>
-
-<p>The first perspective treats “parallel” as an abbreviation
-for “data parallel,” and treats “concurrent” as pretty
-much everything else</p>
-
-<p>也就是说，<strong>concurrency</strong>有很强的<strong>interdependencies</strong>，它们之间可能要做各种通信，基于比如说<strong>locks</strong>啊，<strong>transactions</strong>啊，等等同步机制。相比，<strong>parallel</strong>中组件的相互依赖就很少。新浪微博网友 <a href="http://weibo.com/u/1085583241">@小恶魔提利昂</a>就持这种观点，他说：“并发任务处理的时候，会在并发处理时候可以交换信息，有CSP式的，也可以内存共享式的，但是在外部看到的效果是若干核或若干线程/协程同时对应这些并发任务。并行处理的话，同时处理的任务要做到上下文环境都是隔离的。”</p>
-
-<p>Now, this second perspective can be thought of as making
-the workload match the available scheduler, with parallel
-workloads able to operate on a simple scheduler
-and concurrent workloads requiring more sophisticated
-schedulers.</p>
-
-<p>恩，第二个角度就是需不需要复杂的<strong>scheduler</strong>。</p>
-
-<p>但是<strong>Paul</strong>大叔说，这两个视角很可能是不可兼得或者说矛盾滴。此话怎讲？</p>
-
-<p>考虑每个<strong>CPU</strong>一个线程的基于<strong>lock</strong>通信的程序。是<strong>Concurrency</strong>吗？从第一个角度讲，是的，用<strong>lock</strong>啊，各种同步各种通信啊。从第二个角度看，又不是。</p>
-
-<p>以上就是<strong>Paul McKenney</strong>大致的观点。</p>
-
-<h2 id="yebangyu">yebangyu</h2>
-
-<p><strong>yebangyu</strong>是博主，<strong>yebangyu.org</strong>公司CEO兼站长兼董事长兼老板，苦逼屌丝底层搬砖码农。恩，就是我了。</p>
-
-<p>个人观点：</p>
-
-<p>1，首先，持<strong>Paul McKenney</strong>的观点，没必要区分这两个词。</p>
-
-<p>2，<strong>Concurrency</strong>这个单词含有类“occur”的词根，表示发生，<strong>con</strong>代表共同、一起，指共同发生的意思。而<strong>parallel</strong>词根是<strong>para</strong>，表示相同的、类似、平行的、差不多的。因为，也可以认为问题是同时发生的，解决方法是平行处理。</p>
-
-<p>3，写书在取书名的时候需要区分。如果你是讲<strong>MPI、Open MP</strong>这类技术，建议用并行或者说<strong>Parallel Computing</strong>。如果是讲<strong>lock free、multi-thread</strong>这些共享内存编程的，建议用<strong>Concurrency</strong>或者<strong>Concurrency Programming</strong>。</p>
-
-<p>那么，<strong>Go</strong>语言这种<strong>CSP</strong>类型的<strong>Channel</strong>的呢？个人认为，都可以吧。</p>
 ]]></content>
   </entry>
   

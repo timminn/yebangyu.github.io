@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-05T22:55:15+08:00</updated>
+  <updated>2016-06-26T14:33:59+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,115 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Sequence Lock]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/06/26/sequence-lock/"/>
+    <updated>2016-06-26T14:24:59+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/06/26/sequence-lock</id>
+    <content type="html"><![CDATA[<p>在读多写少(Read Mostly)的场景里，我们可能会使用的同步设施包括：</p>
+
+<blockquote>
+  <ul>
+    <li>Mutex</li>
+    <li>Reader Writer Lock</li>
+    <li>Sequence Lock</li>
+    <li>Read Copy Update</li>
+  </ul>
+</blockquote>
+
+<p>前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您读mutex的实现细节有兴趣，建议您阅读我的两篇博客：<a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">这篇</a>和<a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">这篇</a></p>
+
+<p>从今天起，我们介绍后面两种同步设施。今天我们先介绍Sequence Lock。</p>
+
+<!--more-->
+
+<h2 id="section">基本原理</h2>
+
+<p>我们知道，传统的Reader Writer Lock是reader preference的，可能会产生writer starvation。和RWlock不同，sequence lock是writer preference的，writer随时都可以更新临界资源。</p>
+
+<p>sequence lock的精髓在于一个sequence count。当writer在更新时，count为奇数；不存在writer更新时，该count为偶数。</p>
+
+<p>count初始化为一个偶数，比如说0。当writer操作临界资源前，先将count++，这时候count变成奇数；然后writer操作临街资源，完毕后，再count++，这时候count将又变成奇数。</p>
+
+<p>对于reader，每次进入临界区前读取count值，如果为偶数，说明没有writer存在，那么它可以进入临界区；如果为奇数，那么它需要等待，不断重试，读取count直到count为偶数。进入临界区读取临界资源后，你知道，从reader进入临界区到试图离开临界区这段时间里，可能writer进来了，因此reader需要重新读取count，看和它进入临界区时的count是否相等，不等的话说明此次读取失败，需要重试。</p>
+
+<h2 id="section-1">基本实现</h2>
+
+<p>```c++
+#include<mutex> //c++11的mutex
+using namespace std;</mutex></p>
+
+<p>struct SequenceLock
+{
+  volatile uint64_t sequence_count;
+  mutex lock; //这把锁是用于writer们互斥的。保证只有一个writer能更新。和reader无关。
+};</p>
+
+<p>static void seqlock_init(SequenceLock &amp;sl)
+{
+  sl.sequence_count = 0;//初始化为偶数
+}</p>
+
+<p>static uint64_t read_seqbegin(SequenceLock &amp;sl)
+{
+  uint64_t sc = 0;
+  while(true) {
+    sc = sl.sequence_count;
+	CPU_MEMORY_BARRIER();
+	if (!sc &amp; 1) {
+	  break; //sc是偶数，说明没有writer，返回
+	} 
+  }
+  return sc;
+}</p>
+
+<p>static bool reader_need_retry(SequenceLock &amp;sl, uint64_t oldseq)
+{
+  uint64_t s = 0;
+  CPU_MEMORY_BARRIER();
+  s = sl.sequence_count;
+  return s != oldseq;
+}</p>
+
+<p>static void write_seqlock(SequenceLock &amp;sl)
+{
+  sl.lock.lock();
+  ++sl.sequence_count;//让count变为奇数，和读者声明自己的存在
+  CPU_MEMORY_BARRIER();
+}</p>
+
+<p>static void write_sequnlock(SequenceLock &amp;sl)
+{
+  CPU_MEMORY_BARRIER();
+  ++sl.sequence_count;//让count恢复为偶数
+  sl.lock.unlock();
+}</p>
+
+<p>```</p>
+
+<h2 id="section-2">深度思考</h2>
+
+<p>1，sequence lock和reader writer lock相比，有什么区别？</p>
+
+<p>最主要的区别，如上所述，就是writer随时随地可以进行更新，不会出现writer starvation的情况。正因为如此，如果update heavily，那么可能造成reader starvation。然而，正如我们一早所说的，sequence lock用于read mostly的situation。因此，reader starvation几乎不会发生。</p>
+
+<p>2，sequence_count声明为<code>uint32</code>是否可以？</p>
+
+<p>看你的writer更新的频率。假如你的writer一小时才更新一次，那么一天才更新24次，一个月才更新720次，一年才262800次，一百年才26280000次，是没有溢出危险的。如果一微妙更新一次呢？算算看。</p>
+
+<p>3，使用sequence lock可能会有什么坑？</p>
+
+<p>假如我们的临界资源是这样的：</p>
+
+<p><code>c++
+something *p;
+</code></p>
+
+<p>reader进入临界区后读取p，存放在自己的变量something *q里，然后返回。之后writer对p进行了free操作；如果reader之后使用<code>*q</code>将发生错误。对于这种情况，需要使用值拷贝语义，或者通过引入<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">hazard pointer</a>等其他机制来避免内存释放问题。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Ticket Lock]]></title>
@@ -721,98 +830,6 @@ int main()
 <h2 id="section-4">感谢</h2>
 
 <p>我最早知道这个方法，是从我主管<a href="http://weibo.com/yangzhifeng83">杨志丰</a>先生那儿以及他的<a href="http://blog.csdn.net/killmice/article/details/38443343">这篇</a>文章。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Spinlock and mutex]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/01/24/spinlock-and-mutex/"/>
-    <updated>2016-01-24T15:50:31+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/01/24/spinlock-and-mutex</id>
-    <content type="html"><![CDATA[<p>Spinlock（自旋锁）和mutex作为两种互斥锁，在并行编程中都得到了广泛应用。那么，这两种锁有什么区别吗？</p>
-
-<p>当一个线程对Spinlock加锁时，如果该锁被其他线程占用，那么该线程会通过一个loop不断地重试（ try again and again）；而使用mutex的线程没有得到锁时，会sleep。</p>
-
-<p>因为，当临界区较短时，Spinlock因为没有上下文切换，可能性能更优；当临界区较长时，不断的spin将浪费大量的cpu资源。</p>
-
-<!--more-->
-
-<p>如何实现一个Spinlock呢？下面简单封装了一下，并在Ubuntu 14.04 32bit系统，X86体系结构，Intel I5双核处理器环境下，测试相应的性能：</p>
-
-<p><code>c++
-#include&lt;thread&gt;
-using namespace std;
-int counter = 0;
-int lock = 0;
-void spin_lock()
-{
-  while(__sync_lock_test_and_set(&amp;lock, 1));
-}
-void spin_unlock()
-{
-  __sync_lock_release(&amp;lock);
-}
-void f()
-{
-  for (int i = 0; i &lt;  10000000; i++) {
-    spin_lock();
-    counter = counter + 2;//tiny critical section
-    spin_unlock();
-  }
-}
-int main() 
-{
-  thread t1(f);
-  thread t2(f);
-  t1.join();
-  t2.join();
-  return 0;
-}
-</code></p>
-
-<p>2个线程时，这个程序的运行时间为：</p>
-
-<pre><code>real	0m1.082s
-user	0m2.060s
-sys	0m0.000s
-</code></pre>
-
-<p>4个线程时：</p>
-
-<pre><code>real	0m5.701s
-user	0m19.400s
-sys	0m0.000s
-</code></pre>
-
-<p>如果改为std::mutex(lock和unlock成员函数)呢？对比一下：</p>
-
-<p>2个线程：</p>
-
-<pre><code>real	0m3.081s
-user	0m2.796s
-sys	0m3.344s
-</code></pre>
-
-<p>4个线程：</p>
-
-<pre><code>real	0m5.860s
-user	0m6.004s
-sys	0m14.936s
-</code></pre>
-
-<p>不难发现，由于大量的上下文切换，使用mutex时，花在sys上的时间要远比使用Spinlock的要多。</p>
-
-<h2 id="section">小结</h2>
-
-<p>以下两种情况，应该考虑使用spinlock代替mutex：</p>
-
-<p>1，每个processor上（只）运行一个线程。</p>
-
-<p>2，线程平均等待（spin）时间少于两次上下文切换的开销。</p>
-
-<p>当然，一切都离不开实际的测试和分析。</p>
-
-<p>下次，我们将研究更多、更高效的spinlock实现。</p>
 ]]></content>
   </entry>
   
