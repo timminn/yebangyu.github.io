@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-26T15:30:17+08:00</updated>
+  <updated>2016-07-03T19:58:30+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -151,9 +151,13 @@
 
 <p>最主要的区别，如上所述，就是writer随时随地可以进行更新，不会出现writer starvation的情况。正因为如此，如果update heavily，那么可能造成reader starvation。然而，正如我们一早所说的，sequence lock用于read mostly的situation。因此，reader starvation几乎不会发生。</p>
 
+<p>reader端并不需要加锁，只在极少情况下需要重试而已。因此，从某种角度来说，sequence lock是一种乐观锁。</p>
+
 <p>2，sequence_count声明为<code>uint32_t</code>是否可以？</p>
 
 <p>看你的writer更新的频率。假如你的writer每小时才更新一次，那么一天更新24次，一个月更新720次，一年才262800次，一百年才26280000次，是没有溢出危险的。如果每纳秒更新一次呢？算算看。</p>
+
+<p>我知道，C语言uint32_max（奇数）再自增1之后溢出会回滚到0（偶数）不会影响到程序的正确性，但是好的程序个人认为不应该对此有依赖。</p>
 
 <p>3，使用sequence lock可能会有什么坑？</p>
 
@@ -660,7 +664,7 @@
 
 <p>Soupen：insert，1484001788ns = 1.48s，rank，1182535652ns = 1.18s</p>
 
-<p>可以看出不管在insert还是rank上，Soupen的性能都是要完胜Redis的。实际上，Soupen还可以做得更快，达到Redis的两倍不是问题。真的？天呐，如何做到？请看下次分析。</p>
+<p>可以看出不管在insert还是rank上，Soupen的性能都是要完胜Redis的。</p>
 
 <h2 id="section-3">参考文献</h2>
 

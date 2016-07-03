@@ -4,7 +4,7 @@
   <title><![CDATA[Category: soupen | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/soupen/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-06-26T15:30:17+08:00</updated>
+  <updated>2016-07-03T19:58:30+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -133,7 +133,7 @@ private:
 
 <p>Soupen：insert，1484001788ns = 1.48s，rank，1182535652ns = 1.18s</p>
 
-<p>可以看出不管在insert还是rank上，Soupen的性能都是要完胜Redis的。实际上，Soupen还可以做得更快，达到Redis的两倍不是问题。真的？天呐，如何做到？请看下次分析。</p>
+<p>可以看出不管在insert还是rank上，Soupen的性能都是要完胜Redis的。</p>
 
 <h2 id="section-3">参考文献</h2>
 
