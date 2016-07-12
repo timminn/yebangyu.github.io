@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-07-12T20:55:03+08:00</updated>
+  <updated>2016-07-12T21:01:03+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -106,9 +106,13 @@ private:
 
 <h2 id="section-2">参考文献</h2>
 
-<p>《The Art Of Multiprocessor Programming》 8.4节，187页</p>
+<p>1，《The Art Of Multiprocessor Programming》 8.4节，187页</p>
 
-<p><a href="http://preshing.com/20120305/implementing-a-recursive-mutex/">Implementing a Recursive Mutex</a></p>
+<p>这本书的作者都是并发编程大仙级人物。虽然是用Java语言写的，但是还是很值得一读。</p>
+
+<p>2，<a href="http://preshing.com/20120305/implementing-a-recursive-mutex/">Implementing a Recursive Mutex</a></p>
+
+<p>很好的博客，每篇都非常高水准。我们最近正在翻译其中和并发编程相关的文章。可以点击这里查看：<a href="http://www.chongh.wiki/categories/High-performance/">深入探索并发编程系列</a></p>
 ]]></content>
   </entry>
   
