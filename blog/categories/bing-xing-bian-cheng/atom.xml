@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-07-12T15:25:32+08:00</updated>
+  <updated>2016-07-12T15:42:02+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -121,7 +121,7 @@ using namespace std;</mutex></p>
 something *p;
 </code></p>
 
-<p>reader进入临界区后读取p，存放在自己的变量something *q里，然后返回。之后writer对p进行了free操作；如果reader之后使用<code>*q</code>将发生错误。对于这种情况，需要使用值拷贝语义，或者通过引入<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">hazard pointer</a>等其他机制来避免内存释放问题。</p>
+<p>reader进入临界区后读取p，存放在自己的变量something *q里，然后返回。之后writer对p进行了free操作；如果reader之后使用<code>*q</code>将发生错误。对于这种情况，需要使用值拷贝语义，或者通过引入<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">hazard pointer</a>等其他机制来避免内存释放问题。不仅如此，实际上在临界区里，reader都不可以使用<code>*p</code>，这是因为和reader writer lock不同，sequence lock是不保证writer的不存在的，也就是说在临界区里，是可能随时有writer对p进行释放等操作的（这才需要读者后面的重试操作嘛），这也是它和读写锁的最大不同。</p>
 
 ]]></content>
   </entry>
