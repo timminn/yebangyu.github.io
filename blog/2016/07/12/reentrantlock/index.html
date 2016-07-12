@@ -261,7 +261,7 @@ MathJax.Hub.Config({
 </span><span class="line"><span class="kt">pthread_mutexattr_t</span> <span class="n">attr</span><span class="p">;</span>
 </span><span class="line"><span class="n">pthread_mutexattr_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
 </span><span class="line"><span class="n">pthread_mutexattr_settype</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="n">PTHREAD_MUTEX_RECURSIVE</span><span class="p">);</span><span class="c1">//设置可递归也就是可重入</span>
-</span><span class="line"><span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">Mutex</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+</span><span class="line"><span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mutex</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
 <h2 id="section-2">参考文献</h2>

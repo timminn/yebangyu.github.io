@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-07-12T21:10:31+08:00</updated>
+  <updated>2016-07-12T21:11:27+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -111,7 +111,7 @@ pthread_mutex_t mutex;
 pthread_mutexattr_t attr;
 pthread_mutexattr_init(&amp;attr);
 pthread_mutexattr_settype(&amp;attr, PTHREAD_MUTEX_RECURSIVE);//设置可递归也就是可重入
-pthread_mutex_init(&amp;Mutex, &amp;attr);
+pthread_mutex_init(&amp;mutex, &amp;attr);
 </code></p>
 
 <h2 id="section-2">参考文献</h2>
