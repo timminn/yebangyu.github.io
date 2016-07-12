@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="什么是并发(Concurrency，Concurrent)，什么是并行(parallism，Parallel)？这两者有什么区别？本文收录一下我听过的、我见过的、我看过的一些人的看法。仅供参考： Paul Butcher Paul Butcher在他的《Seven Concurrency &hellip;">
+  <meta name="description" content="本文将介绍： Bloom Filter和它的变形与拓展 Bloom Filter的使用场景 Bloom Filter的详细数学分析 提出问题 Google的爬虫每天需要抓取大量的网页。于是就有一个问题：每当爬虫分析出一个url的时候，是抓呢，还是不抓呢？如何知道这个url已经爬过了？ ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,52 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/23/insidethebloomfilter/">深入解析Bloom Filter(上)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-23T13:24:49+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>23</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>1:24 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>本文将介绍：</p>
+
+<blockquote>
+  <ul>
+    <li>Bloom Filter和它的变形与拓展</li>
+    <li>Bloom Filter的使用场景</li>
+    <li>Bloom Filter的详细数学分析</li>
+  </ul>
+</blockquote>
+
+<h2 id="section">提出问题</h2>
+
+<p>Google的爬虫每天需要抓取大量的网页。于是就有一个问题：每当爬虫分析出一个url的时候，是抓呢，还是不抓呢？如何知道这个url已经爬过了？</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/23/insidethebloomfilter/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -430,49 +476,6 @@ MathJax.Hub.Config({
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/30/build-distributed-compilation-env/">利用Distcc和Dmucs构建大规模、分布式C++编译环境(下)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-11-30T22:23:46+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>30</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>10:23 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="http://www.yebangyu.org/blog/2015/11/23/build-distributed-compilation-ev/">上篇</a>文章，我们介绍了如何利用<strong>Distcc</strong>来搭建分布式编译环境，但是<strong>Distcc</strong>的默认调度策略过于简单，并且并不合理。假如我们的配置是</p>
-
-<pre><code>export DISTCC_HOSTS="192.168.1.11 192.168.1.22 192.168.1.33"
-</code></pre>
-
-<p>那么<strong>Distcc</strong>会根据<strong>DISTCC_HOSTS</strong>中机器出现的先后顺序，来安排编译任务，越靠前的机器(比如这里的<strong>192.168.1.11</strong>)获得越多的任务，这显然是不科学的。</p>
-
-<p>因此，我们可以利用<strong>Dmucs</strong>提供的调度策略，来优化我们的方案。它可以根据编译机的负载情况和硬件实力，来合理的调度资源。能者多劳嘛。</p>
-
-<p>为了保证本文的完整性，我们还是不厌其烦地把我们的环境再交待下：</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/30/build-distributed-compilation-env/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/4">&larr; Older</a>
@@ -490,6 +493,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/07/12/reentrantlock/">实现可重入锁</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/06/26/sequence-lock/">Sequence Lock</a>
       </li>
     
@@ -503,10 +510,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/05/15/stringinyedis/">Soupen源码解析之string实现</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/05/07/treappkskiplist/">Soupen源码解析之rank实现</a>
       </li>
     
   </ul>
@@ -536,7 +539,7 @@ MathJax.Hub.Config({
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
-<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (14)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (15)</a></li>
 <li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (1)</a></li>
 <li class='category'><a href='/blog/categories/suan-fa/'>算法 (4)</a></li>
 <li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-07-12T15:42:02+08:00</updated>
+  <updated>2016-07-12T20:36:10+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,99 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[实现可重入锁]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/07/12/reentrantlock/"/>
+    <updated>2016-07-12T20:27:25+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/07/12/reentrantlock</id>
+    <content type="html"><![CDATA[<h2 id="section">基本概念</h2>
+
+<p>可重入锁(Reentrant Lock)，是指允许同一个线程多次对该锁进行acquire动作。对于不可重入的锁，当一个线程多次调用acquire后将造成死锁。可重入锁具有广泛的应用，例如：</p>
+
+<p><code>c++
+struct Routine
+{
+  void f()
+  {
+    lock_.lock();
+    h();
+    g();
+    lock_.unlock();
+  }
+  void g()
+  {
+    lock_.lock();
+    cout&lt;&lt;"abc"&lt;&lt;endl;
+    lock_.unlock();
+  }
+  void h()
+  {
+    lock_.lock();
+    cout&lt;&lt;"def"&lt;&lt;endl;
+    lock_.unlock();
+  }
+  Lock lock_;
+};
+</code></p>
+
+<!--more-->
+
+<p>在函数f里调用了g和h，而在每个函数里都试图对lock进行acquire操作。可能你会说保证只有一个函数加锁就行了，但是有时候很难做成这个样子，毕竟一般我们都要求任何一个public函数被调用时候都得保证是线程安全因此需要加锁的。</p>
+
+<p>那么，reentrant lock和recursive lock有什么区别呢？根据<a href="https://en.wikipedia.org/wiki/Reentrant_mutex">wikipedia</a>，这两个是一样的。</p>
+
+<h2 id="section-1">基本实现</h2>
+
+<p>自己实现一个可重入锁并不困难：我们增加两个filed，一个用来记录锁当前被哪个线程拥有；一个用来记录尝试acquire的次数。如下所示：</p>
+
+<p><code>c++
+#include &lt;stdint.h&gt;
+#include &lt;pthread.h&gt;
+Class MyReentrantLock
+{
+public:
+  MyLock()
+  {
+    lock_holder_ = NULL;
+    hold_counter_ = 0;
+    pthread_mutex_init(&amp;lock_, NULL);
+  }
+  int lock()
+  {
+    int ret = 0;
+    pthread_t curr_id = pthread_self();
+    if (lock_holder_ == curr_id) {
+      ++hold_counter_;
+    } else {
+      pthread_mutex_lock(&amp;lock_);
+      lock_holder_ = curr_id;
+      hold_counter_ = 1;
+    }
+    return ret;
+  }
+  int unlock()
+  {
+    int ret = 0;
+    pthread_t curr_id = pthread_self();
+    if (lock_holder_ != curr_id) {
+      ret = -1;
+    } else {
+      if (--hold_counter_ == 0) {
+        lock_holder_ = NULL;
+        pthread_mutex_unlock(&amp;lock_);
+      }
+    }
+    return ret;
+  }
+private:
+  pthread_mutex_t lock_;
+  volatile pthread_t lock_holder_;
+  int64_t hold_counter_;
+};
+</code></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Sequence Lock]]></title>
@@ -639,201 +732,6 @@ class PetersonSpinLock
 <p><a href="https://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync">Memory model synchronization modes</a></p>
 
 <p><a href="http://jakob.engbloms.se/archives/65">Dekker’s Algorithm Does not Work, as Expected</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[多线程内存问题分析之mprotect方法]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/02/01/detectmemoryghostinmultithread/"/>
-    <updated>2016-02-01T22:24:25+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/02/01/detectmemoryghostinmultithread</id>
-    <content type="html"><![CDATA[<p>多线程中的内存问题，一直被认为是噩梦般的存在，几乎只有高手、大仙才能解决。除了大量的打log、gdb调试、code review以及依靠多年的经验和直觉之外，有没有一些分析的手段和工具呢？答案是肯定的。本文首先介绍其中的一种：mprotect大法。通过mprotect，保护特定的感兴趣的内存，当有线程改写该区域时，会产生一个中断，我们在中断处理函数中把调用栈等信息打印出来。这是大概的思路，不过其中的问题很多，我们慢慢道来。</p>
-
-<!--more-->
-
-<h2 id="section">原理</h2>
-
-<h3 id="mprotect">mprotect函数</h3>
-
-<p>mprotect函数的原型如下：</p>
-
-<p>int mprotect(const void *addr, size_t len, int prot);</p>
-
-<p>其中addr是待保护的内存首地址，必须按页对齐；len是待保护内存的大小，必须是页的整数倍，prot代表模式，可能的取值有PROT_READ（表示可读）、PROT_WRITE（可写）等。</p>
-
-<p>不同体系结构和操作系统，一页的大小不尽相同。如何获得页大小呢？通过PAGE_SIZE宏或者getpagesize()系统调用即可。</p>
-
-<h3 id="section-1">定制中断处理函数</h3>
-
-<p>当线程试图对我们已保护（成只读）的内存进行篡改时，默认情况下程序会收到SIGSEGV错误而退出。能不能不退出并且把相应的调用栈打印出来分析？当然可以。通过如下代码注册你定制的中断处理函数即可：</p>
-
-<pre><code>struct sigaction act;
-act.sa_sigaction = your_handler;
-sigemptyset(&amp;act.sa_mask);
-act.sa_flags = SA_SIGINFO;
-if(sigaction(SIGSEGV, &amp;act, NULL) == -1) {
-  perror("Register hanlder failed");
-  exit(EXIT_FAILURE);
-}
-</code></pre>
-
-<p>这样，控制流就会到达你编写的your_handler函数上。而your_handler的函数原型是：</p>
-
-<p>void your_handler(int sig, siginfo_t *si, void *unused)；</p>
-
-<p>编写your_handler函数即可？是的，不过这里面有两个注意事项：</p>
-
-<p>1，中断处理函数里不应该调用内存分配函数，否则可能会引起double fault。因此，不适合调用backtrace_symbols（内部会动态分配内存），而是通过backtrace_symbols_fd直接将调用栈信息直接刷到文件中。</p>
-
-<p>2，中断处理函数中应该恢复被保护内存为可写，否则会引起死循环。（再次中断并进入咱们编写的函数）</p>
-
-<h3 id="section-2">封装</h3>
-
-<p>为了方便使用，我封装了一个类，供参考：
-<code>c++
-#include &lt;fcntl.h&gt;
-#include &lt;signal.h&gt;
-#include &lt;stdio.h&gt;
-#include &lt;stdlib.h&gt;
-#include &lt;string.h&gt;
-#include &lt;stdint.h&gt;
-#include &lt;sys/mman.h&gt;
-#include &lt;sys/stat.h&gt;
-#include &lt;unistd.h&gt;
-#include &lt;sys/user.h&gt;
-#include &lt;execinfo.h&gt;
-class MemoryDetector
-{
-public:
-  typedef void (*segv_handler) (int sig, siginfo_t *si, void *unused);
-  static void init(const char *path)
-  {
-    register_handler(handler);
-    fd_ = open(path, O_RDWR|O_CREAT, 777);
-  }
-  static int protect(void *p, int len)
-  {
-    address_ = reinterpret_cast&lt;uint64_t&gt;(p);
-    len_ = len;
-    uint64_t start_address = (address_ &gt;&gt; PAGE_SHIFT) &lt;&lt; PAGE_SHIFT;
-    return mprotect(reinterpret_cast&lt;void *&gt;(start_address), PAGE_SIZE, PROT_READ);
-  }
-  static int umprotect(void *p, int len)
-  {
-    uint64_t tmp_address_ = reinterpret_cast&lt;uint64_t&gt;(p);
-    uint64_t start_address = (tmp_address_ &gt;&gt; PAGE_SHIFT) &lt;&lt; PAGE_SHIFT;
-    return mprotect(reinterpret_cast&lt;void *&gt;(start_address), PAGE_SIZE, PROT_READ | PROT_WRITE);
-  }
-  static int umprotect()
-  {
-    uint64_t start_address = (address_ &gt;&gt; PAGE_SHIFT) &lt;&lt; PAGE_SHIFT;
-    return mprotect(reinterpret_cast&lt;void *&gt;(start_address), PAGE_SIZE, PROT_READ | PROT_WRITE);
-  }
-  static void finish()
-  {
-    close(fd_);
-  }
-private:
-  static void register_handler(segv_handler sh)
-  {
-    struct sigaction act;
-    act.sa_sigaction = sh;
-    sigemptyset(&amp;act.sa_mask);
-    act.sa_flags = SA_SIGINFO;
-    if(sigaction(SIGSEGV, &amp;act, NULL) == -1){
-      perror("Register hanlder failed");
-      exit(EXIT_FAILURE);
-    }
-  }
-  static void handler(int sig, siginfo_t *si, void *unused)
-  {
-    uint64_t address = reinterpret_cast&lt;uint64_t&gt;(si-&gt;si_addr);
-    if (address &gt;= address_ &amp;&amp; address &lt; address_ + len_) {
-      umprotect(si-&gt;si_addr, PAGE_SIZE);
-      my_backtrace();
-    }
-  }
-  static void my_backtrace()
-  {
-    const int N = 100;
-    void* array[100];
-    size_t size = backtrace(array, N);
-    backtrace_symbols_fd(array, size, fd_);
-  }
-  static uint64_t address_;
-  static int len_;
-  static int fd_;
-};
-</code></p>
-
-<p>这个封装还存在一些问题，比如缺少错误处理，待保护内存必须在一页内等。读者诸君可以根据需要自行完善。</p>
-
-<h2 id="section-3">实战</h2>
-
-<p>来个例子,实战一下吧
-<code>c++
-#include "test.h" //就是上面封装的MemoryDetector类
-#include &lt;thread&gt;
-using namespace std;
-uint64_t MemoryDetector::address_ = 0;
-int MemoryDetector::len_ = 0;
-int MemoryDetector::fd_ = 0;
-///////////////////////////////////////
-int *p = NULL;
-void g()
-{
-  usleep(2000000);
-  char *q = reinterpret_cast&lt;char *&gt;(p);
-  *(q+2) = 111;//非法篡改！！！
-}
-void f()
-{
-  p = new int(1);
-  MemoryDetector::protect(p, 4);
-}
-int main()
-{
-  const char *path = "result.tmp";//调用栈信息存放路径
-  MemoryDetector::init(path);
-  std::thread t1(f);
-  std::thread t2(g);
-  t1.join();
-  t2.join();
-  MemoryDetector::finish();
-  return 0;
-}
-</code>
-用如下方式编译链接以上程序：</p>
-
-<pre><code>g++ -g -rdynamic -std=c++11 -pthread  test.cpp -o test
-</code></pre>
-
-<p>程序运行结束后，打开result.tmp文件，看到如下内容：</p>
-
-<pre><code>./test(_ZN14MemoryDetector12my_backtraceEv+0x26)[0x405ce8]
-./test(_ZN14MemoryDetector7handlerEiP7siginfoPv+0x60)[0x405cc0]
-/lib64/libpthread.so.0[0x339a80f500]
-./test(_Z1gv+0x25)[0x405909]
-./test(_ZNSt6thread5_ImplIPFvvEE6_M_runEv+0x16)[0x406e2c]
-/usr/lib64/libstdc++.so.6[0x3a6f6b6490]
-/lib64/libpthread.so.0[0x339a807851]
-/lib64/libc.so.6(clone+0x6d)[0x339a4e767d]
-</code></pre>
-
-<p>注意其中的第四行：./test(_Z1gv+0x25)[0x405909]。使用addr2line命令：</p>
-
-<pre><code>addr2line -e test 0x405909
-</code></pre>
-
-<p>获得非法篡改的代码位置：</p>
-
-<p>/home/yebangyu/test.cpp:13</p>
-
-<p>真相大白了。</p>
-
-<h2 id="section-4">感谢</h2>
-
-<p>我最早知道这个方法，是从我主管<a href="http://weibo.com/yangzhifeng83">杨志丰</a>先生那儿以及他的<a href="http://blog.csdn.net/killmice/article/details/38443343">这篇</a>文章。</p>
 ]]></content>
   </entry>
   

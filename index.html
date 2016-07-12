@@ -9,7 +9,25 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="在读多写少(Read Mostly)的场景里，我们可能会使用的同步设施包括： Mutex Reader Writer Lock Sequence Lock Read Copy Update 前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您对mutex的实现细节有兴趣，建议您阅读我的两篇博客： &hellip;">
+  <meta name="description" content="基本概念 可重入锁(Reentrant Lock)，是指允许同一个线程多次对该锁进行acquire动作。对于不可重入的锁，当一个线程多次调用acquire后将造成死锁。可重入锁具有广泛的应用，例如： 1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +99,90 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/07/12/reentrantlock/">实现可重入锁</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-07-12T20:27:25+08:00'><span class='date'><span class='date-month'>Jul</span> <span class='date-day'>12</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>8:27 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2 id="section">基本概念</h2>
+
+<p>可重入锁(Reentrant Lock)，是指允许同一个线程多次对该锁进行acquire动作。对于不可重入的锁，当一个线程多次调用acquire后将造成死锁。可重入锁具有广泛的应用，例如：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">struct</span> <span class="n">Routine</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">f</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">lock_</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span>
+</span><span class="line">    <span class="n">h</span><span class="p">();</span>
+</span><span class="line">    <span class="n">g</span><span class="p">();</span>
+</span><span class="line">    <span class="n">lock_</span><span class="p">.</span><span class="n">unlock</span><span class="p">();</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">g</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">lock_</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span>
+</span><span class="line">    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;abc&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">    <span class="n">lock_</span><span class="p">.</span><span class="n">unlock</span><span class="p">();</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">h</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">lock_</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span>
+</span><span class="line">    <span class="n">cout</span><span class="o">&lt;&lt;</span><span class="s">&quot;def&quot;</span><span class="o">&lt;&lt;</span><span class="n">endl</span><span class="p">;</span>
+</span><span class="line">    <span class="n">lock_</span><span class="p">.</span><span class="n">unlock</span><span class="p">();</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="n">Lock</span> <span class="n">lock_</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/07/12/reentrantlock/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -503,50 +605,6 @@ MathJax.Hub.Config({
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/03/31/yedis01/">Soupen: A High Performance Nosql</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-03-31T23:53:16+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>31</span><span class='date-suffix'>st</span>, <span class='date-year'>2016</span></span> <span class='time'>11:53 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
-
-<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，很烂的一个Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a>。</p>
-
-<h2 id="section">动机</h2>
-
-<p>开发Soupen的主要原因是想通过这个项目，进一步提高和熟悉C++服务器端开发相关的技术和知识。</p>
-
-<h2 id="section-1">特性</h2>
-
-<p>换句话说，它和Redis相比有什么不同？</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/03/31/yedis01/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -562,6 +620,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/07/12/reentrantlock/">实现可重入锁</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/06/26/sequence-lock/">Sequence Lock</a>
       </li>
     
@@ -575,10 +637,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/05/15/stringinyedis/">Soupen源码解析之string实现</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/05/07/treappkskiplist/">Soupen源码解析之rank实现</a>
       </li>
     
   </ul>
@@ -608,7 +666,7 @@ MathJax.Hub.Config({
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
-<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (14)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (15)</a></li>
 <li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (1)</a></li>
 <li class='category'><a href='/blog/categories/suan-fa/'>算法 (4)</a></li>
 <li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>
