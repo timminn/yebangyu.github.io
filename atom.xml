@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-07-03T19:58:30+08:00</updated>
+  <updated>2016-07-12T15:25:32+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -41,7 +41,7 @@
 
 <p>sequence lock的精髓在于一个sequence count。当writer在更新时，count为奇数；不存在writer更新时，该count为偶数。</p>
 
-<p>count初始化为一个偶数，比如说0。当writer操作临界资源前，先将count++，这时候count变成奇数；然后writer操作临街资源，完毕后，再count++，这时候count将又恢复为偶数。</p>
+<p>count初始化为一个偶数，比如说0。当writer操作临界资源前，先将count++，这时候count变成奇数；然后writer操作临界资源，完毕后，再count++，这时候count将又恢复为偶数。</p>
 
 <p>对于reader，每次进入临界区前读取count值，如果为偶数，说明没有writer存在，那么它可以进入临界区；如果为奇数，那么它需要等待，不断重试，读取count直到count为偶数。进入临界区读取临界资源后，你知道，从reader进入临界区到试图离开临界区这段时间里，可能writer进来了，因此reader需要重新读取count，看和它进入临界区时的count是否相等，不等的话说明此次读取失败，需要重试。</p>
 
@@ -688,7 +688,7 @@
 
 <p>在讨论这个问题前，先让我们回忆一个非常基本的常识，还是不厌其烦的交待两个人物的关系：汉武帝和窦太后。窦太后是汉文帝的老婆，汉景帝的妈妈，汉武帝的奶奶。</p>
 
-<p><img src="http://www.art-child.com/uploads/allimg/160322/352-16032211321SN.jpg" alt="窦太后" /></p>
+<p><img src="http://img1.gtimg.com/rushidao/pics/hv1/116/137/2059/133921526.jpg" alt="窦太后" /></p>
 
 <p>汉武帝为什么独尊儒术呢？大家都说，这是因为汉武帝推崇并认可儒家学说。然而，以我个人的浅见，汉武帝其实并不是多么喜欢儒家思想，也不懂儒家学说。</p>
 
@@ -2341,7 +2341,7 @@
 
 <h2 id="course">Course</h2>
 
-<p><a href="http://www.cs.rice.edu/~johnmc/comp522/lecture-notes/">Multicore Computing</a></p>
+<p><a href="http://15418.courses.cs.cmu.edu/spring2016/">Parallel Computer Architecture and Programming @ CMU</a></p>
 
 <h2 id="paper">Paper</h2>
 
