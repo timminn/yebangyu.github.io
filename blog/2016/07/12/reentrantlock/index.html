@@ -250,6 +250,20 @@ MathJax.Hub.Config({
 </span><span class="line"><span class="p">};</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
+<p>顺便说一句，默认pthread_mutex_t是不可重入的。为了让它可重入，可以这样：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">pthread_mutex_t</span> <span class="n">mutex</span><span class="p">;</span>
+</span><span class="line"><span class="kt">pthread_mutexattr_t</span> <span class="n">attr</span><span class="p">;</span>
+</span><span class="line"><span class="n">pthread_mutexattr_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+</span><span class="line"><span class="n">pthread_mutexattr_settype</span><span class="p">(</span><span class="o">&amp;</span><span class="n">attr</span><span class="p">,</span> <span class="n">PTHREAD_MUTEX_RECURSIVE</span><span class="p">);</span><span class="c1">//设置可递归也就是可重入</span>
+</span><span class="line"><span class="n">pthread_mutex_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">Mutex</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">attr</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
 <h2 id="section-2">参考文献</h2>
 
 <p>1，《The Art Of Multiprocessor Programming》 8.4节，187页</p>
