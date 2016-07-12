@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-07-12T20:41:41+08:00</updated>
+  <updated>2016-07-12T20:43:27+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -128,7 +128,7 @@
 </span><span class="line"><span class="n">Class</span> <span class="n">MyReentrantLock</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line"><span class="k">public</span><span class="o">:</span>
-</span><span class="line">  <span class="n">MyLock</span><span class="p">()</span>
+</span><span class="line">  <span class="n">MyReentrantLock</span><span class="p">()</span>
 </span><span class="line">  <span class="p">{</span>
 </span><span class="line">    <span class="n">lock_holder_</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
 </span><span class="line">    <span class="n">hold_counter_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
