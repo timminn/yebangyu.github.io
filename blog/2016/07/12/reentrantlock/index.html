@@ -160,7 +160,7 @@ MathJax.Hub.Config({
 
 <h2 id="section-1">基本实现</h2>
 
-<p>自己实现一个可重入锁并不困难：我们增加两个filed，一个用来记录锁当前被哪个线程拥有；一个用来记录尝试acquire的次数。如下所示：</p>
+<p>自己实现一个可重入锁并不困难：我们增加两个field，一个用来记录锁当前被哪个线程拥有；一个用来记录尝试acquire的次数。如下所示：</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -245,7 +245,7 @@ MathJax.Hub.Config({
 </span><span class="line">  <span class="p">}</span>
 </span><span class="line"><span class="k">private</span><span class="o">:</span>
 </span><span class="line">  <span class="kt">pthread_mutex_t</span> <span class="n">lock_</span><span class="p">;</span>
-</span><span class="line">  <span class="k">volatile</span> <span class="kt">pthread_t</span> <span class="n">lock_holder_</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">pthread_t</span> <span class="n">lock_holder_</span><span class="p">;</span>
 </span><span class="line">  <span class="kt">int64_t</span> <span class="n">hold_counter_</span><span class="p">;</span>
 </span><span class="line"><span class="p">};</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
