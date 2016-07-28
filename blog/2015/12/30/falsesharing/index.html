@@ -172,7 +172,9 @@ sys     0m0.000s
 
 <p><strong>cacheline</strong>是<strong>cache</strong>块单位，一个<strong>cacheline</strong>大小一般在<strong>32</strong>到<strong>256</strong>字节左右。<strong>cacheline</strong>是这张图中不同模块的数据交互元素。</p>
 
-<p>在上面程序中，<strong>global</strong>是两个<strong>4</strong>字节变量构成的数组，大小为<strong>8</strong>字节，很可能被放到同一个<strong>cacheline</strong>里。当运行在<strong>CPU1 Core</strong>上的线程<strong>thread1</strong>修改了<strong>global[0]</strong>时，会让运行在<strong>CPU2 Core</strong>上对应<strong>global[0]</strong>和<strong>global[1]</strong>的<strong>cacheline</strong>失效，因此运行在<strong>CPU2 Core</strong>上的线程<strong>thread2</strong>修改<strong>global[1]</strong>时会发生<strong>cache miss</strong>，接着它访问内存，修改<strong>global[1]</strong>，这也会让<strong>CPU1 Core</strong>中的<strong>cacheline</strong>失效。很明显，这里面会有大量的<strong>cache miss</strong>和为了缓存一致性而花费的通信开销。</p>
+<p>在上面程序中，<strong>global</strong>是两个<strong>4</strong>字节变量构成的数组，大小为<strong>8</strong>字节，很可能被放到同一个<strong>cacheline</strong>里。当运行在<strong>CPU1 Core</strong>上的线程<strong>thread1</strong>修改了<strong>global[0]</strong>时，会让运行在<strong>CPU2 Core</strong>上对应<strong>global[0]</strong>和<strong>global[1]</strong>的<strong>cacheline</strong>失效，因此运行在<strong>CPU2 Core</strong>上的线程<strong>thread2</strong>修改<strong>global[1]</strong>时会发生<strong>cache miss</strong>。在它修改<strong>global[1]</strong>后，就让<strong>CPU1 Core</strong>中的<strong>cacheline</strong>失效。</p>
+
+<p>很明显，这里面由于cacheline ping pong带来大量为了缓存一致性而产生的开销。</p>
 
 <p>因此这种<strong>false sharing</strong>发生在多核、多线程环境中。单核或者单线程不会有<strong>false sharing</strong>问题。</p>
 
@@ -190,7 +192,33 @@ sys     0m0.000s
 
 <p>解决方法二：假如<strong>global</strong>不是一个数组呢？而是包含多个变量的结构体呢(这种情形也很常见)？上面的方法就不灵了吧？</p>
 
-<p>恩，上面的方法不灵了，而且上面的方法太笨。网上有很多资料告诉您怎么定义变量让其<strong>cacheline aligned</strong>，这也是那些博客千篇一律的做法。还有没有其他方法？有。接着往下看。</p>
+<p>恩，上面的方法不灵了，而且上面的方法太笨。网上有很多资料告诉您怎么定义变量让其<strong>cacheline aligned</strong>，这也是那些博客千篇一律的做法，不过还是值得在这里提及。</p>
+
+<p>以gcc编译器为例：下面的做法不能保证global[0]和global[1]不在同一个cacheline里：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#define CACHELINE_SIZE 64</span>
+</span><span class="line"><span class="kt">int32_t</span> <span class="n">global</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="n">__attribute__</span><span class="p">((</span><span class="n">aligned</span><span class="p">(</span><span class="n">CACHELINE_SIZE</span><span class="p">)));</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>这样只能保证global数组的首元素是cacheline对齐的，不能保证global[0]和global[1]不在同一个cacheline。</p>
+
+<p>以下是正确做法：</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#define CACHELINE_SIZE 64</span>
+</span><span class="line"><span class="k">struct</span> <span class="n">MyCounter</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int32_t</span> <span class="n">counter</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span><span class="n">__attribute__</span><span class="p">((</span><span class="n">aligned</span> <span class="p">(</span><span class="n">CACHELINE_SIZE</span><span class="p">)));</span>
+</span><span class="line"><span class="n">MyCounter</span> <span class="n">global</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>还有没有其他方法？有。接着往下看。</p>
 
 <p>解决方法三：重点来了。</p>
 
