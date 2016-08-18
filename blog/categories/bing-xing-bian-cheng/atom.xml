@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-07-28T23:28:54+08:00</updated>
+  <updated>2016-08-18T22:25:31+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -665,7 +665,35 @@ class PetersonSpinLock
 
 <p>2，没有中文版，没有英文影印版，很难下到pdf。苦逼穷学生想阅读的话基本上只能去amazon.com购买原版</p>
 
-<p>个人喜爱程度：1颗星</p>
+<p>个人喜爱程度：2颗星</p>
+
+<p><a href="http://www.bogotobogo.com/cplusplus/files/CplusplusConcurrencyInAction_PracticalMultithreading.pdf">C++ Concurrency In Action</a></p>
+
+<p>听说人民邮电出版社引进版权翻译了，据说翻译的糟糕透顶。我买了一本英文原版，挺贵的。哈哈。</p>
+
+<p>优点：</p>
+
+<p>1，介绍C++11来编写多线程程序。</p>
+
+<p>2，涵盖了Hazard Pointer等一般教科书上不会出现的内容，还有一章介绍了lock free。</p>
+
+<p>缺点：</p>
+
+<p>可能是我个人实力不行，感觉这本书讲的并不好，看完还是得看论文才懂。</p>
+
+<p>个人喜爱程度：2颗星</p>
+
+<p><a href="http://users.nik.uni-obuda.hu/vamossy/SZPE2011/Segedletek/Multi-Core_Programming_Digital_Edition_(06-29-06).pdf">Multi Core Programming</a></p>
+
+<p>Intel的工程师写的。挺老的书了，但是还是很有用。</p>
+
+<p>优点：</p>
+
+<p>1，介绍了多线程编程中的基础知识，比如说什么是false sharing？什么是priority inversion？</p>
+
+<p>2，第八章介绍了如何编写调试多线程程序的程序，强烈推荐！</p>
+
+<p>个人喜爱程度：3颗星</p>
 
 <h2 id="blog">Blog</h2>
 
@@ -678,6 +706,8 @@ class PetersonSpinLock
 <h2 id="course">Course</h2>
 
 <p><a href="http://15418.courses.cs.cmu.edu/spring2016/">Parallel Computer Architecture and Programming @ CMU</a></p>
+
+<p><a href="http://web.cecs.pdx.edu/~walpole/class/cs510/fall2014/slides/">Parallel Programming @ pdx</a></p>
 
 <h2 id="paper">Paper</h2>
 
