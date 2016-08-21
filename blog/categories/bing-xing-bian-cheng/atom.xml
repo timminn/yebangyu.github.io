@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-08-18T22:25:31+08:00</updated>
+  <updated>2016-08-21T21:24:24+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,154 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[MCS Lock]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/08/21/mcslock/"/>
+    <updated>2016-08-21T20:25:11+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/08/21/mcslock</id>
+    <content type="html"><![CDATA[<h2 id="section">回顾</h2>
+
+<p><a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">上回</a> 我们介绍了Ticket Lock算法，和传统的简单的CAS操作来实现spin lock相比，它提供了不少很好的性质：比如FIFO、没有饥饿等等。</p>
+
+<p>但是根据<a href="https://pdos.csail.mit.edu/papers/linux:lock.pdf">论文</a>，ticket lock的scalability很差。我们不妨简单回顾一下（代码片段也摘自该论文）：</p>
+
+<p><code>c++
+struct spinlock_t 
+{
+  int current_ticket ;
+  int next_ticket ;
+}
+void spin_lock (spinlock_t *lock)
+{
+  int t = atomic_fetch_and_inc(&amp;lock -&gt; next_ticket );
+  while (t != lock-&gt;current_ticket )
+  ; /* spin */
+}
+void spin_unlock (spinlock_t *lock)
+{
+  lock-&gt;current_ticket++;
+}
+</code></p>
+
+<!--more-->
+
+<p>正如论文中指出的那样，当某个core上持有锁的线程释放锁时，它将把其他core上的<code>current_ticket</code>对应的cacheline都invalid掉，之前所有等锁的线程都会通过bus来读取最新的cacheline，这将造成“拥堵”(也就是所谓的bus traffic)。由于在绝大多数体系结构下，这些读取请求都会被串行化，one by one的处理，因此<code>spin_lock</code>所需时间将正比于等待锁的线程数目。</p>
+
+<p>本质上，这里的问题还是在于资源共享：所有等锁线程都spin在同一个全局变量上。如果每个线程仅仅spin在本地变量(该线程私有的变量)，那么将有效的提高scalability。本文要介绍的MCS Lock就是这样的思路。</p>
+
+<h2 id="section-1">实现</h2>
+
+<p>这次，我们先给出实现（环境为：GCC 4.8 + X86体系结构 + Ubuntu 14.04 32bit系统），然后再讲解算法。</p>
+
+<p>```c++
+#include<pthread.h> //just for test demo.
+#define CPU_BARRIER() __sync_synchronize()
+#define CPU_RELAX() __asm__ __volatile__("pause\n": : :"memory")
+#define CAS(address, exp, target) __sync_bool_compare_and_swap(address, exp, target)
+#define ATOMIC_EXCHANGE(address, val) __atomic_exchange_n(address, val, __ATOMIC_SEQ_CST)
+//=========================================
+struct MCSLockNode
+{
+  volatile MCSLockNode *volatile next;
+  volatile int spin;
+};</pthread.h></p>
+
+<p>typedef MCSLockNode MCSLock;
+static void lock(MCSLock **m, MCSLockNode *me)
+{
+  me-&gt;next = NULL;
+  me-&gt;spin = 0;
+  MCSLockNode *tail = ATOMIC_EXCHANGE(m, me);
+  if (!tail) {
+    return;
+  }
+  tail-&gt;next = me;
+  CPU_BARRIER();
+  while (!me-&gt;spin) {
+    CPU_RELAX();
+  }
+  return;
+}</p>
+
+<p>static void unlock(MCSLock <em>*m, MCSLockNode *me)
+{
+  if (!me-&gt;next) {
+    if (CAS(m, me, NULL)) {
+      return;
+    }
+    while (!me-&gt;next) {
+      CPU_RELAX();
+    }
+  }
+  /</em>It holds that me-&gt;next != NULL here */
+  me-&gt;next-&gt;spin = 1;
+}
+```</p>
+
+<h2 id="section-2">算法</h2>
+
+<p>MCS Lock算法维护一个队列(队尾指针tail)。</p>
+
+<p>lock：尝试加锁的线程创建一个节点，并将其中的<code>spin</code>域设置为0。为0表示不是锁的持有者(lock holder)，接着通过原子操作<code>ATOMIC_EXCHANGE</code>，将自己插入队列中，并获得插入前队尾指针tail。如果tail指针为空，说明当前锁是空闲的，没有被任何线程占用，因此获得锁成功；如果tail指针不空，那么设置自己的前驱，然后自旋，等待它的前驱(线程)将自己的<code>spin</code>域置为1。<code>spin</code>域为1，那么该线程就变成锁的持有者了。</p>
+
+<p>注意到23行的cpu级别的memory barrier。因为这里我们需要写<code>tail-&gt;next</code>，然后读<code>me-&gt;spin</code>，这两个是不同的变量，而在X86下，写读不同变量可能会被CPU乱序，而一旦乱序，我们的实现就不正确了。</p>
+
+<p>unlock：释放锁的线程需要检查是否存在后继，如果存在后继，那么将它的后继的<code>spin</code>域设置为1即可，后继将结束spin，成功获得锁。一切搞定，如41行代码所示。</p>
+
+<p>如果不存在后继，那么这里需要特别特别注意。不存在后继有两种可能：</p>
+
+<p>它是最后一个线程。33-35行处理的就是这种情况。那么这时候只需要把队列置为空即可。</p>
+
+<p>它不是最后一个线程。那么此时存在另外一个线程在进行加锁操作，尝试加锁的线程已经通过18-21行设置了新的队尾指针，但是还没设置它的前驱，也就是还没执行到22行。因此释放锁的线程需要等待，等待22行被其他线程执行，等待它被人设置为别人的前驱。这也就是36-38行所做的事。</p>
+
+<p>简单说来，MCS Lock就是将线程们用队列管理起来；加锁的线程spin在自己的变量上；释放锁的线程只更新它后继的变量。</p>
+
+<h2 id="section-3">练习</h2>
+
+<p>1，MCS Lock的优点是显而易见的，因为每个等待锁的线程都spin在自己的局部的变量上。以至于最新版的linux内核已经开始采用它，来代替之前的ticket lock实现。那么，它的缺点呢？</p>
+
+<p>2，列出表格，从公平性、是否出现饥饿、时间空间复杂度等方面，全面对比ticket lock、mcs lock、peterson lock等。</p>
+
+<p>3，编写程序测试这几个算法的性能，考察它们的scalability。</p>
+
+<h2 id="section-4">附录</h2>
+
+<p>MCS Lock测试程序Demo</p>
+
+<p><code>c++
+MCSLock *global_lock = NULL;
+void* t1(void *arg)
+{
+  MCSLockNode mcs_node;
+  for(int i = 0; i &lt; 1000000; i++) {
+    lock(&amp;global_lock, &amp;mcs_node);
+    unlock(&amp;global_lock, &amp;mcs_node);
+  }
+  return NULL;
+}
+void* t2(void *arg)
+{
+  MCSLockNode mcs_node;
+  for(int i = 0; i &lt; 1000000; i++) {
+    lock(&amp;global_lock, &amp;mcs_node);
+    unlock(&amp;global_lock, &amp;mcs_node);
+  }
+  return NULL;
+}
+int main()
+{
+  pthread_t pthread1;
+  pthread_t pthread2;  
+  pthread_create(&amp;pthread1, NULL, t1, NULL);
+  pthread_create(&amp;pthread2, NULL, t2, NULL);
+  pthread_join(pthread1, NULL);  
+  pthread_join(pthread2, NULL);  
+  return 0;
+}
+</code></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[实现可重入锁]]></title>
@@ -591,197 +739,6 @@ class PetersonSpinLock
 <p>本文发出后，微博网友@finalpatch 指出应在代码的29、30行加上volatile。非常感谢。</p>
 
 <p>本文发出后，微博网友@linyvxiang 指出了文中的两处笔误。非常感谢。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Materials In Concurrency Programming]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/02/16/materials-in-concurrency-programming/"/>
-    <updated>2016-02-16T23:36:28+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/02/16/materials-in-concurrency-programming</id>
-    <content type="html"><![CDATA[<h2 id="prerequisite">Prerequisite</h2>
-
-<p>对CPU、内存、Cache有一个很好的认识，对学习并发编程有很大的帮助。</p>
-
-<p><a href="https://people.freebsd.org/~lstewart/articles/cpumemory.pdf">What Every Programmer Should Know About Memory</a></p>
-
-<p><a href="http://www.amazon.com/Consistency-Coherence-Synthesis-Lectures-Architecture/dp/1608455645">A Primer on Memory Consistency and Cache Coherence</a></p>
-
-<!--more-->
-
-<h2 id="textbook">Textbook</h2>
-
-<p><a href="https://www.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html">Is Parallel Programming Hard, And, If So, What Can You Do About It?</a></p>
-
-<p>Paul大叔的神作。</p>
-
-<p>优点：</p>
-
-<p>1，很全面，除了介绍lock的实现、RCU、Transaction Memory等等之外，还包括一些并发程序设计的其他知识，比如如何验证、如何调试等。</p>
-
-<p>个人非常喜欢第14章和附录C，分别详细介绍了什么是Memory Barrier以及为什么需要Memory Barrier。强烈推荐！</p>
-
-<p>2，很正派。这里面介绍的技术都非常通用，普遍适用，没有太多的黑科技。比如书中重点强调的partition，就是一种非常重要、非常scientific的思想。</p>
-
-<p>3，很幽默。真的，很幽默。</p>
-
-<p>缺点：因为正派，所以就没有介绍lock free这种很tricky的黑科技，算是不足吧。</p>
-
-<p>个人喜爱程度：5颗星</p>
-
-<p><a href="http://www.amazon.com/The-Multiprocessor-Programming-Revised-Reprint/dp/0123973376">The Art of Multiprocessor Programming</a></p>
-
-<p>被很多人推崇。第一版有很多错误，作者随后推出了revised版本。</p>
-
-<p>优点：市面上目前能见到的唯一一本包括大量Lock Free Data Structure实现的书籍。</p>
-
-<p>缺点：</p>
-
-<p>1，Java语言实现。个人固执认为应该用C或者C++</p>
-
-<p>2，没有介绍RCU等重要内容</p>
-
-<p>3，不详细。可能是我个人实力不行，感觉这本书讲的并不好，看完还是得看论文才懂。</p>
-
-<p>个人喜爱程度：3颗星</p>
-
-<p><a href="http://www.morganclaypool.com/doi/abs/10.2200/S00499ED1V01Y201304CAC023">Shared Memory Synchronization</a></p>
-
-<p>优点：</p>
-
-<p>1，很新。2013年的书</p>
-
-<p>2，选题不错。综合了上面两本</p>
-
-<p>缺点：</p>
-
-<p>1，鸡肋。初学者看了云里雾里，高手没必要看。</p>
-
-<p>是作者实力不够吗？恐怕不是。作者Michael L. Scott是程序语言设计和并发编程的大拿。</p>
-
-<p>是作者表述能力不行吗？恐怕不是。他写有一本非常著名和畅销的书籍：《Programming Language Pragmatics》</p>
-
-<p>这本书偏综述＋lecture notes性质，估计和这系列丛书的定位有关。</p>
-
-<p>2，没有中文版，没有英文影印版，很难下到pdf。苦逼穷学生想阅读的话基本上只能去amazon.com购买原版</p>
-
-<p>个人喜爱程度：2颗星</p>
-
-<p><a href="http://www.bogotobogo.com/cplusplus/files/CplusplusConcurrencyInAction_PracticalMultithreading.pdf">C++ Concurrency In Action</a></p>
-
-<p>听说人民邮电出版社引进版权翻译了，据说翻译的糟糕透顶。我买了一本英文原版，挺贵的。哈哈。</p>
-
-<p>优点：</p>
-
-<p>1，介绍C++11来编写多线程程序。</p>
-
-<p>2，涵盖了Hazard Pointer等一般教科书上不会出现的内容，还有一章介绍了lock free。</p>
-
-<p>缺点：</p>
-
-<p>可能是我个人实力不行，感觉这本书讲的并不好，看完还是得看论文才懂。</p>
-
-<p>个人喜爱程度：2颗星</p>
-
-<p><a href="http://users.nik.uni-obuda.hu/vamossy/SZPE2011/Segedletek/Multi-Core_Programming_Digital_Edition_(06-29-06).pdf">Multi Core Programming</a></p>
-
-<p>Intel的工程师写的。挺老的书了，但是还是很有用。</p>
-
-<p>优点：</p>
-
-<p>1，介绍了多线程编程中的基础知识，比如说什么是false sharing？什么是priority inversion？</p>
-
-<p>2，第八章介绍了如何编写调试多线程程序的程序，强烈推荐！</p>
-
-<p>个人喜爱程度：3颗星</p>
-
-<h2 id="blog">Blog</h2>
-
-<p><a href="http://preshing.com/">Jeff Preshing’s Blog</a></p>
-
-<p><a href="http://www.cliffc.org/blog/">Cliff Click’s Blog</a></p>
-
-<p><a href="http://www.yebangyu.org">Yebangyu’s Blog</a></p>
-
-<h2 id="course">Course</h2>
-
-<p><a href="http://15418.courses.cs.cmu.edu/spring2016/">Parallel Computer Architecture and Programming @ CMU</a></p>
-
-<p><a href="http://web.cecs.pdx.edu/~walpole/class/cs510/fall2014/slides/">Parallel Programming @ pdx</a></p>
-
-<h2 id="paper">Paper</h2>
-
-<h3 id="linked-list--skip-list">Linked List &amp; Skip List</h3>
-
-<p><a href="https://timharris.uk/papers/2001-disc.pdf">A Pragmatic Implementation of Non-Blocking Linked-Lists</a></p>
-
-<p><a href="http://www.cse.yorku.ca/~ruppert/papers/lfll.pdf">Lock Free Linked Lists and Skip Lists</a></p>
-
-<p><a href="http://www.cse.yorku.ca/~ruppert/Mikhail.pdf">Lock Free Linked Lists and Skip Lists</a></p>
-
-<p><a href="http://cs.ucf.edu/~dcm/Teaching/COT4810-Spring2011/Literature/SplitOrderedLists.pdf">Split-Ordered Lists: Lockfree Extensible Hash Tables</a></p>
-
-<p><a href="http://cs.brown.edu/~mph/LevHLS06/OPODIS2006-BA.pdf">A Provably Correct Scalable Concurrent Skip List</a></p>
-
-<h3 id="stack">Stack</h3>
-
-<p><a href="http://www.cs.bgu.ac.il/~hendlerd/papers/scalable-stack.pdf">A Scalable Lock Free Stack Algorithm</a></p>
-
-<h3 id="queue">Queue</h3>
-
-<p><a href="http://www.cs.rochester.edu/~scott/papers/1996_PODC_queues.pdf">Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms</a></p>
-
-<p><a href="http://www.non-blocking.com/download/SunT03_PQueue_TR.pdf">Fast and Lock Free Concurrent Priority Queues for Multi-Thread Systems</a></p>
-
-<p><a href="http://people.csail.mit.edu/edya/publications/OptimisticFIFOQueue-DISC2004.pdf">An Optimistic Approach to Lock Free FIFO Queues</a></p>
-
-<h3 id="hash-map">Hash Map</h3>
-
-<p><a href="http://www.win.tue.nl/~jfg/articles/CS-Report03-03.pdf">Efficient Almost Wait Free Parallel Accessible Dynamic Hash-tables</a></p>
-
-<p><a href="http://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-639.pdf">Non-Blocking Hash-Tables With Open Addressing</a></p>
-
-<p><a href="http://cs.brown.edu/~mph/HellerHLMSS05/2005-OPODIS-Lazy.pdf">A Lazy Concurrent List-Based Set Algorithm</a></p>
-
-<p><a href="http://www.research.ibm.com/people/m/michael/spaa-2002.pdf">High Performance Dynamic Lock-Free Hash Tables and List-Based Sets</a></p>
-
-<h3 id="cuckoo-hash-map">Cuckoo Hash Map</h3>
-
-<p><a href="http://excess-project.eu/publications/published/CuckooHashing_ICDCS.pdf">Lock-free Cuckoo Hashing</a></p>
-
-<h3 id="b-tree">B+ Tree</h3>
-
-<p><a href="http://www.cs.technion.ac.il/~erez/Papers/lfbtree-full.pdf">A Lock-Free B+ Tree</a></p>
-
-<p><a href="http://www.cs.technion.ac.il/~anastas/lfbtree-spaa.pdf">A Lock-Free B+ Tree</a></p>
-
-<h3 id="others">Others</h3>
-
-<p><a href="https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf">Hazard Pointers: Safe Memory Reclamation For Lock-Free Objects</a></p>
-
-<p><a href="http://www.grame.fr/ressources/publications/fober-JIM2002.pdf">Lock Free Techniques for Concurrent Access to Shared Objects</a></p>
-
-<p><a href="http://www.cs.rochester.edu/~scott/papers/1998_JPDC_nonblocking.pdf">Non-Blocking Algorithms and Preemption-Safe Locking on Multiprogrammed Shared Memory Multiprocessors</a></p>
-
-<p><a href="http://cs.brown.edu/people/mph/HerlihyLM03/main.pdf">Obstruction-Free Synchronization: Double-Ended Queues as an Example</a></p>
-
-<p><a href="http://www.research.ibm.com/people/m/michael/podc-2002.pdf">Safe Memory Reclamation for Dynamic Lock Free Objects Using Atomic Reads and Writes</a></p>
-
-<p><a href="http://www.ece.uc.edu/~paw/classes/ece975/sp2010/papers/herlihy-05.pdf">Non-blocking Memory Management Support for Dynamic-Sized Data Structures</a></p>
-
-<p><a href="http://cs.brown.edu/~mph/DohertyHLM04/ft_gateway.cfm.pdf">Bringing Practical Lock Free Synchronization to 64Bit Applications</a></p>
-
-<p><a href="https://www.research.ibm.com/people/m/michael/pldi-2004.pdf">Scalable Lock-Free Dynamic Memory Allocation</a></p>
-
-<p><a href="http://research.microsoft.com/pubs/209106/paper.pdf">Are Lock-Free Concurrent Algorithms Practically Wait-Free</a></p>
-
-<p><a href="http://www.cl.cam.ac.uk/~pes20/cpp/popl085ap-sewell.pdf">Mathematizing C++ Concurrency</a></p>
-
-<h2 id="pages">Pages</h2>
-
-<p><a href="https://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync">Memory model synchronization modes</a></p>
-
-<p><a href="http://jakob.engbloms.se/archives/65">Dekker’s Algorithm Does not Work, as Expected</a></p>
 ]]></content>
   </entry>
   
