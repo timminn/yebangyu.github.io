@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-08-21T21:24:24+08:00</updated>
+  <updated>2016-08-23T22:30:05+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -54,7 +54,7 @@ void spin_unlock (spinlock_t *lock)
 
 <p>```c++
 #include<pthread.h> //just for test demo.
-#define CPU_BARRIER() __sync_synchronize()
+#define COMPILER_BARRIER() __asm__ __volatile__("" : : : "memory")
 #define CPU_RELAX() __asm__ __volatile__("pause\n": : :"memory")
 #define CAS(address, exp, target) __sync_bool_compare_and_swap(address, exp, target)
 #define ATOMIC_EXCHANGE(address, val) __atomic_exchange_n(address, val, __ATOMIC_SEQ_CST)
@@ -75,7 +75,7 @@ static void lock(MCSLock **m, MCSLockNode *me)
     return;
   }
   tail-&gt;next = me;
-  CPU_BARRIER();
+  COMPILER_BARRIER();
   while (!me-&gt;spin) {
     CPU_RELAX();
   }
@@ -103,8 +103,6 @@ static void lock(MCSLock **m, MCSLockNode *me)
 
 <p>lock：尝试加锁的线程创建一个节点，并将其中的<code>spin</code>域设置为0。为0表示不是锁的持有者(lock holder)，接着通过原子操作<code>ATOMIC_EXCHANGE</code>，将自己插入队列中，并获得插入前队尾指针tail。如果tail指针为空，说明当前锁是空闲的，没有被任何线程占用，因此获得锁成功；如果tail指针不空，那么设置自己的前驱，然后自旋，等待它的前驱(线程)将自己的<code>spin</code>域置为1。<code>spin</code>域为1，那么该线程就变成锁的持有者了。</p>
 
-<p>注意到23行的cpu级别的memory barrier。因为这里我们需要写<code>tail-&gt;next</code>，然后读<code>me-&gt;spin</code>，这两个是不同的变量，而在X86下，写读不同变量可能会被CPU乱序，而一旦乱序，我们的实现就不正确了。</p>
-
 <p>unlock：释放锁的线程需要检查是否存在后继，如果存在后继，那么将它的后继的<code>spin</code>域设置为1即可，后继将结束spin，成功获得锁。一切搞定，如41行代码所示。</p>
 
 <p>如果不存在后继，那么这里需要特别特别注意。不存在后继有两种可能：</p>
@@ -117,7 +115,7 @@ static void lock(MCSLock **m, MCSLockNode *me)
 
 <h2 id="section-3">练习</h2>
 
-<p>1，MCS Lock的优点是显而易见的，因为每个等待锁的线程都spin在自己的局部的变量上。以至于最新版的linux内核已经开始采用它，来代替之前的ticket lock实现。那么，它的缺点呢？</p>
+<p>1，MCS Lock的优点是显而易见的，因为每个等待锁的线程都spin在自己的局部的变量上。以至于新版的linux内核已经开始采用它，来代替之前的ticket lock实现。那么，它的缺点呢？</p>
 
 <p>2，列出表格，从公平性、是否出现饥饿、时间空间复杂度等方面，全面对比ticket lock、mcs lock、peterson lock等。</p>
 
@@ -129,16 +127,7 @@ static void lock(MCSLock **m, MCSLockNode *me)
 
 <p><code>c++
 MCSLock *global_lock = NULL;
-void* t1(void *arg)
-{
-  MCSLockNode mcs_node;
-  for(int i = 0; i &lt; 1000000; i++) {
-    lock(&amp;global_lock, &amp;mcs_node);
-    unlock(&amp;global_lock, &amp;mcs_node);
-  }
-  return NULL;
-}
-void* t2(void *arg)
+void* f(void *arg)
 {
   MCSLockNode mcs_node;
   for(int i = 0; i &lt; 1000000; i++) {
@@ -151,13 +140,24 @@ int main()
 {
   pthread_t pthread1;
   pthread_t pthread2;  
-  pthread_create(&amp;pthread1, NULL, t1, NULL);
-  pthread_create(&amp;pthread2, NULL, t2, NULL);
+  pthread_create(&amp;pthread1, NULL, f, NULL);
+  pthread_create(&amp;pthread2, NULL, f, NULL);
   pthread_join(pthread1, NULL);  
   pthread_join(pthread2, NULL);  
   return 0;
 }
 </code></p>
+
+<h2 id="section-5">致谢</h2>
+
+<p>本文刚写作时，在23行使用了一个cpu级别的memory barrier，因为这里我们需要写<code>tail-&gt;next</code>，然后读<code>me-&gt;spin</code>，这两个是不同的变量，而在X86下，写读不同变量可能会被CPU乱序。</p>
+
+<p>本文发出后，不少朋友，包括@ForFunny 、 @赵星宇tju 发起了是否编译器级别的memory barrier即可的讨论。</p>
+
+<p>经过认真讨论和思考，23行改为使用编译器级别的memory barrier。实际上，在linux的内核的mcs lock里，存在cpu memory barrier和compiler memory barrier两种实现版本。</p>
+
+<p>感谢@ForFunny @赵星宇tju参与讨论。</p>
+
 ]]></content>
   </entry>
   
