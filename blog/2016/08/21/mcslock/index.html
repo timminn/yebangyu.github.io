@@ -310,9 +310,11 @@ MathJax.Hub.Config({
 
 <p>本文发出后，不少朋友，包括@ForFunny 、 @赵星宇tju 发起了是否编译器级别的memory barrier即可的讨论。</p>
 
-<p>经过认真讨论和思考，23行改为使用编译器级别的memory barrier。实际上，在linux的内核的mcs lock里，存在cpu memory barrier和compiler memory barrier两种实现版本。</p>
+<p>实际上，在我所看到的linux内核的mcs lock<a href="https://github.com/torvalds/linux/blob/9256d5a308c95a50c6e85d682492ae1f86a70f9b/kernel/locking/mcs_spinlock.h">实现</a>里，就是使用的cpu memory barrier(在<code>arch_mcs_spin_lock_contended</code>里)。</p>
 
-<p>感谢@ForFunny @赵星宇tju参与讨论。</p>
+<p>也有人提交了一个<a href="http://www.gossamer-threads.com/lists/linux/kernel/1852965">patch</a>，建议去除cpu级别的memory barrier。</p>
+
+<p>经过认真讨论和思考，23行改为使用编译器级别的memory barrier。感谢@ForFunny @赵星宇tju参与讨论。</p>
 
 </div>
 
