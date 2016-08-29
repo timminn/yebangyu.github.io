@@ -264,7 +264,7 @@ int b = i;//强制从内存中读取实时的i的值
 
 <p>有些人可能会说，那结果不就不对了吗？b为10，a为13？可是正确结果应该是a为5啊。</p>
 
-<p>哦，这里说的是语句的执行，对应的汇编指令不是简单的mov b,10和mov b,a+3。</p>
+<p>哦，这里说的是语句的执行，对应的汇编指令不是简单的mov b,10和mov a,b+3。</p>
 
 <p>生成的汇编代码可能是：</p>
 
@@ -278,7 +278,9 @@ int b = i;//强制从内存中读取实时的i的值
 </span><span class="line"><span class="n">movl</span>    <span class="o">%</span><span class="n">eax</span><span class="p">,</span> <span class="n">a</span><span class="p">(</span><span class="o">%</span><span class="n">rip</span><span class="p">)</span> <span class="p">;</span> <span class="err">将</span><span class="o">%</span><span class="n">eax</span><span class="err">也就是</span><span class="n">b</span><span class="o">+</span><span class="mi">3</span><span class="err">的值写入</span><span class="n">a</span><span class="p">,</span><span class="err">即</span> <span class="n">a</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">3</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>这并不奇怪，为了优化性能，有时候确实可以这么做。但是在多线程并行编程中，有时候乱序就会出问题。</p>
+<p>这并不奇怪，为了优化性能，有时候确实可以这么做。编译器只要保证执行之后a=5且b=10，即单线程内的一致性即可，中间过程是允许任意优化的。</p>
+
+<p>但是在多线程并行编程中，有时候乱序就会出问题。</p>
 
 <p>一个最典型的例子是用锁保护临界区。如果临界区的代码被拉到加锁前或者释放锁之后执行，那么将导致不明确的结果，往往让人不开心的结果。</p>
 
