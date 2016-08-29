@@ -278,7 +278,7 @@ int b = i;//强制从内存中读取实时的i的值
 </span><span class="line"><span class="n">movl</span>    <span class="o">%</span><span class="n">eax</span><span class="p">,</span> <span class="n">a</span><span class="p">(</span><span class="o">%</span><span class="n">rip</span><span class="p">)</span> <span class="p">;</span> <span class="err">将</span><span class="o">%</span><span class="n">eax</span><span class="err">也就是</span><span class="n">b</span><span class="o">+</span><span class="mi">3</span><span class="err">的值写入</span><span class="n">a</span><span class="p">,</span><span class="err">即</span> <span class="n">a</span> <span class="o">=</span> <span class="n">b</span> <span class="o">+</span> <span class="mi">3</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>这并不奇怪，为了优化性能，有时候确实可以这么做。编译器只要保证执行之后a=5且b=10，即单线程内的一致性即可，中间过程是允许任意优化的。</p>
+<p>结果还是对的，a等于5，b等于10。这并不奇怪，为了优化性能，有时候确实可以这么做。编译器只要保证执行之后a等于5且b等于10，即单线程内的一致性即可，中间过程是允许任意优化的。</p>
 
 <p>但是在多线程并行编程中，有时候乱序就会出问题。</p>
 
