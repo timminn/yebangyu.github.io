@@ -123,7 +123,7 @@ MathJax.Hub.Config({
 
 <p>但是内存回收问题依旧存在。我们知道，和Java这种提供自动gc的语言相比，C++程序员刀耕火种，得自己管理内存。当一个线程正在访问某块内存，而另外一个线程将它释放将是一个灾难行为。解决内存回收问题在lock free里显得更加困难。</p>
 
-<p>目前用于lock free代码的内存回收方法的经典方法有：Lock Free Reference Counting、Hazard Pointer、Epoch Based Reclamation、Quiescent State Based Reclamation等。<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">上回</a>我们简单介绍了Hazard Pointer，本文我们介绍Epoch Based Reclamation方法。据我所知，这是第一篇介绍这个方法的中文资料。</p>
+<p>目前用于lock free代码的内存回收的经典方法有：Lock Free Reference Counting、Hazard Pointer、Epoch Based Reclamation、Quiescent State Based Reclamation等。<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">上回</a>我们简单介绍了Hazard Pointer，本文我们介绍Epoch Based Reclamation方法。据我所知，这是第一篇介绍这个方法的中文资料。</p>
 
 </div>
   
