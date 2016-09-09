@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-08-29T22:51:54+08:00</updated>
+  <updated>2016-09-09T22:29:09+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,142 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Lock Free中的Epoch Based Reclamation]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/09/09/epochbasedreclamation/"/>
+    <updated>2016-09-09T22:24:02+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/09/09/epochbasedreclamation</id>
+    <content type="html"><![CDATA[<h2 id="section">楔子</h2>
+
+<p>一般认为，用C/C++编写Lock Free代码非常困难，主要原因无非是两个：</p>
+
+<blockquote>
+  <ul>
+    <li>内存模型</li>
+  </ul>
+</blockquote>
+
+<blockquote>
+  <ul>
+    <li>内存回收</li>
+  </ul>
+</blockquote>
+
+<p>C++11引入了标准的内存模型，在此之前，C++程序员依赖于具体的体系结构特点和编译器提供的feature来保证正确的内存访问语义。C++11出来后，程序员编写健壮的、可移植的lock free代码成为可能。</p>
+
+<p>但是内存回收问题依旧存在。我们知道，和Java这种提供自动gc的语言相比，C++程序员刀耕火种，得自己管理内存。当一个线程正在访问某块内存，而另外一个线程将它释放将是一个灾难行为。解决内存回收问题在lock free里显得更加困难。</p>
+
+<p>目前用于lock free代码的内存回收方法的经典方法有：Lock Free Reference Counting、Hazard Pointer、Epoch Based Reclamation、Quiescent State Based Reclamation等。<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">上回</a>我们简单介绍了Hazard Pointer，本文我们介绍Epoch Based Reclamation方法。据我所知，这是第一篇介绍这个方法的中文资料。</p>
+
+<!--more-->
+
+<h2 id="section-1">概念</h2>
+
+<p>1，逻辑删除和物理删除：逻辑删除仅仅是在逻辑上删除该节点，该节点在被逻辑删除之时可能会有其他线程正在访问它，而逻辑删除之后不会再被线程访问到。逻辑删除不回收内存空间。物理删除则是将对应到内存空间真正回收。一般逻辑删除是delete，物理删除是free或者reclaim。</p>
+
+<p>2，Grace Period：记时间段T＝[t1,t2]，如果t1之前逻辑删除的节点，都可以在t2之后安全的回收，那么称T是一个Grace Period。t2之后保证不会有任何线程会访问在t1之前逻辑删除的节点。</p>
+
+<p>3，临界区：在本文，临界区指的是线程访问共享内存资源的代码段。和传统上所说的临界资源不同。</p>
+
+<h2 id="section-2">实现</h2>
+
+<p>我们依然先给出实现，再讲原理。注意到这里为了能focus我们的主题，我们刻意简化为四个线程，其中三个读线程，它们对数据都是只读的；而只有一个写线程可以对资源进行改写和删除，因此不需要加锁。</p>
+
+<p><code>c++
+#define N_THREADS 4 //一共4个线程
+bool active[N_THREADS] = {false};
+int epoches[N_THREADS] = {0};
+int globla_epoch = 0;
+vector&lt;int&gt; retire_lists[3];
+void read(int thread_id)
+{
+  active[thread_id] = true;
+  memory_barrier();//防止写读乱序
+  epoches[thread_id] = globla_epoch;
+  acquire_memory_barrier();//acquire语义
+  //进入临界区了。可以安全的读取*p，比如cout &lt;&lt; *p &lt;&lt; endl;
+  //...... 
+  //读取完毕，离开临界区
+  active[thread_id] = false;
+  release_memory_barrier();//release语义
+}
+void logical_deletion(int thread_id)
+{
+  active[thread_id] = true;
+  memory_barrier();//防止写读乱序
+  epoches[thread_id] = globla_epoch;
+  acquire_memory_barrier();//acquire语义
+  //进入临界区了，这里，我们可以安全的读取*p，比如cout &lt;&lt; *p &lt;&lt; endl;
+  //好了，假如说我们现在要删除它了。先逻辑删除。
+  int *new_p = new int(*p + 1);
+  int *tmp = p;
+  p = new_p;
+  //tmp对应的内存还不能马上被回收，加入到对应的retire list
+  retire_lists[epoches[thread_id]].push_back(tmp);
+  //离开临界区
+  active[thread_id] = false;
+  //看看能不能物理删除
+  try_gc();
+}
+bool try_gc()
+{
+  e = global_epoch;
+  for (int i = 0; i &lt; N_THREADS; i++) {
+    if (active[i] &amp;&amp; epochs[i] != e) {
+        //还有部分线程没有更新到最新的全局的epoch值
+        //这时候可以回收(e + 1) % 3对应的retire list。
+        free((e + 1) % 3);//不是free(e)，也不是free(e-1)。参看下面
+        return false;
+    }
+  }
+  //更新global epoch
+  e = (e + 1) % 3;
+  //更新之后，那些active线程中，部分线程的epoch值可能还是e - 1（模3）
+  //那些inactive的线程，之后将读到最新的值，也就是e。
+  //不管如何，(e + 1) % 3对应的retire list的那些内存，不会有人再访问到了，可以回收它们了
+  //因此epoch的取值需要有三种，仅仅两种是不够的。
+  free((e + 1) % 3);//不是free(e)，也不是free(e-1)。参看下面
+}
+bool free(int epoch)
+{
+  for each pointer in retire_lists[epoch]
+    if (pointer is not NULL)
+      delete pointer;
+}
+</code>
+## 原理</p>
+
+<p>算法维护了一个全局的epoch(取值为0、1、2)和三个全局的retire_list（每个全局的epoch对应一个retire list）。除此之外我们为每个线程维护一个局部的active flag和epoch。</p>
+
+<h3 id="section-3">读线程</h3>
+
+<p>首先设置自己的active flag 为true，表明自己需要访问共享内存。然后将自己的局部的epoch设置为全局的epoch值。注意到，这里是写一个变量(active[i])，读另外一个变量(global_epoch)，在x86下可能会乱序，因此这里需要一个cpu级别的memory barrier。</p>
+
+<p>这之后线程就可以放心的读取资源了，不用担心会被回收。</p>
+
+<p>读完之后将自己的active flag设置为false即可。</p>
+
+<h3 id="section-4">写线程</h3>
+
+<p>这里说的写线程是指会对资源进行删除的线程。首先进行逻辑删除，让该资源不可见。然后尝试对它进行物理删除，也就是回收。</p>
+
+<p>令全局的epoch值为e。首先检查是否存在线程处在活动中并且还没有更新它自己的线程局部的epoch到全局e。如果存在，那么可以回收retire_lists[(e+1) % 3]。</p>
+
+<p>如果不存在，那么我们把全局epoch的值更新为(e+1)%3，然后再回收对应的retire list。</p>
+
+<p>有点绕？这里关键是理清线程局部epoch和全局epoch的关系：在这个算法里，任何时刻，线程的局部epoch值要么和全局epoch相等，要么差1（模3），不可能相差2。</p>
+
+<p>所以[epoch-1, epoch + 1]（模3）构成了一个Grace Period。</p>
+
+<p>举个例子，当全局epoch的值为2的时候，其他的线程的局部epoch要么是1，要么是2，不可能是0。因此[0,2]构成了一个Grace Period，也就是说0对应的retire list这时候可以放心的回收了。</p>
+
+<p>也因此，当全局epoch值为2时，如果存在部分活跃线程epoch等于1，那么retire_list[1]将不能立马回收。如果这些活跃线程不退出临界区（在里面不断的读、疯狂的读，或者死了），那么retire_list[1]纪录的那些内存将一直无法回收。</p>
+
+<p>这也就是在Epoch Based Reclamation中，回收操作可能被读延迟的原因所在。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[MCS Lock]]></title>
@@ -526,217 +662,6 @@ int add_and_fetch(int *p, int inc)
 
 <p>那么ticket lock是否完美呢？有什么惊人的缺点呢？请看下集。</p>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Peterson算法实现spin lock]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/"/>
-    <updated>2016-03-04T22:26:51+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm</id>
-    <content type="html"><![CDATA[<p>对spin lock和mutex不熟悉的朋友，可以看<a href="http://www.yebangyu.org/blog/2016/01/24/spinlock-and-mutex/">上篇</a>博客。</p>
-
-<h2 id="section">提出问题</h2>
-
-<p>如何仅仅通过load和store实现spin lock呢？</p>
-
-<p>本文只考虑、只针对只有两个线程的情形。假设这两个线程的id分别为0和1。编程环境为X86体系结构 + Intel CPU + gcc</p>
-
-<!--more-->
-
-<h2 id="section-1">分析问题</h2>
-
-<h3 id="section-2">尝试一：仅使用一个变量</h3>
-
-<p>仅使用一个bool类型变量flag，线程i申请锁时，查看flag是否为1-i，如果不是，说明另外一个线程没有在临界区，申请成功，并把flag的值设置为i。</p>
-
-<p>这种方法的问题在于，检查flag是否为1-i，以及设置flag为i这两步不是原子的，无法仅仅通过load和store来原子实现。（需要CAS等类似的原子操作）</p>
-
-<h3 id="section-3">尝试二：使用两个变量</h3>
-
-<p>根据前面的分析，我们可以使用两个bool变量flag[0]和flag[1]。线程i申请锁时，先把flag[i]设置为true，表示自己试图进入临界区，然后查看flag[1-i]是否为true，如果是，说明另一个线程在临界区，于是spin。</p>
-
-<p>这个方法的问题在于可能发生这样的问题：</p>
-
-<p>线程0把flag[0]设置为true，这时候还没开始检查flag[1]，此时线程1把flag[1]设置为true。</p>
-
-<p>接下去，每个线程都发现对方的flag为true，而实际上两个都没在临界区中，却谁都没法拿到锁，发生starvation现象。</p>
-
-<h3 id="section-4">尝试三：使用三个变量</h3>
-
-<p>在尝试二的基础上，再增加一个变量turn，表示谁先将自己的flag设置为true（仅仅通过那两个flag是没法区分的，想想看，是不是这样的）。因此这个变量可以用来裁决谁取得进入临界区的权利。</p>
-
-<h2 id="section-5">解决问题</h2>
-
-<p>以上尝试三所描述的方法，就是大名鼎鼎的peterson算法的雏形了。简单实现如下（注意，本文的平台是x86体系结构 + Intel CPU + gcc）：</p>
-
-<p><code>c++
-class PetersonSpinLock
-{
-  public:
-    PetersonSpinLock()
-    {
-      flags_[0] = false;
-      flags_[1] = false;
-      turn_ = false;//initial value does not matter
-    }
-    bool lock(int thread_id)
-    {
-      int other = !thread_id;
-      flags_[thread_id] = true; 
-      COMPILER_BARRIER();
-      turn_ = thread_id;
-      CPU_BARRIER();// essential
-      while(flags_[other] &amp;&amp; turn_ == thread_id) {
-        CPU_RELAX();//spin
-      }
-      //get lock successfully
-      return true;
-    }
-    bool unlock(int thread_id)
-    {
-      flags_[thread_id] = false;
-      return true;
-    }
-  private:
-    volatile bool flags_[2];
-    volatile bool turn_;
-};
-</code></p>
-
-<p>以下是对peterson算法的思考和讨论。在看我的分析之前，请自己尝试思考以下问题：（温馨提示：在C/C++中，if条件判断是短路求值的。也就是说对于if(A &amp;&amp; B)，一旦知道A是false，那么B将不用evaluate了）</p>
-
-<blockquote>
-  <ul>
-    <li>peterson算法如何防止starvation的发生？</li>
-  </ul>
-</blockquote>
-
-<blockquote>
-  <ul>
-    <li>peterson算法如何防止两个线程同时进入临界区？</li>
-  </ul>
-</blockquote>
-
-<blockquote>
-  <ul>
-    <li>代码13行和15行能否调换执行顺序？</li>
-  </ul>
-</blockquote>
-
-<blockquote>
-  <ul>
-    <li>代码15行能否改为<code>turn_ = !thread_id</code> ？</li>
-  </ul>
-</blockquote>
-
-<blockquote>
-  <ul>
-    <li>16行的cpu 级别的memory barrier是否必要？</li>
-  </ul>
-</blockquote>
-
-<blockquote>
-  <ul>
-    <li>实现（针对两个线程的）peterson算法所需最少空间为多少？</li>
-  </ul>
-</blockquote>
-
-<p>思考了没？下面我们来分析讨论一下：</p>
-
-<h3 id="petersonstarvation">peterson算法如何防止starvation的发生？</h3>
-
-<p>假设某时刻两个线程都在spin，也就是17行中while的条件对两个线程都成立，也就是说：</p>
-
-<p>flag_[0] == true 并且 trun_ == 0 并且 flag_[1] == true 并且turn_ == 1</p>
-
-<p>但是turn_只能有一个值，矛盾。</p>
-
-<h3 id="peterson">peterson算法如何防止两个线程同时进入临界区？</h3>
-
-<p>如果两者同时进入临界区，说明17行中的while判断对两个线程都为false，也就是说</p>
-
-<p>flag_[1] == false 或者 turn _ == 1</p>
-
-<p>同时</p>
-
-<p>flag_[0] == false 或者 turn_ == 0</p>
-
-<p>因此只有四种情形：</p>
-
-<p>flag_[1] == false  &amp;&amp; flag_[0] == false  与13行矛盾</p>
-
-<p>flag_[1] == false  &amp;&amp; turn_ == 0  与13行矛盾</p>
-
-<p>turn_ == 1 &amp;&amp; flag_[0] == false 与13行矛盾</p>
-
-<p>turn _ == 1 &amp;&amp; turn _ == 0 不可能发生</p>
-
-<p>而一旦例如说，线程0，进入临界区后，线程1会因为turn_的值而spin，直到线程0通过unlock将flag_[0]设置为false。</p>
-
-<p>因此，13、15两行的顺序很重要。是这样的吗？接着往下看。</p>
-
-<h3 id="section-6">代码13行和15行能否调换执行顺序？</h3>
-
-<p>不可以，否则可能发生两个线程同时进入临界区。</p>
-
-<p>考虑以下情形：</p>
-
-<p>线程0执行turn_ = 0</p>
-
-<p>线程1执行turn_ = 1</p>
-
-<p>线程1执行flag_[1] = true</p>
-
-<p>线程1执行17行的判断，因为flag_[0]为false，所以线程1进入临界区。</p>
-
-<p>线程0执行flag_[0] = true</p>
-
-<p>线程0执行17行判断，此时turn_等于1，所以线程0也进入临界区。</p>
-
-<p>因此13行和15行执行顺序不可以交换；而这两个都是store操作，在X86 Intel CPU下，cpu不会乱序执行它们，因此只需要在14行增加一个compiler级别的memory barrier，防止编译器乱序即可。</p>
-
-<h3 id="turn--threadid">代码15行能否改为<code>turn_ = !thread_id</code></h3>
-
-<p>可以。只是如果15行改为<code>turn_ = !thread_id</code>，那么17行需要将<code>turn_ == thread_id</code>也改为<code>turn_ == !thread_id</code>。也就是说turn_的初始值是什么并不重要，turn_设置成什么值也不太重要，重要的是通过turn_能区分出谁先尝试申请锁。</p>
-
-<h3 id="cpu-memory-barrier">16行的cpu 级别的Memory Barrier是否必要？</h3>
-
-<p>非常必要。否则17行对flags_[other]的读取（判断）操作可能和15行发生乱序（写读乱序。而13、15属于写写，是不会被CPU乱序执行的，不用加cpu 级别的memory barrier），最后可能导致两个线程同时进入临界区。这点，请读者务必自己亲自分析。非常重要！</p>
-
-<p>不加Memory Barrier，乱序后，考虑以下情形：</p>
-
-<p>线程0判断flag_[1]，发现为false（此时线程1还没开始调用lock函数，flag_[1]还是它的初始值false），进入临界区。</p>
-
-<p>线程1判断flag_[0]，发现为true</p>
-
-<p>线程1执行<code>turn_ = 1</code></p>
-
-<p>线程0执行<code>turn_ = 0</code></p>
-
-<p>线程1执行17行判断，此时turn_等于0，所以线程1也进入临界区。</p>
-
-<h3 id="peterson-1">实现（针对两个线程的）peterson算法所需最少空间为多少？</h3>
-
-<p>3个bit足矣。两个flag_两个bit，turn_也只需要1个bit。</p>
-
-<h2 id="section-7">附录：</h2>
-
-<p>在X86下，<code>CPU_BARRIER</code>和<code>CPU_RELAX</code>以及<code>COMPILER_BARRIER</code>可以用gcc内置feature，通过宏来实现：</p>
-
-<p><code>c++
-#define CPU_BARRIER() __sync_synchronize()
-#define COMPILER_BARRIER() __asm__ __volatile__("" : : : "memory")
-#define CPU_RELAX() __asm__ __volatile__("pause": : :"memory")
-</code></p>
-
-<p>18行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以提高性能、节能减排。</p>
-
-<h2 id="section-8">致谢</h2>
-
-<p>本文发出后，微博网友@finalpatch 指出应在代码的29、30行加上volatile。非常感谢。</p>
-
-<p>本文发出后，微博网友@linyvxiang 指出了文中的两处笔误。非常感谢。</p>
 ]]></content>
   </entry>
   

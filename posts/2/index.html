@@ -9,7 +9,11 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="写在最前 Soupen是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。 Github请访问这里 ，Python客户端请点击这里 提出问题 如何用C/C++实现正确的、可移植的、高效的、 &hellip;">
+  <meta name="description" content="最近被一个很基本的知识点给咬伤，虽然之前知道这个问题，但是写代码的时候不小心还是容易犯错。简单记录一下。 提出问题 之前，代码里拥有如下数组： 1
+2
+3
+4
+const char *COLORS[3] = {&quot;red&quot;, &quot;black&quot;, &quot; &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +85,56 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/10/stringliteralincpp/">String Literal In C++</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-10T22:05:21+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>10</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:05 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>最近被一个很基本的知识点给咬伤，虽然之前知道这个问题，但是写代码的时候不小心还是容易犯错。简单记录一下。</p>
+
+<h2 id="section">提出问题</h2>
+
+<p>之前，代码里拥有如下数组：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">COLORS</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;red&quot;</span><span class="p">,</span>
+</span><span class="line">                         <span class="s">&quot;black&quot;</span><span class="p">,</span>
+</span><span class="line">                         <span class="s">&quot;green&quot;</span>
+</span><span class="line">                        <span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>现在需要以追加的形式，添加一个yellow的颜色。粗心之下，我写成了：</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/04/10/stringliteralincpp/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -486,55 +540,6 @@ MathJax.Hub.Config({
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/29/insidethebloomfilter/">深入解析Bloom Filter(中)</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-01-29T22:38:31+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:38 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>本篇将介绍：</p>
-
-<blockquote>
-  <ul>
-    <li>d-left hashing</li>
-    <li>d-left counting bloom filter</li>
-  </ul>
-</blockquote>
-
-<p>在<a href="http://www.yebangyu.org/blog/2016/01/23/insidethebloomfilter/">上篇</a>文章，我们介绍了Standard Bloom Filter(SBF)和Counting Bloom Filter(CBF)。简单回顾下，我们大概思路和历程是：为了解决允许false positive下的membership问题，我们设计了哈希表算法，由于它所需空间巨大，我们引入bitmap方法；因为它false positive possibility太大，我们引入了SBF，它使用多个独立的、均匀分布的哈希函数。而SBF的一个缺点是不支持删除操作，为了能够删除，我们引入了CBF，然而，CBF存在一个问题。</p>
-
-<p>什么问题呢？那就是空间利用率不高。这可以通过简单的数学计算知道大概：</p>
-
-<p>考察某个位置，该位置的计数器counter的值$\xi$</p>
-
-<p>$P(\xi = c) \approx \binom{mk}{c} {(\frac{1}{n})}^{c}({1-\frac{1}{n}})^{mk-c} = B(km,\frac{1}{n})$</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/29/insidethebloomfilter/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/3">&larr; Older</a>
@@ -552,6 +557,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/09/09/epochbasedreclamation/">Lock Free中的Epoch Based Reclamation</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/08/21/mcslock/">MCS Lock</a>
       </li>
     
@@ -565,10 +574,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/06/04/copy-on-write-in-string-and-soupen/">String与Copy On Write</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/05/26/ticketlock/">Ticket Lock</a>
       </li>
     
   </ul>
@@ -598,7 +603,7 @@ MathJax.Hub.Config({
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
-<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (16)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (17)</a></li>
 <li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (1)</a></li>
 <li class='category'><a href='/blog/categories/suan-fa/'>算法 (4)</a></li>
 <li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>
