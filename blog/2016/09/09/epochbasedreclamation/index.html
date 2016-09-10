@@ -136,6 +136,8 @@ MathJax.Hub.Config({
 
 <p>我们依然先给出实现，再讲原理。注意到这里为了能focus我们的主题，我们刻意简化为四个线程，其中三个读线程，它们对数据都是只读的；而只有一个写线程可以对资源进行改写和删除，因此不需要加锁。</p>
 
+<p>也请注意，这里只是示范作用。真正生产环境实现时需要考虑更多问题，比如在某些地方加上memory barrier(参考最后的思考一节)。</p>
+
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
 <span class="line-number">3</span>
@@ -191,11 +193,6 @@ MathJax.Hub.Config({
 <span class="line-number">53</span>
 <span class="line-number">54</span>
 <span class="line-number">55</span>
-<span class="line-number">56</span>
-<span class="line-number">57</span>
-<span class="line-number">58</span>
-<span class="line-number">59</span>
-<span class="line-number">60</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#define N_THREADS 4 </span><span class="c1">//一共4个线程</span>
 </span><span class="line"><span class="kt">bool</span> <span class="n">active</span><span class="p">[</span><span class="n">N_THREADS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nb">false</span><span class="p">};</span>
 </span><span class="line"><span class="kt">int</span> <span class="n">epoches</span><span class="p">[</span><span class="n">N_THREADS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
@@ -204,21 +201,16 @@ MathJax.Hub.Config({
 </span><span class="line"><span class="kt">void</span> <span class="nf">read</span><span class="p">(</span><span class="kt">int</span> <span class="n">thread_id</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="n">active</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-</span><span class="line">  <span class="n">memory_barrier</span><span class="p">();</span><span class="c1">//防止写读乱序</span>
 </span><span class="line">  <span class="n">epoches</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">globla_epoch</span><span class="p">;</span>
-</span><span class="line">  <span class="n">acquire_memory_barrier</span><span class="p">();</span><span class="c1">//acquire语义</span>
 </span><span class="line">  <span class="c1">//进入临界区了。可以安全的读取*p，比如cout &lt;&lt; *p &lt;&lt; endl;</span>
 </span><span class="line">  <span class="c1">//...... </span>
 </span><span class="line">  <span class="c1">//读取完毕，离开临界区</span>
 </span><span class="line">  <span class="n">active</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
-</span><span class="line">  <span class="n">release_memory_barrier</span><span class="p">();</span><span class="c1">//release语义</span>
 </span><span class="line"><span class="p">}</span>
 </span><span class="line"><span class="kt">void</span> <span class="nf">logical_deletion</span><span class="p">(</span><span class="kt">int</span> <span class="n">thread_id</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="n">active</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-</span><span class="line">  <span class="n">memory_barrier</span><span class="p">();</span><span class="c1">//防止写读乱序</span>
 </span><span class="line">  <span class="n">epoches</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">globla_epoch</span><span class="p">;</span>
-</span><span class="line">  <span class="n">acquire_memory_barrier</span><span class="p">();</span><span class="c1">//acquire语义</span>
 </span><span class="line">  <span class="c1">//进入临界区了，这里，我们可以安全的读取*p，比如cout &lt;&lt; *p &lt;&lt; endl;</span>
 </span><span class="line">  <span class="c1">//好了，假如说我们现在要删除它了。先逻辑删除。</span>
 </span><span class="line">  <span class="kt">int</span> <span class="o">*</span><span class="n">new_p</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">(</span><span class="o">*</span><span class="n">p</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
@@ -291,6 +283,16 @@ MathJax.Hub.Config({
 <p>也因此，当全局epoch值为2时，如果存在部分活跃线程的局部epoch等于1，那么retire_list[1]将不能立马回收。如果这些活跃线程不退出临界区（在里面不断的读、疯狂的读，或者死了），那么retire_list[1]纪录的那些内存将一直无法回收。</p>
 
 <p>这也就是在Epoch Based Reclamation中，回收操作可能被读延迟的原因所在。</p>
+
+<h2 id="section-6">思考</h2>
+
+<p>1，代码中7、8两行因为是写读不同变量，X86下可能会被CPU乱序，这里是否需要一个cpu级别的memory barrier？如果被乱序，有没有影响？</p>
+
+<p>2，<code>retire_lists[epoches[thread_id]].push_back(tmp);</code>能否改为<code>retire_lists[global_epoch].push_back(tmp);</code> ？也就是说这里能否改为使用(当前)全局epoch值？</p>
+
+<p>3，和Hazard Pointer相比，Epoch Based Reclamation 有什么优点和缺点？</p>
+
+<p>4，为什么epoch有三个取值0、1、2？能不能仅使用两个？</p>
 
 </div>
 
