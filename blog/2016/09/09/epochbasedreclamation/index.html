@@ -260,7 +260,7 @@ MathJax.Hub.Config({
 
 <h2 id="section-3">原理</h2>
 
-<p>算法维护了一个全局的epoch(取值为0、1、2)和三个全局的retire_list（每个全局的epoch对应一个retire list）。除此之外我们为每个线程维护一个局部的active flag和epoch。</p>
+<p>算法维护了一个全局的epoch(取值为0、1、2)和三个全局的retire_list（每个全局的epoch对应一个retire list, retire list 存放逻辑删除后待回收的节点指针）。除此之外我们为每个线程维护一个局部的active flag和epoch。</p>
 
 <h3 id="section-4">读线程</h3>
 
@@ -274,17 +274,21 @@ MathJax.Hub.Config({
 
 <p>这里说的写线程是指会对资源进行删除的线程。首先进行逻辑删除，然后尝试对它进行物理删除，也就是回收。</p>
 
-<p>令全局的epoch值为e。首先检查是否存在线程处在活动中并且还没有更新它自己的线程局部的epoch到全局e。如果存在，那么可以回收retire_lists[(e+1) % 3]。</p>
+<p>令全局的epoch值为e。首先检查，如果存在活动线程的局部epoch值不等于全局epoch值，那么可以回收retire_lists[(e+1) % 3]。</p>
 
 <p>如果不存在，那么我们把全局epoch的值更新为(e+1)%3，然后再回收对应的retire list。</p>
 
-<p>有点绕？这里关键是理清线程局部epoch和全局epoch的关系：在这个算法里，任何时刻，线程的局部epoch值要么和全局epoch相等，要么差1（模3），不可能相差2。</p>
+<p>有点绕？这里关键是理清线程局部epoch和全局epoch的关系：在这个算法里，任何时刻，全局epoch的值如果为e，那么线程的局部epoch值要么也为e，要么为e-1，不可能为e+1。</p>
 
-<p>所以[epoch-1, epoch + 1]（模3）构成了一个Grace Period。</p>
+<p>所以[epoch, epoch + 2]（模3）构成了一个Grace Period。</p>
 
-<p>举个例子，当全局epoch的值为2的时候，其他的线程的局部epoch要么是1，要么是2，不可能是0。因此[0,2]构成了一个Grace Period，也就是说0对应的retire list这时候可以放心的回收了。</p>
+<p>当全局epoch的值为1的时候，线程的局部epoch要么是1，要么是0，不可能是2。因此[2,1]构成了一个Grace Period，也就是说2对应的retire list这时候可以放心的回收了。</p>
 
-<p>也因此，当全局epoch值为2时，如果存在部分活跃线程epoch等于1，那么retire_list[1]将不能立马回收。如果这些活跃线程不退出临界区（在里面不断的读、疯狂的读，或者死了），那么retire_list[1]纪录的那些内存将一直无法回收。</p>
+<p>当全局epoch的值为0的时候，线程的局部epoch要么是0，要么是2，不可能是1。因此[1,0]构成了一个Grace Period，也就是说1对应的retire list这时候可以放心的回收了。</p>
+
+<p>当全局epoch的值为2的时候，线程的局部epoch要么是2，要么是1，不可能是0。因此[0,2]构成了一个Grace Period，也就是说0对应的retire list这时候可以放心的回收了。</p>
+
+<p>也因此，当全局epoch值为2时，如果存在部分活跃线程的局部epoch等于1，那么retire_list[1]将不能立马回收。如果这些活跃线程不退出临界区（在里面不断的读、疯狂的读，或者死了），那么retire_list[1]纪录的那些内存将一直无法回收。</p>
 
 <p>这也就是在Epoch Based Reclamation中，回收操作可能被读延迟的原因所在。</p>
 
