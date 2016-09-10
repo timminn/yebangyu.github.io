@@ -238,7 +238,7 @@ MathJax.Hub.Config({
 <span class="line-number">71</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;thread&gt;</span>
 </span><span class="line"><span class="cp">#include&lt;iostream&gt;</span>
-</span><span class="line"><span class="cp">#define Strong_Memory_Barrier __sync_synchronize</span>
+</span><span class="line"><span class="cp">#define Memory_Barrier __asm__ __volatile__(&quot;&quot; : : : &quot;memory&quot;)</span>
 </span><span class="line"><span class="cp">#define ACCESS_ONCE(x) (* (volatile typeof(x) *) &amp;(x))</span>
 </span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span><span class="line"><span class="k">struct</span> <span class="n">HazardPointer</span>
@@ -288,7 +288,7 @@ MathJax.Hub.Config({
 </span><span class="line">    <span class="k">do</span>
 </span><span class="line">    <span class="p">{</span>
 </span><span class="line">      <span class="n">tmp</span> <span class="o">=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
-</span><span class="line">      <span class="n">Strong_Memory_Barrier</span><span class="p">();</span>
+</span><span class="line">      <span class="n">Memory_Barrier</span><span class="p">();</span>
 </span><span class="line">      <span class="n">acquire</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span> <span class="c1">//封装。这是告诉Writer：我要读，别释放！</span>
 </span><span class="line">    <span class="p">}</span> <span class="k">while</span> <span class="p">(</span><span class="n">tmp</span> <span class="o">!=</span> <span class="n">ACCESS_ONCE</span><span class="p">(</span><span class="n">p</span><span class="p">));</span><span class="c1">//仔细想想，为什么这里还要判断？</span>
 </span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="k">nullptr</span> <span class="o">!=</span> <span class="n">tmp</span><span class="p">)</span> <span class="p">{</span> <span class="c1">//不妨想想，这里为什么也要判断？</span>
