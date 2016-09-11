@@ -246,7 +246,7 @@ MathJax.Hub.Config({
 
 <h2 id="section-3">原理</h2>
 
-<p>算法维护了一个全局的epoch(取值为0、1、2)和三个全局的retire_list（每个全局的epoch对应一个retire list, retire list 存放逻辑删除后待回收的节点指针）。除此之外我们为每个线程维护一个局部的active flag和epoch。</p>
+<p>算法维护了一个全局的epoch(取值为0、1、2)和三个全局的retire_list（每个全局的epoch对应一个retire list, retire list 存放逻辑删除后待回收的节点指针）。除此之外我们为每个线程维护一个局部的active flag和epoch(取值自然也为0、1、2)。</p>
 
 <h3 id="section-4">读线程</h3>
 
