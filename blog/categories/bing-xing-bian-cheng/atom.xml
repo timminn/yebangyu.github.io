@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-09-10T20:07:24+08:00</updated>
+  <updated>2016-09-11T09:24:47+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -86,7 +86,7 @@ void logical_deletion(int thread_id)
 }
 bool try_gc()
 {
-  e = global_epoch;
+  int &amp;e = global_epoch;
   for (int i = 0; i &lt; N_THREADS; i++) {
     if (active[i] &amp;&amp; epochs[i] != e) {
         //还有部分线程没有更新到最新的全局的epoch值
