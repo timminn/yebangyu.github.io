@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-09-12T22:21:20+08:00</updated>
+  <updated>2016-09-12T22:41:22+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -78,7 +78,7 @@ void logical_deletion(int thread_id)
   //进入临界区了，这里，我们可以安全的读取
   //好了，假如说我们现在要删除它了。先逻辑删除。
   //而被逻辑删除的tmp指向的节点还不能马上被回收，因此把它加入到对应的retire list
-  retire_lists[global_epoch].push_back(tmp);
+  retire_list[global_epoch].push_back(tmp);
   //离开临界区
   active[thread_id] = false;
   //看看能不能物理删除
@@ -149,7 +149,7 @@ bool free(int epoch)
 
 <p>1，代码中8、9两行是写一个变量(active[i])，读另外一个变量(global_epoch)，在x86下可能会乱序，这里是否需要一个cpu级别的memory barrier？如果被乱序，有没有影响？</p>
 
-<p>2，<code>retire_lists[global_epoch].push_back(tmp);</code>能否改为<code>retire_lists[epoches[thread_id]].push_back(tmp);</code> ？也就是说这里能否改为使用线程局部epoch值？</p>
+<p>2，<code>retire_lists[global_epoch].push_back(tmp);</code> 能否改为 <code>retire_lists[epoches[thread_id]].push_back(tmp);</code> ？也就是说这里能否改为使用线程局部epoch值？</p>
 
 <p>3，和Hazard Pointer相比，Epoch Based Reclamation 有什么优点和缺点？</p>
 
