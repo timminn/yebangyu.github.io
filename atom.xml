@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-09-12T22:41:22+08:00</updated>
+  <updated>2016-09-12T22:47:41+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -112,7 +112,7 @@
 </span><span class="line"><span class="kt">bool</span> <span class="n">active</span><span class="p">[</span><span class="n">N_THREADS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nb">false</span><span class="p">};</span>
 </span><span class="line"><span class="kt">int</span> <span class="n">epoches</span><span class="p">[</span><span class="n">N_THREADS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
 </span><span class="line"><span class="kt">int</span> <span class="n">globla_epoch</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">retire_lists</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+</span><span class="line"><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">retire_list</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
 </span><span class="line"><span class="kt">void</span> <span class="nf">read</span><span class="p">(</span><span class="kt">int</span> <span class="n">thread_id</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="n">active</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
@@ -156,7 +156,7 @@
 </span><span class="line"><span class="p">}</span>
 </span><span class="line"><span class="kt">bool</span> <span class="nf">free</span><span class="p">(</span><span class="kt">int</span> <span class="n">epoch</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">for</span> <span class="n">each</span> <span class="n">pointer</span> <span class="n">in</span> <span class="n">retire_lists</span><span class="p">[</span><span class="n">epoch</span><span class="p">]</span>
+</span><span class="line">  <span class="k">for</span> <span class="n">each</span> <span class="n">pointer</span> <span class="n">in</span> <span class="n">retire_list</span><span class="p">[</span><span class="n">epoch</span><span class="p">]</span>
 </span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">pointer</span> <span class="n">is</span> <span class="n">not</span> <span class="nb">NULL</span><span class="p">)</span>
 </span><span class="line">      <span class="k">delete</span> <span class="n">pointer</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>
@@ -200,7 +200,7 @@
 
 <p>1，代码中8、9两行是写一个变量(active[i])，读另外一个变量(global_epoch)，在x86下可能会乱序，这里是否需要一个cpu级别的memory barrier？如果被乱序，有没有影响？</p>
 
-<p>2，<code>retire_lists[global_epoch].push_back(tmp);</code> 能否改为 <code>retire_lists[epoches[thread_id]].push_back(tmp);</code> ？也就是说这里能否改为使用线程局部epoch值？</p>
+<p>2，<code>retire_list[global_epoch].push_back(tmp);</code> 能否改为 <code>retire_list[epoches[thread_id]].push_back(tmp);</code> ？也就是说这里能否改为使用线程局部epoch值？</p>
 
 <p>3，和Hazard Pointer相比，Epoch Based Reclamation 有什么优点和缺点？</p>
 

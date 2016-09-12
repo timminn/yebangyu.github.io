@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-09-12T22:41:22+08:00</updated>
+  <updated>2016-09-12T22:47:41+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -61,7 +61,7 @@
 bool active[N_THREADS] = {false};
 int epoches[N_THREADS] = {0};
 int globla_epoch = 0;
-vector&lt;int&gt; retire_lists[3];
+vector&lt;int&gt; retire_list[3];
 void read(int thread_id)
 {
   active[thread_id] = true;
@@ -105,7 +105,7 @@ bool try_gc()
 }
 bool free(int epoch)
 {
-  for each pointer in retire_lists[epoch]
+  for each pointer in retire_list[epoch]
     if (pointer is not NULL)
       delete pointer;
 }
@@ -149,7 +149,7 @@ bool free(int epoch)
 
 <p>1，代码中8、9两行是写一个变量(active[i])，读另外一个变量(global_epoch)，在x86下可能会乱序，这里是否需要一个cpu级别的memory barrier？如果被乱序，有没有影响？</p>
 
-<p>2，<code>retire_lists[global_epoch].push_back(tmp);</code> 能否改为 <code>retire_lists[epoches[thread_id]].push_back(tmp);</code> ？也就是说这里能否改为使用线程局部epoch值？</p>
+<p>2，<code>retire_list[global_epoch].push_back(tmp);</code> 能否改为 <code>retire_list[epoches[thread_id]].push_back(tmp);</code> ？也就是说这里能否改为使用线程局部epoch值？</p>
 
 <p>3，和Hazard Pointer相比，Epoch Based Reclamation 有什么优点和缺点？</p>
 
