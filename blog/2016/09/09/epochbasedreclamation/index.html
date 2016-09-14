@@ -260,7 +260,7 @@ MathJax.Hub.Config({
 
 <p>这里说的写线程是指会对资源进行删除的线程。首先进行逻辑删除，然后尝试对它进行物理删除，也就是回收。</p>
 
-<p>令全局的epoch值为e。首先检查，如果存在活动线程的局部epoch值不等于全局epoch值，那么可以回收retire_lists[(e+1) % 3]。</p>
+<p>令全局的epoch值为e。首先检查，如果存在活动线程的局部epoch值不等于全局epoch值，那么可以回收retire_list[(e+1) % 3]。</p>
 
 <p>如果不存在，那么我们把全局epoch的值更新为(e+1)%3，然后再回收对应的retire list。</p>
 
