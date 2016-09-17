@@ -315,14 +315,20 @@ MathJax.Hub.Config({
 
 <blockquote>
   <ul>
-    <li>Mutex</li>
+    <li>Mutex / Spin Lock</li>
     <li>Reader Writer Lock</li>
     <li>Sequence Lock</li>
     <li>Read Copy Update</li>
   </ul>
 </blockquote>
 
-<p>前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您对mutex的实现细节有兴趣，建议您阅读我的两篇博客：<a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">这篇</a>和<a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">这篇</a></p>
+<p>前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您对Spin Lock的实现细节有兴趣，建议您阅读我的这几篇博客：</p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">Peterson Lock</a></p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">Ticket Lock</a></p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/08/21/mcslock/">MCS Queue Lock</a></p>
 
 <p>从今天起，我们介绍后面两种同步设施。今天我们先介绍Sequence Lock。</p>
 

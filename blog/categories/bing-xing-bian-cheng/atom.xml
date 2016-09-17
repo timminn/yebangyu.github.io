@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-09-14T21:23:30+08:00</updated>
+  <updated>2016-09-17T19:48:19+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -428,14 +428,20 @@ pthread_mutex_init(&amp;mutex, &amp;attr);
 
 <blockquote>
   <ul>
-    <li>Mutex</li>
+    <li>Mutex / Spin Lock</li>
     <li>Reader Writer Lock</li>
     <li>Sequence Lock</li>
     <li>Read Copy Update</li>
   </ul>
 </blockquote>
 
-<p>前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您对mutex的实现细节有兴趣，建议您阅读我的两篇博客：<a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">这篇</a>和<a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">这篇</a></p>
+<p>前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您对Spin Lock的实现细节有兴趣，建议您阅读我的这几篇博客：</p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">Peterson Lock</a></p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">Ticket Lock</a></p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/08/21/mcslock/">MCS Queue Lock</a></p>
 
 <p>从今天起，我们介绍后面两种同步设施。今天我们先介绍Sequence Lock。</p>
 
@@ -473,7 +479,6 @@ using namespace std;</mutex></p>
   uint64_t sc = 0;
   while(true) {
     sc = sl.sequence_count;
-    CPU_MEMORY_BARRIER();
     if (!(sc &amp; 1)) {
       break; //sc是偶数，说明没有writer，返回
     } 
@@ -483,22 +488,17 @@ using namespace std;</mutex></p>
 
 <p>static bool reader_need_retry(SequenceLock &amp;sl, uint64_t oldseq)
 {
-  uint64_t s = 0;
-  CPU_MEMORY_BARRIER();
-  s = sl.sequence_count;
-  return s != oldseq;
+  return sl.sequence_count != oldseq;
 }</p>
 
 <p>static void write_seqlock(SequenceLock &amp;sl)
 {
   sl.lock.lock();
   ++sl.sequence_count;//让count变为奇数，和读者声明自己的存在
-  CPU_MEMORY_BARRIER();
 }</p>
 
 <p>static void write_sequnlock(SequenceLock &amp;sl)
 {
-  CPU_MEMORY_BARRIER();
   ++sl.sequence_count;//让count恢复为偶数
   sl.lock.unlock();
 }</p>
@@ -527,7 +527,7 @@ using namespace std;</mutex></p>
 something *p;
 </code></p>
 
-<p>reader进入临界区后读取p，存放在自己的变量something *q里，然后返回。之后writer对p进行了free操作；如果reader之后使用<code>*q</code>将发生错误。对于这种情况，需要使用值拷贝语义，或者通过引入<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">hazard pointer</a>等其他机制来避免内存释放问题。不仅如此，实际上在临界区里，reader都不可以使用<code>*p</code>，这是因为和reader writer lock不同，sequence lock是不保证writer的不存在的，也就是说在临界区里，是可能随时有writer对p进行释放等操作的（这才需要读者后面的重试操作嘛），这也是它和读写锁的最大不同。</p>
+<p>reader进入临界区后读取p，存放在自己的变量something *q里，然后返回。之后writer对p进行了free操作；如果reader之后使用<code>*q</code>将发生错误。对于这种情况，需要使用值拷贝语义，或者通过引入<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">hazard pointer</a>等其他机制来避免内存释放问题。不仅如此，实际上在临界区里，reader都不可以使用<code>*p</code>，这是因为和reader writer lock不同，sequence lock是不保证writer的不存在的，也就是说在临界区里，是可能随时有writer对p进行释放等操作的，这也是它和读写锁的最大不同。</p>
 
 ]]></content>
   </entry>

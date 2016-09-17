@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-09-14T21:23:30+08:00</updated>
+  <updated>2016-09-17T19:48:19+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -621,14 +621,20 @@
 
 <blockquote>
   <ul>
-    <li>Mutex</li>
+    <li>Mutex / Spin Lock</li>
     <li>Reader Writer Lock</li>
     <li>Sequence Lock</li>
     <li>Read Copy Update</li>
   </ul>
 </blockquote>
 
-<p>前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您对mutex的实现细节有兴趣，建议您阅读我的两篇博客：<a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">这篇</a>和<a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">这篇</a></p>
+<p>前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您对Spin Lock的实现细节有兴趣，建议您阅读我的这几篇博客：</p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">Peterson Lock</a></p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">Ticket Lock</a></p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/08/21/mcslock/">MCS Queue Lock</a></p>
 
 <p>从今天起，我们介绍后面两种同步设施。今天我们先介绍Sequence Lock。</p>
 
@@ -688,12 +694,6 @@
 <span class="line-number">40</span>
 <span class="line-number">41</span>
 <span class="line-number">42</span>
-<span class="line-number">43</span>
-<span class="line-number">44</span>
-<span class="line-number">45</span>
-<span class="line-number">46</span>
-<span class="line-number">47</span>
-<span class="line-number">48</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;mutex&gt; </span><span class="c1">//c++11的mutex</span>
 </span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
 </span><span class="line">
@@ -713,7 +713,6 @@
 </span><span class="line">  <span class="kt">uint64_t</span> <span class="n">sc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
 </span><span class="line">  <span class="k">while</span><span class="p">(</span><span class="nb">true</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">    <span class="n">sc</span> <span class="o">=</span> <span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span><span class="p">;</span>
-</span><span class="line">    <span class="n">CPU_MEMORY_BARRIER</span><span class="p">();</span>
 </span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">sc</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="p">))</span> <span class="p">{</span>
 </span><span class="line">      <span class="k">break</span><span class="p">;</span> <span class="c1">//sc是偶数，说明没有writer，返回</span>
 </span><span class="line">    <span class="p">}</span>
@@ -723,22 +722,17 @@
 </span><span class="line">
 </span><span class="line"><span class="k">static</span> <span class="kt">bool</span> <span class="nf">reader_need_retry</span><span class="p">(</span><span class="n">SequenceLock</span> <span class="o">&amp;</span><span class="n">sl</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">oldseq</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="kt">uint64_t</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line">  <span class="n">CPU_MEMORY_BARRIER</span><span class="p">();</span>
-</span><span class="line">  <span class="n">s</span> <span class="o">=</span> <span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span><span class="p">;</span>
-</span><span class="line">  <span class="k">return</span> <span class="n">s</span> <span class="o">!=</span> <span class="n">oldseq</span><span class="p">;</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span> <span class="o">!=</span> <span class="n">oldseq</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>
 </span><span class="line">
 </span><span class="line"><span class="k">static</span> <span class="kt">void</span> <span class="nf">write_seqlock</span><span class="p">(</span><span class="n">SequenceLock</span> <span class="o">&amp;</span><span class="n">sl</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="n">sl</span><span class="p">.</span><span class="n">lock</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span>
 </span><span class="line">  <span class="o">++</span><span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span><span class="p">;</span><span class="c1">//让count变为奇数，和读者声明自己的存在</span>
-</span><span class="line">  <span class="n">CPU_MEMORY_BARRIER</span><span class="p">();</span>
 </span><span class="line"><span class="p">}</span>
 </span><span class="line">
 </span><span class="line"><span class="k">static</span> <span class="kt">void</span> <span class="nf">write_sequnlock</span><span class="p">(</span><span class="n">SequenceLock</span> <span class="o">&amp;</span><span class="n">sl</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">CPU_MEMORY_BARRIER</span><span class="p">();</span>
 </span><span class="line">  <span class="o">++</span><span class="n">sl</span><span class="p">.</span><span class="n">sequence_count</span><span class="p">;</span><span class="c1">//让count恢复为偶数</span>
 </span><span class="line">  <span class="n">sl</span><span class="p">.</span><span class="n">lock</span><span class="p">.</span><span class="n">unlock</span><span class="p">();</span>
 </span><span class="line"><span class="p">}</span>
@@ -766,7 +760,7 @@
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">something</span> <span class="o">*</span><span class="n">p</span><span class="p">;</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>reader进入临界区后读取p，存放在自己的变量something *q里，然后返回。之后writer对p进行了free操作；如果reader之后使用<code>*q</code>将发生错误。对于这种情况，需要使用值拷贝语义，或者通过引入<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">hazard pointer</a>等其他机制来避免内存释放问题。不仅如此，实际上在临界区里，reader都不可以使用<code>*p</code>，这是因为和reader writer lock不同，sequence lock是不保证writer的不存在的，也就是说在临界区里，是可能随时有writer对p进行释放等操作的（这才需要读者后面的重试操作嘛），这也是它和读写锁的最大不同。</p>
+<p>reader进入临界区后读取p，存放在自己的变量something *q里，然后返回。之后writer对p进行了free操作；如果reader之后使用<code>*q</code>将发生错误。对于这种情况，需要使用值拷贝语义，或者通过引入<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">hazard pointer</a>等其他机制来避免内存释放问题。不仅如此，实际上在临界区里，reader都不可以使用<code>*p</code>，这是因为和reader writer lock不同，sequence lock是不保证writer的不存在的，也就是说在临界区里，是可能随时有writer对p进行释放等操作的，这也是它和读写锁的最大不同。</p>
 
 ]]></content>
   </entry>
