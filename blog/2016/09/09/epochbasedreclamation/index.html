@@ -193,12 +193,12 @@ MathJax.Hub.Config({
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#define N_THREADS 4 </span><span class="c1">//一共4个线程</span>
 </span><span class="line"><span class="kt">bool</span> <span class="n">active</span><span class="p">[</span><span class="n">N_THREADS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="nb">false</span><span class="p">};</span>
 </span><span class="line"><span class="kt">int</span> <span class="n">epoches</span><span class="p">[</span><span class="n">N_THREADS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">};</span>
-</span><span class="line"><span class="kt">int</span> <span class="n">globla_epoch</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">retire_list</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+</span><span class="line"><span class="kt">int</span> <span class="n">global_epoch</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line"><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">*&gt;</span> <span class="n">retire_list</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
 </span><span class="line"><span class="kt">void</span> <span class="nf">read</span><span class="p">(</span><span class="kt">int</span> <span class="n">thread_id</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="n">active</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-</span><span class="line">  <span class="n">epoches</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">globla_epoch</span><span class="p">;</span>
+</span><span class="line">  <span class="n">epoches</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_epoch</span><span class="p">;</span>
 </span><span class="line">  <span class="c1">//进入临界区了。可以安全的读取</span>
 </span><span class="line">  <span class="c1">//...... </span>
 </span><span class="line">  <span class="c1">//读取完毕，离开临界区</span>
@@ -207,7 +207,7 @@ MathJax.Hub.Config({
 </span><span class="line"><span class="kt">void</span> <span class="nf">logical_deletion</span><span class="p">(</span><span class="kt">int</span> <span class="n">thread_id</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="n">active</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
-</span><span class="line">  <span class="n">epoches</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">globla_epoch</span><span class="p">;</span>
+</span><span class="line">  <span class="n">epoches</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_epoch</span><span class="p">;</span>
 </span><span class="line">  <span class="c1">//进入临界区了，这里，我们可以安全的读取</span>
 </span><span class="line">  <span class="c1">//好了，假如说我们现在要删除它了。先逻辑删除。</span>
 </span><span class="line">  <span class="c1">//而被逻辑删除的tmp指向的节点还不能马上被回收，因此把它加入到对应的retire list</span>
@@ -221,7 +221,7 @@ MathJax.Hub.Config({
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="kt">int</span> <span class="o">&amp;</span><span class="n">e</span> <span class="o">=</span> <span class="n">global_epoch</span><span class="p">;</span>
 </span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N_THREADS</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">active</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">epochs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">active</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">epoches</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">        <span class="c1">//还有部分线程没有更新到最新的全局的epoch值</span>
 </span><span class="line">        <span class="c1">//这时候可以回收(e + 1) % 3对应的retire list。</span>
 </span><span class="line">        <span class="n">free</span><span class="p">((</span><span class="n">e</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">3</span><span class="p">);</span><span class="c1">//不是free(e)，也不是free(e-1)。参看下面</span>

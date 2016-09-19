@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-09-17T19:48:19+08:00</updated>
+  <updated>2016-09-19T20:24:31+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -60,12 +60,12 @@
 #define N_THREADS 4 //一共4个线程
 bool active[N_THREADS] = {false};
 int epoches[N_THREADS] = {0};
-int globla_epoch = 0;
-vector&lt;int&gt; retire_list[3];
+int global_epoch = 0;
+vector&lt;int*&gt; retire_list[3];
 void read(int thread_id)
 {
   active[thread_id] = true;
-  epoches[thread_id] = globla_epoch;
+  epoches[thread_id] = global_epoch;
   //进入临界区了。可以安全的读取
   //...... 
   //读取完毕，离开临界区
@@ -74,7 +74,7 @@ void read(int thread_id)
 void logical_deletion(int thread_id)
 {
   active[thread_id] = true;
-  epoches[thread_id] = globla_epoch;
+  epoches[thread_id] = global_epoch;
   //进入临界区了，这里，我们可以安全的读取
   //好了，假如说我们现在要删除它了。先逻辑删除。
   //而被逻辑删除的tmp指向的节点还不能马上被回收，因此把它加入到对应的retire list
@@ -88,7 +88,7 @@ bool try_gc()
 {
   int &amp;e = global_epoch;
   for (int i = 0; i &lt; N_THREADS; i++) {
-    if (active[i] &amp;&amp; epochs[i] != e) {
+    if (active[i] &amp;&amp; epoches[i] != e) {
         //还有部分线程没有更新到最新的全局的epoch值
         //这时候可以回收(e + 1) % 3对应的retire list。
         free((e + 1) % 3);//不是free(e)，也不是free(e-1)。参看下面
