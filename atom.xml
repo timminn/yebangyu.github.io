@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-09-19T20:24:31+08:00</updated>
+  <updated>2016-10-13T23:16:08+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,119 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一个轻量的lock free程序调试工具]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/10/13/debuggerforlockfreeprogamming/"/>
+    <updated>2016-10-13T22:39:29+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/10/13/debuggerforlockfreeprogamming</id>
+    <content type="html"><![CDATA[<p>lock free 程序时序混乱，逻辑复杂，反直觉的地方很多，心智负担很重，因此调试起来也非常困难。</p>
+
+<p>下面用C++编写了一个用于调试lock free代码的程序，非常轻量，代码如下，只适用于linux环境。</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+<span class="line-number">29</span>
+<span class="line-number">30</span>
+<span class="line-number">31</span>
+<span class="line-number">32</span>
+<span class="line-number">33</span>
+<span class="line-number">34</span>
+<span class="line-number">35</span>
+<span class="line-number">36</span>
+<span class="line-number">37</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="c1">//xx.h</span>
+</span><span class="line"><span class="cp">#include &lt;pthread.h&gt;</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">LockFreeLogger</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="k">struct</span> <span class="n">Event</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="kt">char</span> <span class="o">*</span><span class="n">message</span><span class="p">;</span>
+</span><span class="line">    <span class="kt">pthread_t</span> <span class="n">thread_id</span><span class="p">;</span>
+</span><span class="line">    <span class="kt">int</span> <span class="n">info</span><span class="p">;</span>
+</span><span class="line">  <span class="p">};</span>
+</span><span class="line">  <span class="n">LockFreeLogger</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">pos_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">    <span class="n">buffer_</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Event</span><span class="p">[</span><span class="n">SIZE</span><span class="p">];</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">log</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">message</span><span class="p">,</span> <span class="kt">int</span> <span class="n">info</span><span class="p">)</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">__sync_fetch_and_add</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pos_</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class="line">    <span class="n">buffer_</span><span class="p">[</span><span class="n">pos</span><span class="p">].</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">;</span>
+</span><span class="line">    <span class="n">buffer_</span><span class="p">[</span><span class="n">pos</span><span class="p">].</span><span class="n">info</span> <span class="o">=</span> <span class="n">info</span><span class="p">;</span>
+</span><span class="line">    <span class="n">buffer_</span><span class="p">[</span><span class="n">pos</span><span class="p">].</span><span class="n">thread_id</span> <span class="o">=</span> <span class="n">pthread_self</span><span class="p">();</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">report</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="c1">//single thread code</span>
+</span><span class="line">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">pos_</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="c1">//cout or fwrite buffer_[i];</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="k">private</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">pos_</span><span class="p">;</span>
+</span><span class="line">  <span class="n">Event</span> <span class="o">*</span><span class="n">buffer_</span><span class="p">;</span>
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">SIZE</span> <span class="o">=</span> <span class="mi">1234567</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line">
+</span><span class="line"><span class="cp">#define LOG(message, info) logger.log(message, info)</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<!--more-->
+
+<p>当然，为了能使用它，应该在某个cpp里面定义一个实例出来</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="c1">//xx.cpp</span>
+</span><span class="line"><span class="cp">#include &quot;xx.h&quot;</span>
+</span><span class="line"><span class="n">LockFreeLogger</span> <span class="n">logger</span><span class="p">;</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>然后就可以使用<code>LOG(message, info)</code>来记录信息了。比如说<code>LOG("current value of counter", id)</code>等。读者诸君可以根据需要，自由拓展Event结构。</p>
+
+<h2 id="section">注意事项</h2>
+
+<p>1，<code>LockFreeLogger</code>中的构造函数的内存分配可能会失败，工业级代码需要考虑异常或者处理处理。</p>
+
+<p>2，数组下标可能会越界，达到或者超过SIZE值。不过调试的时候可以考虑把SIZE值设大一点，一般情况下也就够用了。</p>
+
+<p>3，注意到这个调试程序有时候并不能work。为什么？举个简单的场景：假如你的lock free程序中存在一个bug，也就是两条语句之间漏加了memory barrier，导致乱序。</p>
+
+<p>你没发觉，并在两条语句中间加了日志，想看看变量的值，结果因为加了代码，乱序不出现，bug不出现了。</p>
+
+<p>4，编写这个程序的思想，最早我是在《Multi Core Programming》这本书的第八章学到的，后来在偶然的机会和场合下看到了Jeff Preshing写了一篇<a href="http://preshing.com/20120522/lightweight-in-memory-logging/">博客</a>，介绍了一样的想法和做法，不过他的代码是针对Windows环境的。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Lock Free中的Epoch Based Reclamation]]></title>
@@ -3039,302 +3152,6 @@
 <p><a href="https://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync">Memory model synchronization modes</a></p>
 
 <p><a href="http://jakob.engbloms.se/archives/65">Dekker’s Algorithm Does not Work, as Expected</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[多线程内存问题分析之mprotect方法]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/02/01/detectmemoryghostinmultithread/"/>
-    <updated>2016-02-01T22:24:25+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/02/01/detectmemoryghostinmultithread</id>
-    <content type="html"><![CDATA[<p>多线程中的内存问题，一直被认为是噩梦般的存在，几乎只有高手、大仙才能解决。除了大量的打log、gdb调试、code review以及依靠多年的经验和直觉之外，有没有一些分析的手段和工具呢？答案是肯定的。本文首先介绍其中的一种：mprotect大法。通过mprotect，保护特定的感兴趣的内存，当有线程改写该区域时，会产生一个中断，我们在中断处理函数中把调用栈等信息打印出来。这是大概的思路，不过其中的问题很多，我们慢慢道来。</p>
-
-<!--more-->
-
-<h2 id="section">原理</h2>
-
-<h3 id="mprotect">mprotect函数</h3>
-
-<p>mprotect函数的原型如下：</p>
-
-<p>int mprotect(const void *addr, size_t len, int prot);</p>
-
-<p>其中addr是待保护的内存首地址，必须按页对齐；len是待保护内存的大小，必须是页的整数倍，prot代表模式，可能的取值有PROT_READ（表示可读）、PROT_WRITE（可写）等。</p>
-
-<p>不同体系结构和操作系统，一页的大小不尽相同。如何获得页大小呢？通过PAGE_SIZE宏或者getpagesize()系统调用即可。</p>
-
-<h3 id="section-1">定制中断处理函数</h3>
-
-<p>当线程试图对我们已保护（成只读）的内存进行篡改时，默认情况下程序会收到SIGSEGV错误而退出。能不能不退出并且把相应的调用栈打印出来分析？当然可以。通过如下代码注册你定制的中断处理函数即可：</p>
-
-<pre><code>struct sigaction act;
-act.sa_sigaction = your_handler;
-sigemptyset(&amp;act.sa_mask);
-act.sa_flags = SA_SIGINFO;
-if(sigaction(SIGSEGV, &amp;act, NULL) == -1) {
-  perror("Register hanlder failed");
-  exit(EXIT_FAILURE);
-}
-</code></pre>
-
-<p>这样，控制流就会到达你编写的your_handler函数上。而your_handler的函数原型是：</p>
-
-<p>void your_handler(int sig, siginfo_t *si, void *unused)；</p>
-
-<p>编写your_handler函数即可？是的，不过这里面有两个注意事项：</p>
-
-<p>1，中断处理函数里不应该调用内存分配函数，否则可能会引起double fault。因此，不适合调用backtrace_symbols（内部会动态分配内存），而是通过backtrace_symbols_fd直接将调用栈信息直接刷到文件中。</p>
-
-<p>2，中断处理函数中应该恢复被保护内存为可写，否则会引起死循环。（再次中断并进入咱们编写的函数）</p>
-
-<h3 id="section-2">封装</h3>
-
-<p>为了方便使用，我封装了一个类，供参考：</p>
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-<span class="line-number">15</span>
-<span class="line-number">16</span>
-<span class="line-number">17</span>
-<span class="line-number">18</span>
-<span class="line-number">19</span>
-<span class="line-number">20</span>
-<span class="line-number">21</span>
-<span class="line-number">22</span>
-<span class="line-number">23</span>
-<span class="line-number">24</span>
-<span class="line-number">25</span>
-<span class="line-number">26</span>
-<span class="line-number">27</span>
-<span class="line-number">28</span>
-<span class="line-number">29</span>
-<span class="line-number">30</span>
-<span class="line-number">31</span>
-<span class="line-number">32</span>
-<span class="line-number">33</span>
-<span class="line-number">34</span>
-<span class="line-number">35</span>
-<span class="line-number">36</span>
-<span class="line-number">37</span>
-<span class="line-number">38</span>
-<span class="line-number">39</span>
-<span class="line-number">40</span>
-<span class="line-number">41</span>
-<span class="line-number">42</span>
-<span class="line-number">43</span>
-<span class="line-number">44</span>
-<span class="line-number">45</span>
-<span class="line-number">46</span>
-<span class="line-number">47</span>
-<span class="line-number">48</span>
-<span class="line-number">49</span>
-<span class="line-number">50</span>
-<span class="line-number">51</span>
-<span class="line-number">52</span>
-<span class="line-number">53</span>
-<span class="line-number">54</span>
-<span class="line-number">55</span>
-<span class="line-number">56</span>
-<span class="line-number">57</span>
-<span class="line-number">58</span>
-<span class="line-number">59</span>
-<span class="line-number">60</span>
-<span class="line-number">61</span>
-<span class="line-number">62</span>
-<span class="line-number">63</span>
-<span class="line-number">64</span>
-<span class="line-number">65</span>
-<span class="line-number">66</span>
-<span class="line-number">67</span>
-<span class="line-number">68</span>
-<span class="line-number">69</span>
-<span class="line-number">70</span>
-<span class="line-number">71</span>
-<span class="line-number">72</span>
-<span class="line-number">73</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include &lt;fcntl.h&gt;</span>
-</span><span class="line"><span class="cp">#include &lt;signal.h&gt;</span>
-</span><span class="line"><span class="cp">#include &lt;stdio.h&gt;</span>
-</span><span class="line"><span class="cp">#include &lt;stdlib.h&gt;</span>
-</span><span class="line"><span class="cp">#include &lt;string.h&gt;</span>
-</span><span class="line"><span class="cp">#include &lt;stdint.h&gt;</span>
-</span><span class="line"><span class="cp">#include &lt;sys/mman.h&gt;</span>
-</span><span class="line"><span class="cp">#include &lt;sys/stat.h&gt;</span>
-</span><span class="line"><span class="cp">#include &lt;unistd.h&gt;</span>
-</span><span class="line"><span class="cp">#include &lt;sys/user.h&gt;</span>
-</span><span class="line"><span class="cp">#include &lt;execinfo.h&gt;</span>
-</span><span class="line"><span class="k">class</span> <span class="nc">MemoryDetector</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line"><span class="k">public</span><span class="o">:</span>
-</span><span class="line">  <span class="k">typedef</span> <span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="n">segv_handler</span><span class="p">)</span> <span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">,</span> <span class="kt">siginfo_t</span> <span class="o">*</span><span class="n">si</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">unused</span><span class="p">);</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="nf">init</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span><span class="p">)</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="n">register_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">);</span>
-</span><span class="line">    <span class="n">fd_</span> <span class="o">=</span> <span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">O_RDWR</span><span class="o">|</span><span class="n">O_CREAT</span><span class="p">,</span> <span class="mi">777</span><span class="p">);</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">int</span> <span class="nf">protect</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="n">address_</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
-</span><span class="line">    <span class="n">len_</span> <span class="o">=</span> <span class="n">len</span><span class="p">;</span>
-</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">start_address</span> <span class="o">=</span> <span class="p">(</span><span class="n">address_</span> <span class="o">&gt;&gt;</span> <span class="n">PAGE_SHIFT</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">PAGE_SHIFT</span><span class="p">;</span>
-</span><span class="line">    <span class="k">return</span> <span class="n">mprotect</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">void</span> <span class="o">*&gt;</span><span class="p">(</span><span class="n">start_address</span><span class="p">),</span> <span class="n">PAGE_SIZE</span><span class="p">,</span> <span class="n">PROT_READ</span><span class="p">);</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">int</span> <span class="nf">umprotect</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">len</span><span class="p">)</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">tmp_address_</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
-</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">start_address</span> <span class="o">=</span> <span class="p">(</span><span class="n">tmp_address_</span> <span class="o">&gt;&gt;</span> <span class="n">PAGE_SHIFT</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">PAGE_SHIFT</span><span class="p">;</span>
-</span><span class="line">    <span class="k">return</span> <span class="n">mprotect</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">void</span> <span class="o">*&gt;</span><span class="p">(</span><span class="n">start_address</span><span class="p">),</span> <span class="n">PAGE_SIZE</span><span class="p">,</span> <span class="n">PROT_READ</span> <span class="o">|</span> <span class="n">PROT_WRITE</span><span class="p">);</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">int</span> <span class="nf">umprotect</span><span class="p">()</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">start_address</span> <span class="o">=</span> <span class="p">(</span><span class="n">address_</span> <span class="o">&gt;&gt;</span> <span class="n">PAGE_SHIFT</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">PAGE_SHIFT</span><span class="p">;</span>
-</span><span class="line">    <span class="k">return</span> <span class="n">mprotect</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">void</span> <span class="o">*&gt;</span><span class="p">(</span><span class="n">start_address</span><span class="p">),</span> <span class="n">PAGE_SIZE</span><span class="p">,</span> <span class="n">PROT_READ</span> <span class="o">|</span> <span class="n">PROT_WRITE</span><span class="p">);</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="nf">finish</span><span class="p">()</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="n">close</span><span class="p">(</span><span class="n">fd_</span><span class="p">);</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="k">private</span><span class="o">:</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="n">register_handler</span><span class="p">(</span><span class="n">segv_handler</span> <span class="n">sh</span><span class="p">)</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="k">struct</span> <span class="n">sigaction</span> <span class="n">act</span><span class="p">;</span>
-</span><span class="line">    <span class="n">act</span><span class="p">.</span><span class="n">sa_sigaction</span> <span class="o">=</span> <span class="n">sh</span><span class="p">;</span>
-</span><span class="line">    <span class="n">sigemptyset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">act</span><span class="p">.</span><span class="n">sa_mask</span><span class="p">);</span>
-</span><span class="line">    <span class="n">act</span><span class="p">.</span><span class="n">sa_flags</span> <span class="o">=</span> <span class="n">SA_SIGINFO</span><span class="p">;</span>
-</span><span class="line">    <span class="k">if</span><span class="p">(</span><span class="n">sigaction</span><span class="p">(</span><span class="n">SIGSEGV</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">act</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">){</span>
-</span><span class="line">      <span class="n">perror</span><span class="p">(</span><span class="s">&quot;Register hanlder failed&quot;</span><span class="p">);</span>
-</span><span class="line">      <span class="n">exit</span><span class="p">(</span><span class="n">EXIT_FAILURE</span><span class="p">);</span>
-</span><span class="line">    <span class="p">}</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="n">handler</span><span class="p">(</span><span class="kt">int</span> <span class="n">sig</span><span class="p">,</span> <span class="kt">siginfo_t</span> <span class="o">*</span><span class="n">si</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">unused</span><span class="p">)</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="kt">uint64_t</span> <span class="n">address</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">si</span><span class="o">-&gt;</span><span class="n">si_addr</span><span class="p">);</span>
-</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">address</span> <span class="o">&gt;=</span> <span class="n">address_</span> <span class="o">&amp;&amp;</span> <span class="n">address</span> <span class="o">&lt;</span> <span class="n">address_</span> <span class="o">+</span> <span class="n">len_</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">      <span class="n">umprotect</span><span class="p">(</span><span class="n">si</span><span class="o">-&gt;</span><span class="n">si_addr</span><span class="p">,</span> <span class="n">PAGE_SIZE</span><span class="p">);</span>
-</span><span class="line">      <span class="n">my_backtrace</span><span class="p">();</span>
-</span><span class="line">    <span class="p">}</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">void</span> <span class="n">my_backtrace</span><span class="p">()</span>
-</span><span class="line">  <span class="p">{</span>
-</span><span class="line">    <span class="k">const</span> <span class="kt">int</span> <span class="n">N</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
-</span><span class="line">    <span class="kt">void</span><span class="o">*</span> <span class="n">array</span><span class="p">[</span><span class="mi">100</span><span class="p">];</span>
-</span><span class="line">    <span class="kt">size_t</span> <span class="n">size</span> <span class="o">=</span> <span class="n">backtrace</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">N</span><span class="p">);</span>
-</span><span class="line">    <span class="n">backtrace_symbols_fd</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">fd_</span><span class="p">);</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">uint64_t</span> <span class="n">address_</span><span class="p">;</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">int</span> <span class="n">len_</span><span class="p">;</span>
-</span><span class="line">  <span class="k">static</span> <span class="kt">int</span> <span class="n">fd_</span><span class="p">;</span>
-</span><span class="line"><span class="p">};</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<p>这个封装还存在一些问题，比如缺少错误处理，待保护内存必须在一页内等。读者诸君可以根据需要自行完善。</p>
-
-<h2 id="section-3">实战</h2>
-
-<p>来个例子,实战一下吧</p>
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-<span class="line-number">15</span>
-<span class="line-number">16</span>
-<span class="line-number">17</span>
-<span class="line-number">18</span>
-<span class="line-number">19</span>
-<span class="line-number">20</span>
-<span class="line-number">21</span>
-<span class="line-number">22</span>
-<span class="line-number">23</span>
-<span class="line-number">24</span>
-<span class="line-number">25</span>
-<span class="line-number">26</span>
-<span class="line-number">27</span>
-<span class="line-number">28</span>
-<span class="line-number">29</span>
-<span class="line-number">30</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include &quot;test.h&quot; </span><span class="c1">//就是上面封装的MemoryDetector类</span>
-</span><span class="line"><span class="cp">#include &lt;thread&gt;</span>
-</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
-</span><span class="line"><span class="kt">uint64_t</span> <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">address_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="kt">int</span> <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">len_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="kt">int</span> <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">fd_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="c1">///////////////////////////////////////</span>
-</span><span class="line"><span class="kt">int</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">g</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">usleep</span><span class="p">(</span><span class="mi">2000000</span><span class="p">);</span>
-</span><span class="line">  <span class="kt">char</span> <span class="o">*</span><span class="n">q</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span> <span class="o">*&gt;</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
-</span><span class="line">  <span class="o">*</span><span class="p">(</span><span class="n">q</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="mi">111</span><span class="p">;</span><span class="c1">//非法篡改！！！</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
-</span><span class="line">  <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">protect</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">path</span> <span class="o">=</span> <span class="s">&quot;result.tmp&quot;</span><span class="p">;</span><span class="c1">//调用栈信息存放路径</span>
-</span><span class="line">  <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">init</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
-</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t1</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
-</span><span class="line">  <span class="n">std</span><span class="o">::</span><span class="kr">thread</span> <span class="n">t2</span><span class="p">(</span><span class="n">g</span><span class="p">);</span>
-</span><span class="line">  <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class="line">  <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class="line">  <span class="n">MemoryDetector</span><span class="o">::</span><span class="n">finish</span><span class="p">();</span>
-</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>用如下方式编译链接以上程序：</p>
-
-<pre><code>g++ -g -rdynamic -std=c++11 -pthread  test.cpp -o test
-</code></pre>
-
-<p>程序运行结束后，打开result.tmp文件，看到如下内容：</p>
-
-<pre><code>./test(_ZN14MemoryDetector12my_backtraceEv+0x26)[0x405ce8]
-./test(_ZN14MemoryDetector7handlerEiP7siginfoPv+0x60)[0x405cc0]
-/lib64/libpthread.so.0[0x339a80f500]
-./test(_Z1gv+0x25)[0x405909]
-./test(_ZNSt6thread5_ImplIPFvvEE6_M_runEv+0x16)[0x406e2c]
-/usr/lib64/libstdc++.so.6[0x3a6f6b6490]
-/lib64/libpthread.so.0[0x339a807851]
-/lib64/libc.so.6(clone+0x6d)[0x339a4e767d]
-</code></pre>
-
-<p>注意其中的第四行：./test(_Z1gv+0x25)[0x405909]。使用addr2line命令：</p>
-
-<pre><code>addr2line -e test 0x405909
-</code></pre>
-
-<p>获得非法篡改的代码位置：</p>
-
-<p>/home/yebangyu/test.cpp:13</p>
-
-<p>真相大白了。</p>
-
-<h2 id="section-4">感谢</h2>
-
-<p>我最早知道这个方法，是从我主管<a href="http://weibo.com/yangzhifeng83">杨志丰</a>先生那儿以及他的<a href="http://blog.csdn.net/killmice/article/details/38443343">这篇</a>文章。</p>
 ]]></content>
   </entry>
   

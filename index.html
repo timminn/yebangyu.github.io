@@ -9,7 +9,24 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="楔子 一般认为，用C/C++编写Lock Free代码非常困难，主要原因无非是两个： 内存模型 内存回收 C++11引入了标准的内存模型，在此之前，C++程序员依赖于具体的体系结构特点和编译器提供的feature来保证正确的内存访问语义。C++11出来后，程序员编写健壮的、可移植的lock &hellip;">
+  <meta name="description" content="lock free 程序时序混乱，逻辑复杂，反直觉的地方很多，心智负担很重，因此调试起来也非常困难。 下面用C++编写了一个用于调试lock free代码的程序，非常轻量，代码如下，只适用于linux环境。 1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +98,118 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/10/13/debuggerforlockfreeprogamming/">一个轻量的lock free程序调试工具</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-10-13T22:39:29+08:00'><span class='date'><span class='date-month'>Oct</span> <span class='date-day'>13</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:39 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>lock free 程序时序混乱，逻辑复杂，反直觉的地方很多，心智负担很重，因此调试起来也非常困难。</p>
+
+<p>下面用C++编写了一个用于调试lock free代码的程序，非常轻量，代码如下，只适用于linux环境。</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+<span class="line-number">29</span>
+<span class="line-number">30</span>
+<span class="line-number">31</span>
+<span class="line-number">32</span>
+<span class="line-number">33</span>
+<span class="line-number">34</span>
+<span class="line-number">35</span>
+<span class="line-number">36</span>
+<span class="line-number">37</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="c1">//xx.h</span>
+</span><span class="line"><span class="cp">#include &lt;pthread.h&gt;</span>
+</span><span class="line"><span class="k">class</span> <span class="nc">LockFreeLogger</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line"><span class="k">public</span><span class="o">:</span>
+</span><span class="line">  <span class="k">struct</span> <span class="n">Event</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="kt">char</span> <span class="o">*</span><span class="n">message</span><span class="p">;</span>
+</span><span class="line">    <span class="kt">pthread_t</span> <span class="n">thread_id</span><span class="p">;</span>
+</span><span class="line">    <span class="kt">int</span> <span class="n">info</span><span class="p">;</span>
+</span><span class="line">  <span class="p">};</span>
+</span><span class="line">  <span class="n">LockFreeLogger</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="n">pos_</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">    <span class="n">buffer_</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Event</span><span class="p">[</span><span class="n">SIZE</span><span class="p">];</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">log</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">message</span><span class="p">,</span> <span class="kt">int</span> <span class="n">info</span><span class="p">)</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="kt">int</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">__sync_fetch_and_add</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pos_</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span><span class="line">    <span class="n">buffer_</span><span class="p">[</span><span class="n">pos</span><span class="p">].</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span><span class="p">;</span>
+</span><span class="line">    <span class="n">buffer_</span><span class="p">[</span><span class="n">pos</span><span class="p">].</span><span class="n">info</span> <span class="o">=</span> <span class="n">info</span><span class="p">;</span>
+</span><span class="line">    <span class="n">buffer_</span><span class="p">[</span><span class="n">pos</span><span class="p">].</span><span class="n">thread_id</span> <span class="o">=</span> <span class="n">pthread_self</span><span class="p">();</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="kt">void</span> <span class="n">report</span><span class="p">()</span>
+</span><span class="line">  <span class="p">{</span>
+</span><span class="line">    <span class="c1">//single thread code</span>
+</span><span class="line">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">pos_</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="c1">//cout or fwrite buffer_[i];</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="k">private</span><span class="o">:</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">pos_</span><span class="p">;</span>
+</span><span class="line">  <span class="n">Event</span> <span class="o">*</span><span class="n">buffer_</span><span class="p">;</span>
+</span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">SIZE</span> <span class="o">=</span> <span class="mi">1234567</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line">
+</span><span class="line"><span class="cp">#define LOG(message, info) logger.log(message, info)</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/10/13/debuggerforlockfreeprogamming/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -573,52 +702,6 @@ MathJax.Hub.Config({
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/04/22/optimization/">Introduction To Performance Optimization</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-04-22T23:13:13+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>22</span><span class='date-suffix'>nd</span>, <span class='date-year'>2016</span></span> <span class='time'>11:13 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2 id="section">写在最前</h2>
-
-<p>本文针对<strong>C++</strong>和<strong>linux</strong>环境，但是思想和方法，却对其他语言和环境同样适用。很可供参考的。</p>
-
-<h2 id="section-1">优化前</h2>
-
-<p>1，确定优化是必须要做的。</p>
-
-<p>如果程序已经跑的足够快了，内存使用也足够省了，那么完全没有优化的必要。什么是足够呢？能够满足当前的业务和需求。因此，如果不是绝对必要，不要优化。</p>
-
-<p>这是因为虽然优化不是万恶之源，但是优化可能会带来问题。为了提升一点点性能就得绞尽脑汁、辗转反侧；它可能让之前只需要一两行逻辑很清晰的代码，变成很难理解的高度优化的实现。优化很多时候某种程度上让代码可读性和可维护性变差。</p>
-
-<p>2，确定该做的优化都做了</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/04/22/optimization/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -634,6 +717,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/10/13/debuggerforlockfreeprogamming/">一个轻量的lock free程序调试工具</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/09/09/epochbasedreclamation/">Lock Free中的Epoch Based Reclamation</a>
       </li>
     
@@ -647,10 +734,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/06/26/sequence-lock/">Sequence Lock</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/06/04/copy-on-write-in-string-and-soupen/">String与Copy On Write</a>
       </li>
     
   </ul>
@@ -680,7 +763,7 @@ MathJax.Hub.Config({
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
-<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (17)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (18)</a></li>
 <li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (1)</a></li>
 <li class='category'><a href='/blog/categories/suan-fa/'>算法 (4)</a></li>
 <li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>

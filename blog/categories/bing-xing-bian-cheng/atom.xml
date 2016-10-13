@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-09-19T20:24:31+08:00</updated>
+  <updated>2016-10-13T23:16:08+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,82 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[一个轻量的lock free程序调试工具]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/10/13/debuggerforlockfreeprogamming/"/>
+    <updated>2016-10-13T22:39:29+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/10/13/debuggerforlockfreeprogamming</id>
+    <content type="html"><![CDATA[<p>lock free 程序时序混乱，逻辑复杂，反直觉的地方很多，心智负担很重，因此调试起来也非常困难。</p>
+
+<p>下面用C++编写了一个用于调试lock free代码的程序，非常轻量，代码如下，只适用于linux环境。</p>
+
+<p>```c++
+//xx.h
+#include <pthread.h>
+class LockFreeLogger
+{
+public:
+  struct Event
+  {
+    char *message;
+    pthread_t thread_id;
+    int info;
+  };
+  LockFreeLogger()
+  {
+    pos_ = 0;
+    buffer_ = new Event[SIZE];
+  }
+  void log(char *message, int info)
+  {
+    int pos = __sync_fetch_and_add(&amp;pos_, 1);
+    buffer_[pos].message = message;
+    buffer_[pos].info = info;
+    buffer_[pos].thread_id = pthread_self();
+  }
+  void report()
+  {
+    //single thread code
+    for (int i = 0; i &lt; pos_; i++) {
+      //cout or fwrite buffer_[i];
+    }
+  }
+private:
+  int pos_;
+  Event *buffer_;
+  static const int SIZE = 1234567;
+};</pthread.h></p>
+
+<h1 id="define-logmessage-info-loggerlogmessage-info">define LOG(message, info) logger.log(message, info)</h1>
+
+<p>```</p>
+
+<!--more-->
+
+<p>当然，为了能使用它，应该在某个cpp里面定义一个实例出来</p>
+
+<p><code>c++
+//xx.cpp
+#include "xx.h"
+LockFreeLogger logger;
+</code></p>
+
+<p>然后就可以使用<code>LOG(message, info)</code>来记录信息了。比如说<code>LOG("current value of counter", id)</code>等。读者诸君可以根据需要，自由拓展Event结构。</p>
+
+<h2 id="section">注意事项</h2>
+
+<p>1，<code>LockFreeLogger</code>中的构造函数的内存分配可能会失败，工业级代码需要考虑异常或者处理处理。</p>
+
+<p>2，数组下标可能会越界，达到或者超过SIZE值。不过调试的时候可以考虑把SIZE值设大一点，一般情况下也就够用了。</p>
+
+<p>3，注意到这个调试程序有时候并不能work。为什么？举个简单的场景：假如你的lock free程序中存在一个bug，也就是两条语句之间漏加了memory barrier，导致乱序。</p>
+
+<p>你没发觉，并在两条语句中间加了日志，想看看变量的值，结果因为加了代码，乱序不出现，bug不出现了。</p>
+
+<p>4，编写这个程序的思想，最早我是在《Multi Core Programming》这本书的第八章学到的，后来在偶然的机会和场合下看到了Jeff Preshing写了一篇<a href="http://preshing.com/20120522/lightweight-in-memory-logging/">博客</a>，介绍了一样的想法和做法，不过他的代码是针对Windows环境的。</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Lock Free中的Epoch Based Reclamation]]></title>
@@ -528,150 +604,6 @@ something *p;
 </code></p>
 
 <p>reader进入临界区后读取p，存放在自己的变量something *q里，然后返回。之后writer对p进行了free操作；如果reader之后使用<code>*q</code>将发生错误。对于这种情况，需要使用值拷贝语义，或者通过引入<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">hazard pointer</a>等其他机制来避免内存释放问题。不仅如此，实际上在临界区里，reader都不可以使用<code>*p</code>，这是因为和reader writer lock不同，sequence lock是不保证writer的不存在的，也就是说在临界区里，是可能随时有writer对p进行释放等操作的，这也是它和读写锁的最大不同。</p>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Ticket Lock]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/"/>
-    <updated>2016-05-26T19:25:15+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/05/26/ticketlock</id>
-    <content type="html"><![CDATA[<h2 id="section">简单回顾</h2>
-
-<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">上回</a> 我们介绍了peterson算法来实现spin lock，算法简单，实现简单，但是值得注意和留心的点很多。</p>
-
-<p>粗略说来，peterson算法的主要缺点在于：</p>
-
-<p>1，很难推广到n个线程(n&gt;=3)。原始的算法针对两个线程，如果想应用在多个线程的场景里，需要做一定的修改。</p>
-
-<p>2，peterson算法的动机是仅仅使用load和store来实现互斥访问。然而，我们知道，现代体系结构下，CPU和编译器会对读写操作进行乱序，仅仅依靠读写操作而不使用memory barrier就编写正确的程序非常困难。</p>
-
-<h2 id="ticket-lock">Ticket Lock</h2>
-
-<p>在介绍Ticket Lock之前，我们首先分析一个妇孺皆知、地球人都知道的实现spin lock的方法（伪代码）：</p>
-
-<!--more-->
-
-<p><code>c++
-int flag = 0;
-void lock()
-{
-  while (!cas(flag, 0, 1));
-  //get lock ! now , flag == 1
-}
-void unlock()
-{
-  flag = 0;
-}
-</code>
-上面代码的第四行使用一个CAS原子操作：判断如果flag是否为0，如果为0，将它的值设置为1。判断和设置，所谓的test和set是一个原子操作，返回ture；如果不为0，则不设置，返回false。</p>
-
-<p>这就是大名鼎鼎的<code>test-and-set</code>来实现spin lock。想想看，这种实现方式有什么缺点？</p>
-
-<p>缺点一：不保证公平性，不满足FIFO先来先服务。假如有两个线程在第4行上spin，那么当持有锁的线程释放锁之后，这两个线程谁会成功拿到锁和谁先来spin没有任何直接关系。</p>
-
-<p>缺点二：我们知道，不管CAS操作是否成功，都会产生大量的因为需要保证cache coherency而产生的message，降低性能。因此有一种改进方式：在CAS之前，先读取flag的值，当flag的值为0的时候，再尝试CAS。如下图的伪代码所示：</p>
-
-<p><code>c++
-int flag = 0;
-void lock()
-{
-  while(true) {
-    if (flag == 0) {
-      if (cas(flag, 0, 1)) {
-        break;
-      }
-    }
-  }
-  //get lock ! now , flag == 1
-}
-void unlock()
-{
-  flag = 0;
-}
-</code></p>
-
-<p>改进后的算法叫做<code>test-and-test-and-set</code>，然而即使经过改进，上面的两个问题依旧存在。在很多场景下，我们希望：</p>
-
-<p>1，保证公平性。</p>
-
-<p>2，原子操作少些，少些，再少些。</p>
-
-<p>3，没有饥饿。</p>
-
-<p>这就涉及到我们要谈到的Ticket Lock。</p>
-
-<p>想想我们去银行排队办业务：先拿个号，然后排队，叫到你的号就是服务你的时候了。没叫到你？老老实实等着吧（这里不考虑关系户走后门插队）。</p>
-
-<p><a href="https://github.com/yebangyu/Soupen/blob/master/src/concurrency/soupen_ticket_spin_lock.h">Soupen</a>中实现了ticket spin lock，这里摘抄如下：</p>
-
-<p><code>
-class SoupenTicketSpinLock
-{
-  public:
-    SoupenTicketSpinLock()
-    {
-      next_id_ = 0;
-      service_id_ = 0;
-    }
-    bool lock()
-    {
-      uint64_t my_id = FETCH_AND_ADD(&amp;next_id_, 1);
-      CPU_BARRIER();
-      while(my_id != ACCESS_ONCE(service_id_)) {}
-      return true;
-    }
-    void unlock()
-    {
-      INC_ATOMIC(&amp;service_id_, 1);
-    }
-  private:
-    uint64_t next_id_;
-    uint64_t service_id_;
-};
-</code>
-第11行：获得自己的号，同时把号码递增。其中<code>fetch_and_add</code>是一个原子操作:</p>
-
-<p><code>c++
-int fech_and_add(int *p, int inc)
-{
-  int origin = *p;
-  *p += inc;
-  return origin;
-}
-</code>
-顺便说一下，也有所谓的<code>add_and_fech</code>：
-<code>c++
-int add_and_fetch(int *p, int inc)
-{
-  *p += inc;
-  return *p;
-}
-</code>
-区别就在于返回原来的值还是返回更新后的值</p>
-
-<p>第13行：判断是否到自己的号了，否则就一直等待。</p>
-
-<p>第18行：叫下一个人，和下一个人说，轮到你了。</p>
-
-<p>关于<code>CPU_BARRIER</code>、<code>FETCH_AND_ADD</code>、<code>ACCESS_ONCE</code>和<code>INC_ATOMIC</code>的实现，请参考<a href="https://github.com/yebangyu/Soupen/blob/master/src/base/soupen_define.h">Soupen</a>中的相关代码。</p>
-
-<p>公平性：不难看出，先来排队的人将优先获得服务。</p>
-
-<p>性能：不难看出，和之前的不断CAS的版本相比，ticket lock算法中，一次lock调用只有一次原子操作开销。</p>
-
-<p>饥饿：不难看出，每个线程都可以按照自己的排队顺序拿到锁，不会发生饥饿现象。</p>
-
-<p>哈哈，如果过号呢？现实生活里，去银行排队可能因为时间太长不爽闪人了，银行叫人如果连叫三遍还没看到你就会叫下一个人了。</p>
-
-<p>在这里，假如持有锁的线程crash了，来不及调用unlock，那么所有等待锁的线程都将一直spin，除非，哦，除非海量的线程来排队不断自增<code>next_id_</code>导致<code>next_id_</code>溢出回滚，然后重新等于<code>service_id_</code>。</p>
-
-<p>如果持有锁的线程没有crash，它正常释放锁，而叫到的下一个线程之前crash了，那么也会导致所有排队的线程拿不到锁。</p>
-
-<p>顺便说一下，(部分)Linux Kernel的spin lock就是用ticket lock实现的。更多细节可以参考<a href="https://www.ibm.com/developerworks/cn/linux/l-cn-spinlock/">这里</a>。</p>
-
-<p>那么ticket lock是否完美呢？有什么惊人的缺点呢？请看下集。</p>
 
 ]]></content>
   </entry>
