@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-10-13T23:16:08+08:00</updated>
+  <updated>2016-10-13T23:25:56+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -85,7 +85,7 @@ LockFreeLogger logger;
 
 <p>你没发觉，并在两条语句中间加了日志，想看看变量的值，结果因为加了代码，乱序不出现，bug不出现了。</p>
 
-<p>4，编写这个程序的思想，最早我是在《Multi Core Programming》这本书的第八章学到的，后来在偶然的机会和场合下看到了Jeff Preshing写了一篇<a href="http://preshing.com/20120522/lightweight-in-memory-logging/">博客</a>，介绍了一样的想法和做法，不过他的代码是针对Windows环境的。</p>
+<p>4，编写这个程序的思想，是我自己想出来的。后来我在《Multi Core Programming》这本书的第八章看到了同样的idea，又后来看到了Jeff Preshing写了一篇<a href="http://preshing.com/20120522/lightweight-in-memory-logging/">博客</a>，介绍了一样的想法和做法，不过他的代码是针对Windows环境的。</p>
 ]]></content>
   </entry>
   
