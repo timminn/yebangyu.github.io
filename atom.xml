@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-10-13T23:25:56+08:00</updated>
+  <updated>2016-10-14T09:04:10+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -59,6 +59,8 @@
 <span class="line-number">35</span>
 <span class="line-number">36</span>
 <span class="line-number">37</span>
+<span class="line-number">38</span>
+<span class="line-number">39</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="c1">//xx.h</span>
 </span><span class="line"><span class="cp">#include &lt;pthread.h&gt;</span>
 </span><span class="line"><span class="k">class</span> <span class="nc">LockFreeLogger</span>
@@ -95,6 +97,8 @@
 </span><span class="line">  <span class="k">static</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">SIZE</span> <span class="o">=</span> <span class="mi">1234567</span><span class="p">;</span>
 </span><span class="line"><span class="p">};</span>
 </span><span class="line">
+</span><span class="line"><span class="k">extern</span> <span class="n">LockFreeLogger</span> <span class="n">logger</span><span class="p">;</span>
+</span><span class="line">
 </span><span class="line"><span class="cp">#define LOG(message, info) logger.log(message, info)</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
@@ -114,9 +118,9 @@
 
 <h2 id="section">注意事项</h2>
 
-<p>1，<code>LockFreeLogger</code>中的构造函数的内存分配可能会失败，工业级代码需要考虑异常或者处理处理。</p>
+<p>1，<code>LockFreeLogger</code>构造函数里的内存分配操作可能会失败，工业级代码需要考虑异常或者处理处理。</p>
 
-<p>2，数组下标可能会越界，达到或者超过SIZE值。不过调试的时候可以考虑把SIZE值设大一点，一般情况下也就够用了。</p>
+<p>2，数组下标可能会越界，达到或者超过SIZE。不过调试的时候可以考虑把SIZE设大一点，一般情况下也就够用了。</p>
 
 <p>3，注意到这个调试程序有时候并不能work。为什么？举个简单的场景：假如你的lock free程序中存在一个bug，也就是两条语句之间漏加了memory barrier，导致乱序。</p>
 
