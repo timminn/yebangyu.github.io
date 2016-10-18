@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-10-15T16:48:04+08:00</updated>
+  <updated>2016-10-18T20:01:47+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -372,14 +372,6 @@ int main()
   return 0;
 }
 </code></p>
-
-<h2 id="section-5">致谢</h2>
-
-<p>本文刚写作时，在23行使用了一个cpu级别的memory barrier，因为这里我们需要写<code>tail-&gt;next</code>，然后读<code>me-&gt;spin</code>，这两个是不同的变量，而在X86下，写读不同变量可能会被CPU乱序。</p>
-
-<p>本文发出后，不少朋友，包括@ForFunny 、 @赵星宇tju 发起了是否编译器级别的memory barrier即可的讨论。</p>
-
-<p>经过思考，个人认为23行改为使用编译器级别的memory barrier。感谢@ForFunny @赵星宇tju。</p>
 
 ]]></content>
   </entry>
