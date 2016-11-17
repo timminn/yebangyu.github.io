@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-10-30T14:43:04+08:00</updated>
+  <updated>2016-11-17T20:52:57+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -1507,11 +1507,11 @@
 
 <p>哈希表：<strong>O(1)</strong>期望查找时间让它常常成为除了数组之外的首选，尤其是当查找非常关键时。只知道<strong>Separate Chaining</strong>和<strong>Open Addressing</strong>？那您<strong>out</strong>了。建议您阅读我的<a href="http://www.yebangyu.org/blog/2015/12/19/cuckoo-hashing/">这篇</a>讲解<strong>cuckoo hashing</strong>的博客。</p>
 
-<p>跳表：说到<strong>O(lgn)</strong>的<strong>insert、find、del</strong>，很多人想到二叉搜索树，由于非平衡的二叉搜索树有退化为<strong>O(n)</strong>的风险，因此很多场景需要平衡树。<strong>B</strong>树？红黑树？太<strong>heavy</strong>了。有时候，您需要跳表，真的，很需要。它足够简单，而且很多时候就能满足您的需求。除此之外，<strong>Treap</strong>也是一种随机的数据结构，我实现的大规模分布式数据库<a href="https://github.com/yebangyu/Soupen">Soupen</a>里就有提供相应的实现，以后会放出。</p>
+<p>跳表：说到<strong>O(lgn)</strong>的<strong>insert、find、del</strong>，很多人想到二叉搜索树，由于非平衡的二叉搜索树有退化为<strong>O(n)</strong>的风险，因此很多场景需要平衡树。<strong>B</strong>树？红黑树？太<strong>heavy</strong>了。有时候，您需要跳表，真的，很需要。它足够简单，而且很多时候就能满足您的需求。除此之外，<strong>Treap</strong>也是一种随机的数据结构，我实现的大规模分布式数据库<a href="https://github.com/yebangyu/Soupen">Soupen</a>里就有提供相应的实现，您可以参考我的这篇<a href="http://www.yebangyu.org/blog/2016/05/07/treappkskiplist/">博客</a>。</p>
 
 <p><strong>Sunday</strong>算法：字符串匹配里，<strong>KMP</strong>算法是大名鼎鼎了。谁让<strong>Knuth</strong>是大佬呢？可是，您是否知道<strong>Sunday</strong>算法？<strong>Sunday</strong>算法什么时候会比<strong>KMP</strong>高效而且高效地多？</p>
 
-<p><strong>string.h</strong>里提供的算法：包括<strong>memcmp、memcpy、memmem</strong>（我第一次知道<strong>memmem</strong>是从我的主管杨志丰先生那儿）等。当您想手工实现这些函数，正在写一大堆<strong>while</strong>循环时，请优先选择这些库函数。</p>
+<p><strong>string.h</strong>里提供的算法：包括<strong>memcmp、memcpy、memmem、memmove</strong>等。当您想手工实现这些函数，正在写一大堆<strong>while</strong>循环时，请优先选择这些库函数。</p>
 
 <p>排序算法：快速排序，非常常见、常用。那么，如何编写一个高效的快速排序？建议您阅读我的<a href="http://www.yebangyu.org/blog/2016/03/09/quicksort/">这篇</a>博客。</p>
 
@@ -1557,7 +1557,9 @@
 
 <h2 id="section-4">参考资料</h2>
 
-<p>专门针对<strong>C++</strong>和<strong>Linux</strong>的优化的书，不多。但是有一些零碎的、七七八八的资料，编程珠玑啊，深入理解计算机系统啊，还有过几个月会出的<strong>optimized c++</strong>啊等等。</p>
+<p>专门针对<strong>C++</strong>和<strong>Linux</strong>的优化的书，不多。但是有一些零碎的、七七八八的资料，编程珠玑啊，深入理解计算机系统啊，还有最近刚刚出版的<strong>optimized c++</strong>啊等等。</p>
+
+<p>有好心的网友在Github上维护了一个<a href="https://github.com/fenbf/AwesomePerfCpp">项目</a>，分享了不少C++性能优化相关的资料。</p>
 
 ]]></content>
   </entry>
