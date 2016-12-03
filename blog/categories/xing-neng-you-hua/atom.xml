@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 性能优化 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/xing-neng-you-hua/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-03T17:09:52+08:00</updated>
+  <updated>2016-12-03T17:15:25+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -88,7 +88,7 @@ int g1(char *p)
   return xx;
 }
 </code>
-它们建议你可以第4行中的<code>strlen(p)</code>调用抽离出来放在执行开始前：</p>
+它们建议你可以将第4行中的<code>strlen(p)</code>调用抽离出来放在循环开始前：</p>
 
 <p><code>c++
 int g2(char *p)
@@ -135,7 +135,7 @@ int g2(char *p)
 
 <p>看到没，<code>const char</code>，也就是说这个函数不会改变输入参数，并且该函数不会对全局状态做一些设置和改变。而在函数g1内部，也只有对p的读，没有写，因此编译器可以放心地、大胆的做优化，把它当固定量。如果该函数可能有副作用，编译器是不会做这样的优化的。</p>
 
-<p>因此，如果这里不是strlen，而是memcpy这样的函数，显然编译器无法做优化。如果这里不是strlen，而是你的一个辅助函数，比如说help，它的函数签名除了名字之外，和strlen一模一样。为了帮助gcc施展优化，你可以给gcc更多更好的提示和信息，比如说：</p>
+<p>因此，如果这里不是strlen，而是memcpy这样的函数，显然编译器无法做优化。如果这里不是strlen，而是你的一个辅助函数，比如说help，它的函数签名除了名字之外，和strlen一模一样。为了帮助gcc施展优化，你可以给gcc提供更多更好的提示和信息，比如说：</p>
 
 <p><code>c++
 int attribute ((pure)) help(const char *p);
@@ -197,7 +197,7 @@ unsigned int h2(unsigned int a)
 
 <h2 id="section-3">写在最后</h2>
 
-<p>1，本文的演示仅仅是抛砖引玉，更重要的目的则有二：一是授人以鱼不如授人以渔，教会大家如何分析。二是，尽信书不如无书，必须报着怀疑的态度去读书，去验证，去思考。</p>
+<p>1，本文的演示仅仅是抛砖引玉，更重要的目的则有二：一是授人以鱼不如授人以渔，用一种方法和大家一起分析。二是，尽信书不如无书，必须报着怀疑的态度去读书，去验证，去思考。</p>
 
 <p>2，教科书自然是强调原理的，强调思想的，它和实际有脱节这是无法避免的，也是必须这样的。无可厚非。我并不是说教科书说的这些优化不好，相反，如你所见，非常好。本文的目的是，很可能编译器已经帮你做了。</p>
 
