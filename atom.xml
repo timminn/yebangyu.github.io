@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-11-17T20:52:57+08:00</updated>
+  <updated>2016-12-03T17:07:41+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,267 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[性能优化的那些传说和迷思]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/12/03/gccandperfopt/"/>
+    <updated>2016-12-03T17:04:10+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/12/03/gccandperfopt</id>
+    <content type="html"><![CDATA[<p>相信你在很多书籍中见到很多代码调优（tuning code）的建议和方法。这些书籍可能包括《编程珠玑》、《深入理解计算机系统》、《程序设计实践》、《Optimzed C++》等等。坦白说，这些书我都看过，它们确实提供了不少有意思的性能调优的方法，那么我们的问题是，这些建议和方法有效吗？所谓有效，一种衡量途径是，假如我们不那么做，是否编译器已经会自动优化了呢？</p>
+
+<p>本文我们举几个例子，然后开启编译器优化选项后，看看发生了什么。</p>
+
+<p>本文环境为：Ubuntu 14.04 32bit + Intel I7 CPU + GCC 4.8</p>
+
+<p>生成汇编代码的语句是：<code>g++ -S -O2 code.cpp</code></p>
+
+<h2 id="section">循环展开</h2>
+
+<p>对于下面的函数</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f1</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>它们建议可以将循环展开，变成这样：</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f2</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">  <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">  <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<!--more-->
+
+<p>OK，我们看看f1函数的反汇编代码：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line">    <span class="n">movl</span>    <span class="mi">4</span><span class="p">(</span><span class="o">%</span><span class="n">esp</span><span class="p">),</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class="line">    <span class="n">addl</span>    <span class="err">$</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="o">%</span><span class="n">eax</span><span class="p">)</span>
+</span><span class="line">    <span class="n">addl</span>    <span class="err">$</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">(</span><span class="o">%</span><span class="n">eax</span><span class="p">)</span>
+</span><span class="line">    <span class="n">addl</span>    <span class="err">$</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">(</span><span class="o">%</span><span class="n">eax</span><span class="p">)</span>
+</span><span class="line">    <span class="n">ret</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>嗯，编译器已经自动帮你循环展开了。</p>
+
+<p>练习：那么对于以下这种情况呢？是否有优化效果？</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f1</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="n">n</span><span class="p">;</span> <span class="n">i</span> <span class="o">+=</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">    <span class="n">a</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">    <span class="n">a</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h2 id="section-1">循环条件去重</h2>
+
+<p>对于以下函数</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">g1</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">xx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">xx</span> <span class="o">+=</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">xx</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>它们建议你可以第4行中的<code>strlen(p)</code>调用抽离出来放在执行开始前：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">g2</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">xx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">len</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">xx</span> <span class="o">+=</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">xx</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>OK，我们看看g1函数的反汇编代码：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="p">.</span><span class="nl">LFB26</span><span class="p">:</span>
+</span><span class="line">        <span class="n">pushl</span>   <span class="o">%</span><span class="n">ebx</span>
+</span><span class="line">        <span class="n">subl</span>    <span class="err">$</span><span class="mi">24</span><span class="p">,</span> <span class="o">%</span><span class="n">esp</span>
+</span><span class="line">        <span class="n">movl</span>    <span class="mi">32</span><span class="p">(</span><span class="o">%</span><span class="n">esp</span><span class="p">),</span> <span class="o">%</span><span class="n">ebx</span>
+</span><span class="line">        <span class="n">movl</span>    <span class="o">%</span><span class="n">ebx</span><span class="p">,</span> <span class="p">(</span><span class="o">%</span><span class="n">esp</span><span class="p">)</span>
+</span><span class="line">        <span class="n">call</span>    <span class="n">strlen</span> <span class="c1">//只有一次调用，不在循环里</span>
+</span><span class="line">        <span class="n">movl</span>    <span class="o">%</span><span class="n">ebx</span><span class="p">,</span> <span class="o">%</span><span class="n">edx</span>
+</span><span class="line">        <span class="n">leal</span>    <span class="p">(</span><span class="o">%</span><span class="n">ebx</span><span class="p">,</span><span class="o">%</span><span class="n">eax</span><span class="p">),</span> <span class="o">%</span><span class="n">ecx</span>
+</span><span class="line">        <span class="n">xorl</span>    <span class="o">%</span><span class="n">eax</span><span class="p">,</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class="line">        <span class="n">jmp</span>     <span class="p">.</span><span class="n">L2</span>
+</span><span class="line"><span class="p">.</span><span class="nl">L3</span><span class="p">:</span>
+</span><span class="line">        <span class="n">movsbl</span>  <span class="p">(</span><span class="o">%</span><span class="n">edx</span><span class="p">),</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class="line">        <span class="n">addl</span>    <span class="err">$</span><span class="mi">1</span><span class="p">,</span> <span class="o">%</span><span class="n">edx</span>
+</span><span class="line">        <span class="n">addl</span>    <span class="err">$</span><span class="mi">9977</span><span class="p">,</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class="line"><span class="p">.</span><span class="nl">L2</span><span class="p">:</span>
+</span><span class="line">        <span class="n">cmpl</span>    <span class="o">%</span><span class="n">ecx</span><span class="p">,</span> <span class="o">%</span><span class="n">edx</span>
+</span><span class="line">        <span class="n">jne</span>     <span class="p">.</span><span class="n">L3</span>
+</span><span class="line">        <span class="n">addl</span>    <span class="err">$</span><span class="mi">24</span><span class="p">,</span> <span class="o">%</span><span class="n">esp</span>
+</span><span class="line">        <span class="n">popl</span>    <span class="o">%</span><span class="n">ebx</span>
+</span><span class="line">        <span class="n">ret</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>编译器已经帮你做了优化了。Why？本质原因是什么？</p>
+
+<p>这是因为，首先，<code>strlen</code>函数的原型是：</p>
+
+<p><code>size_t strlen(const char *p)</code></p>
+
+<p>看到没，<code>const char</code>，也就是说这个函数不会改变输入参数，并且该函数不会对全局状态做一些设置和改变。而在函数g1内部，也只有对p的读，没有写，因此编译器可以放心地、大胆的做优化，把它当固定量。如果该函数可能有副作用，编译器是不会做这样的优化的。</p>
+
+<p>因此，如果这里不是strlen，而是memcpy这样的函数，显然编译器无法做优化。如果这里不是strlen，而是你的一个辅助函数，比如说help，它的函数签名除了名字之外，和strlen一模一样。为了帮助gcc施展优化，你可以给gcc更多更好的提示和信息，比如说：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">attribute</span> <span class="p">((</span><span class="n">pure</span><span class="p">))</span> <span class="n">help</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>根据gcc文档，pure属性是用来修饰这样的函数：该函数除了返回一些值之外，不会产生其他作用和影响；并且它的返回值只依赖于它的输入参数和一些全局变量，比如说strlen和memcmp。</p>
+
+<p>练习：实现一个简单的help函数，参数分别是<code>const char *p</code>和<code>volatile char *p</code>，查看gcc策略的差异。这个练习有助于让你发现，volatile是如何阻止编译器优化的。</p>
+
+<h2 id="section-2">移位代替简单除法</h2>
+
+<p>对于除以2，它们建议用移位来代替。比如说，对于下面的函数：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">h1</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">a</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>它们建议改为：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">h2</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">a</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>查看h1函数的反汇编代码：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line">    <span class="n">movl</span>    <span class="mi">4</span><span class="p">(</span><span class="o">%</span><span class="n">esp</span><span class="p">),</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class="line">    <span class="n">shrl</span>    <span class="o">%</span><span class="n">eax</span> <span class="c1">//移位指令</span>
+</span><span class="line">    <span class="n">ret</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>也就是说，编译器已经帮你做了优化。</p>
+
+<p>练习：对于以下函数和“优化”，查看是否必要，是否有效</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">h1</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="mi">9</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>对应的“优化”版本：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">h2</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">return</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;&lt;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span><span class="p">;</span> <span class="c1">//括号不能丢哦。</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>那么，你可能会说了，什么是有效的呢？什么是编译器可能无法自动主动做的呢？你可以参考我的<a href="http://www.yebangyu.org/blog/2016/04/22/optimization/">这篇</a>博客。</p>
+
+<h2 id="section-3">写在最后</h2>
+
+<p>1，本文的演示仅仅是抛砖引玉，更重要的目的则有二：一是授人以鱼不如授人以渔，教会大家如何分析。二是，尽信书不如无书，必须报着怀疑的态度去读书，去验证，去思考。</p>
+
+<p>2，教科书自然是强调原理的，强调思想的，它和实际有脱节这是无法避免的，也是必须这样的。无可厚非。我并不是说教科书说的这些优化不好，相反，如你所见，非常好。本文的目的是，很可能编译器已经帮你做了。</p>
+
+<p>3，不同的编译器策略可能不同；同一个编译器不同版本策略可能也不同；同一个编译器的同一个版本在不同的上下文对于同一个函数的策略也可能不同。读者诸君务必不要过于相信本文，如我第一点所说：质疑！！！实践！！！</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一个轻量的lock free程序调试工具]]></title>
@@ -1532,13 +1793,6 @@
 
 <p>5，查表法。将反复使用的、不大的、静态的数据事先计算好，存在表格里，需要的时候，直接去查，避免计算。</p>
 
-<p>6，避免重复计算。很多计算只需要执行一次，比如说非常著名的</p>
-
-<pre><code>for (int i = 0; i &lt; strlen(a); i++) do sth;
-</code></pre>
-
-<p>其中<code>strlen(a)</code>可以事先计算好，用一个变量存放即可。</p>
-
 <p>还有很多很多。就看您的知识面和经验了。</p>
 
 <p>有一个错误的想法，很值得在这里说。很多资料上写着：用移位代替乘除法。因此很多人的代码里充斥着大量的<code>&gt;&gt;1</code> 以及 <code>&lt;&lt;1</code>，美其名曰性能优化。</p>
@@ -2959,201 +3213,6 @@
 </span><span class="line"><span class="n">list</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
 </span><span class="line"><span class="n">list</span><span class="p">.</span><span class="n">del</span><span class="p">(</span><span class="n">p</span><span class="p">);</span><span class="c1">//ok! delete p will be called</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Materials In Concurrency Programming]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/02/16/materials-in-concurrency-programming/"/>
-    <updated>2016-02-16T23:36:28+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/02/16/materials-in-concurrency-programming</id>
-    <content type="html"><![CDATA[<h2 id="prerequisite">Prerequisite</h2>
-
-<p>对CPU、内存、Cache有一个很好的认识，对学习并发编程有很大的帮助。</p>
-
-<p><a href="https://people.freebsd.org/~lstewart/articles/cpumemory.pdf">What Every Programmer Should Know About Memory</a></p>
-
-<p><a href="http://www.amazon.com/Consistency-Coherence-Synthesis-Lectures-Architecture/dp/1608455645">A Primer on Memory Consistency and Cache Coherence</a></p>
-
-<!--more-->
-
-<h2 id="textbook">Textbook</h2>
-
-<p><a href="https://www.kernel.org/pub/linux/kernel/people/paulmck/perfbook/perfbook.html">Is Parallel Programming Hard, And, If So, What Can You Do About It?</a></p>
-
-<p>Paul大叔的神作。</p>
-
-<p>优点：</p>
-
-<p>1，很全面，除了介绍lock的实现、RCU、Transaction Memory等等之外，还包括一些并发程序设计的其他知识，比如如何验证、如何调试等。</p>
-
-<p>个人非常喜欢第14章和附录C，分别详细介绍了什么是Memory Barrier以及为什么需要Memory Barrier。强烈推荐！</p>
-
-<p>2，很正派。这里面介绍的技术都非常通用，普遍适用，没有太多的黑科技。比如书中重点强调的partition，就是一种非常重要、非常scientific的思想。</p>
-
-<p>3，很幽默。真的，很幽默。</p>
-
-<p>缺点：因为正派，所以就没有介绍 lock free data structure 设计这些很tricky的黑科技，算是不足吧。</p>
-
-<p>个人喜爱程度：5颗星</p>
-
-<p><a href="http://www.amazon.com/The-Multiprocessor-Programming-Revised-Reprint/dp/0123973376">The Art of Multiprocessor Programming</a></p>
-
-<p>被很多人推崇。第一版有很多错误，作者随后推出了revised版本。</p>
-
-<p>优点：市面上目前能见到的唯一一本包括大量Lock Free Data Structure 实现的书籍。</p>
-
-<p>缺点：</p>
-
-<p>1，Java语言实现。个人固执认为应该用C或者C++。代码质量也很一般，甚至有错，和书里正文内容描述不符。</p>
-
-<p>2，没有介绍RCU等重要内容</p>
-
-<p>3，不详细。可能是我个人实力不行，感觉这本书讲的并不好，看完还是得看论文才懂。</p>
-
-<p>书中有一大章节详细介绍了各种spin lock的实现，强烈推荐！！！</p>
-
-<p>从某个渠道里获知，作者正在编写本书第二版，快要出版了。不过还是Java实现，sigh。</p>
-
-<p>个人喜爱程度：3颗星</p>
-
-<p><a href="http://www.morganclaypool.com/doi/abs/10.2200/S00499ED1V01Y201304CAC023">Shared Memory Synchronization</a></p>
-
-<p>优点：</p>
-
-<p>1，很新。2013年的书</p>
-
-<p>2，选题不错。综合了上面两本</p>
-
-<p>缺点：</p>
-
-<p>1，鸡肋。初学者看了云里雾里，高手没必要看。</p>
-
-<p>是作者实力不够吗？恐怕不是。作者Michael L. Scott是程序语言设计和并发编程的大拿。</p>
-
-<p>是作者表述能力不行吗？恐怕不是。他写有一本非常著名和畅销的书籍：《Programming Language Pragmatics》</p>
-
-<p>这本书偏综述＋lecture notes性质，估计和这系列丛书的定位有关。</p>
-
-<p>2，没有中文版，没有英文影印版，很难下到pdf。苦逼穷学生想阅读的话基本上只能去amazon.com购买原版</p>
-
-<p>个人喜爱程度：2颗星</p>
-
-<p><a href="http://www.bogotobogo.com/cplusplus/files/CplusplusConcurrencyInAction_PracticalMultithreading.pdf">C++ Concurrency In Action</a></p>
-
-<p>听说人民邮电出版社引进版权翻译了，据说翻译的糟糕透顶。我买了一本英文原版，挺贵的。哈哈。</p>
-
-<p>优点：</p>
-
-<p>1，介绍C++11来编写多线程程序。</p>
-
-<p>2，涵盖了Hazard Pointer等一般教科书上不会出现的内容，还有一章介绍了lock free stack design。</p>
-
-<p>缺点：</p>
-
-<p>可能是我个人实力不行，感觉这本书讲的并不好，看完还是得看论文才懂。</p>
-
-<p>个人喜爱程度：2颗星</p>
-
-<p><a href="http://users.nik.uni-obuda.hu/vamossy/SZPE2011/Segedletek/Multi-Core_Programming_Digital_Edition_(06-29-06).pdf">Multi Core Programming</a></p>
-
-<p>Intel的工程师写的。挺老的书了，但是还是很有用。</p>
-
-<p>优点：</p>
-
-<p>1，介绍了多线程编程中的基础知识，比如说什么是false sharing？什么是priority inversion？</p>
-
-<p>2，第八章介绍了如何编写调试多线程程序的程序，强烈推荐！</p>
-
-<p>个人喜爱程度：3颗星</p>
-
-<h2 id="blog">Blog</h2>
-
-<p><a href="http://preshing.com/">Jeff Preshing’s Blog</a></p>
-
-<p><a href="http://www.cliffc.org/blog/">Cliff Click’s Blog</a></p>
-
-<p><a href="http://www.yebangyu.org">Yebangyu’s Blog</a></p>
-
-<h2 id="course">Course</h2>
-
-<p><a href="http://15418.courses.cs.cmu.edu/spring2016/">Parallel Computer Architecture and Programming @ CMU</a></p>
-
-<p><a href="http://web.cecs.pdx.edu/~walpole/class/cs510/fall2014/slides/">Parallel Programming @ pdx</a></p>
-
-<h2 id="paper">Paper</h2>
-
-<h3 id="linked-list--skip-list">Linked List &amp; Skip List</h3>
-
-<p><a href="https://timharris.uk/papers/2001-disc.pdf">A Pragmatic Implementation of Non-Blocking Linked-Lists</a></p>
-
-<p><a href="http://www.cse.yorku.ca/~ruppert/papers/lfll.pdf">Lock Free Linked Lists and Skip Lists</a></p>
-
-<p><a href="http://www.cse.yorku.ca/~ruppert/Mikhail.pdf">Lock Free Linked Lists and Skip Lists</a></p>
-
-<p><a href="http://cs.ucf.edu/~dcm/Teaching/COT4810-Spring2011/Literature/SplitOrderedLists.pdf">Split-Ordered Lists: Lockfree Extensible Hash Tables</a></p>
-
-<p><a href="http://cs.brown.edu/~mph/LevHLS06/OPODIS2006-BA.pdf">A Provably Correct Scalable Concurrent Skip List</a></p>
-
-<h3 id="stack">Stack</h3>
-
-<p><a href="http://www.cs.bgu.ac.il/~hendlerd/papers/scalable-stack.pdf">A Scalable Lock Free Stack Algorithm</a></p>
-
-<h3 id="queue">Queue</h3>
-
-<p><a href="http://www.cs.rochester.edu/~scott/papers/1996_PODC_queues.pdf">Simple, Fast, and Practical Non-Blocking and Blocking Concurrent Queue Algorithms</a></p>
-
-<p><a href="http://www.non-blocking.com/download/SunT03_PQueue_TR.pdf">Fast and Lock Free Concurrent Priority Queues for Multi-Thread Systems</a></p>
-
-<p><a href="http://people.csail.mit.edu/edya/publications/OptimisticFIFOQueue-DISC2004.pdf">An Optimistic Approach to Lock Free FIFO Queues</a></p>
-
-<h3 id="hash-map">Hash Map</h3>
-
-<p><a href="http://www.win.tue.nl/~jfg/articles/CS-Report03-03.pdf">Efficient Almost Wait Free Parallel Accessible Dynamic Hash-tables</a></p>
-
-<p><a href="http://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-639.pdf">Non-Blocking Hash-Tables With Open Addressing</a></p>
-
-<p><a href="http://cs.brown.edu/~mph/HellerHLMSS05/2005-OPODIS-Lazy.pdf">A Lazy Concurrent List-Based Set Algorithm</a></p>
-
-<p><a href="http://www.research.ibm.com/people/m/michael/spaa-2002.pdf">High Performance Dynamic Lock-Free Hash Tables and List-Based Sets</a></p>
-
-<h3 id="cuckoo-hash-map">Cuckoo Hash Map</h3>
-
-<p><a href="http://excess-project.eu/publications/published/CuckooHashing_ICDCS.pdf">Lock-free Cuckoo Hashing</a></p>
-
-<h3 id="b-tree">B+ Tree</h3>
-
-<p><a href="http://www.cs.technion.ac.il/~erez/Papers/lfbtree-full.pdf">A Lock-Free B+ Tree</a></p>
-
-<p><a href="http://www.cs.technion.ac.il/~anastas/lfbtree-spaa.pdf">A Lock-Free B+ Tree</a></p>
-
-<h3 id="others">Others</h3>
-
-<p><a href="https://www.research.ibm.com/people/m/michael/ieeetpds-2004.pdf">Hazard Pointers: Safe Memory Reclamation For Lock-Free Objects</a></p>
-
-<p><a href="http://www.grame.fr/ressources/publications/fober-JIM2002.pdf">Lock Free Techniques for Concurrent Access to Shared Objects</a></p>
-
-<p><a href="http://www.cs.rochester.edu/~scott/papers/1998_JPDC_nonblocking.pdf">Non-Blocking Algorithms and Preemption-Safe Locking on Multiprogrammed Shared Memory Multiprocessors</a></p>
-
-<p><a href="http://cs.brown.edu/people/mph/HerlihyLM03/main.pdf">Obstruction-Free Synchronization: Double-Ended Queues as an Example</a></p>
-
-<p><a href="http://www.research.ibm.com/people/m/michael/podc-2002.pdf">Safe Memory Reclamation for Dynamic Lock Free Objects Using Atomic Reads and Writes</a></p>
-
-<p><a href="http://www.ece.uc.edu/~paw/classes/ece975/sp2010/papers/herlihy-05.pdf">Non-blocking Memory Management Support for Dynamic-Sized Data Structures</a></p>
-
-<p><a href="http://cs.brown.edu/~mph/DohertyHLM04/ft_gateway.cfm.pdf">Bringing Practical Lock Free Synchronization to 64Bit Applications</a></p>
-
-<p><a href="https://www.research.ibm.com/people/m/michael/pldi-2004.pdf">Scalable Lock-Free Dynamic Memory Allocation</a></p>
-
-<p><a href="http://research.microsoft.com/pubs/209106/paper.pdf">Are Lock-Free Concurrent Algorithms Practically Wait-Free</a></p>
-
-<p><a href="http://www.cl.cam.ac.uk/~pes20/cpp/popl085ap-sewell.pdf">Mathematizing C++ Concurrency</a></p>
-
-<h2 id="pages">Pages</h2>
-
-<p><a href="https://gcc.gnu.org/wiki/Atomic/GCCMM/AtomicSync">Memory model synchronization modes</a></p>
-
-<p><a href="http://jakob.engbloms.se/archives/65">Dekker’s Algorithm Does not Work, as Expected</a></p>
 ]]></content>
   </entry>
   

@@ -184,13 +184,6 @@ MathJax.Hub.Config({
 
 <p>5，查表法。将反复使用的、不大的、静态的数据事先计算好，存在表格里，需要的时候，直接去查，避免计算。</p>
 
-<p>6，避免重复计算。很多计算只需要执行一次，比如说非常著名的</p>
-
-<pre><code>for (int i = 0; i &lt; strlen(a); i++) do sth;
-</code></pre>
-
-<p>其中<code>strlen(a)</code>可以事先计算好，用一个变量存放即可。</p>
-
 <p>还有很多很多。就看您的知识面和经验了。</p>
 
 <p>有一个错误的想法，很值得在这里说。很多资料上写着：用移位代替乘除法。因此很多人的代码里充斥着大量的<code>&gt;&gt;1</code> 以及 <code>&lt;&lt;1</code>，美其名曰性能优化。</p>
@@ -268,6 +261,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/12/03/gccandperfopt/">性能优化的那些传说和迷思</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/10/13/debuggerforlockfreeprogamming/">一个轻量的lock free程序调试工具</a>
       </li>
     
@@ -281,10 +278,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/07/12/reentrantlock/">实现可重入锁</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/06/26/sequence-lock/">Sequence Lock</a>
       </li>
     
   </ul>
@@ -315,7 +308,7 @@ MathJax.Hub.Config({
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (18)</a></li>
-<li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (1)</a></li>
+<li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (2)</a></li>
 <li class='category'><a href='/blog/categories/suan-fa/'>算法 (4)</a></li>
 <li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>
 

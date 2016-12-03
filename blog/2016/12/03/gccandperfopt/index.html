@@ -1,0 +1,507 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>性能优化的那些传说和迷思 - Yebangyu's Blog</title>
+  <meta name="author" content="Yebangyu">
+
+  
+  <meta name="description" content="本文指出性能优化中的很多所谓的循环展开、移位等优化可能编译器已经帮你做了">
+  <meta name="keywords" content="性能优化 循环展开 移位 除法 GCC">
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://www.yebangyu.org/blog/2016/12/03/gccandperfopt/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Yebangyu's Blog" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.lug.ustc.edu.cn/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.lug.ustc.edu.cn/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.lug.ustc.edu.cn/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Yebangyu's Blog</a></h1>
+  
+    <h2>Fond of Concurrency Programming, Distributed System and Deep Learning.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="sitesearch" value="www.yebangyu.org">
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About Me</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">性能优化的那些传说和迷思</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-12-03T17:04:10+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>5:04 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>相信你在很多书籍中见到很多代码调优（tuning code）的建议和方法。这些书籍可能包括《编程珠玑》、《深入理解计算机系统》、《程序设计实践》、《Optimzed C++》等等。坦白说，这些书我都看过，它们确实提供了不少有意思的性能调优的方法，那么我们的问题是，这些建议和方法有效吗？所谓有效，一种衡量途径是，假如我们不那么做，是否编译器已经会自动优化了呢？</p>
+
+<p>本文我们举几个例子，然后开启编译器优化选项后，看看发生了什么。</p>
+
+<p>本文环境为：Ubuntu 14.04 32bit + Intel I7 CPU + GCC 4.8</p>
+
+<p>生成汇编代码的语句是：<code>g++ -S -O2 code.cpp</code></p>
+
+<h2 id="section">循环展开</h2>
+
+<p>对于下面的函数</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f1</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>它们建议可以将循环展开，变成这样：</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f2</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">  <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">  <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<!--more-->
+
+<p>OK，我们看看f1函数的反汇编代码：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line">    <span class="n">movl</span>    <span class="mi">4</span><span class="p">(</span><span class="o">%</span><span class="n">esp</span><span class="p">),</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class="line">    <span class="n">addl</span>    <span class="err">$</span><span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="o">%</span><span class="n">eax</span><span class="p">)</span>
+</span><span class="line">    <span class="n">addl</span>    <span class="err">$</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">(</span><span class="o">%</span><span class="n">eax</span><span class="p">)</span>
+</span><span class="line">    <span class="n">addl</span>    <span class="err">$</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">(</span><span class="o">%</span><span class="n">eax</span><span class="p">)</span>
+</span><span class="line">    <span class="n">ret</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>嗯，编译器已经自动帮你循环展开了。</p>
+
+<p>练习：那么对于以下这种情况呢？是否有优化效果？</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f1</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="n">n</span><span class="p">;</span> <span class="n">i</span> <span class="o">+=</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">    <span class="n">a</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">    <span class="n">a</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h2 id="section-1">循环条件去重</h2>
+
+<p>对于以下函数</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">g1</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">xx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">strlen</span><span class="p">(</span><span class="n">p</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">xx</span> <span class="o">+=</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">xx</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>它们建议你可以第4行中的<code>strlen(p)</code>调用抽离出来放在执行开始前：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">g2</span><span class="p">(</span><span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">xx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class="line">  <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="n">strlen</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">len</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">xx</span> <span class="o">+=</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">xx</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>OK，我们看看g1函数的反汇编代码：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="p">.</span><span class="nl">LFB26</span><span class="p">:</span>
+</span><span class="line">        <span class="n">pushl</span>   <span class="o">%</span><span class="n">ebx</span>
+</span><span class="line">        <span class="n">subl</span>    <span class="err">$</span><span class="mi">24</span><span class="p">,</span> <span class="o">%</span><span class="n">esp</span>
+</span><span class="line">        <span class="n">movl</span>    <span class="mi">32</span><span class="p">(</span><span class="o">%</span><span class="n">esp</span><span class="p">),</span> <span class="o">%</span><span class="n">ebx</span>
+</span><span class="line">        <span class="n">movl</span>    <span class="o">%</span><span class="n">ebx</span><span class="p">,</span> <span class="p">(</span><span class="o">%</span><span class="n">esp</span><span class="p">)</span>
+</span><span class="line">        <span class="n">call</span>    <span class="n">strlen</span> <span class="c1">//只有一次调用，不在循环里</span>
+</span><span class="line">        <span class="n">movl</span>    <span class="o">%</span><span class="n">ebx</span><span class="p">,</span> <span class="o">%</span><span class="n">edx</span>
+</span><span class="line">        <span class="n">leal</span>    <span class="p">(</span><span class="o">%</span><span class="n">ebx</span><span class="p">,</span><span class="o">%</span><span class="n">eax</span><span class="p">),</span> <span class="o">%</span><span class="n">ecx</span>
+</span><span class="line">        <span class="n">xorl</span>    <span class="o">%</span><span class="n">eax</span><span class="p">,</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class="line">        <span class="n">jmp</span>     <span class="p">.</span><span class="n">L2</span>
+</span><span class="line"><span class="p">.</span><span class="nl">L3</span><span class="p">:</span>
+</span><span class="line">        <span class="n">movsbl</span>  <span class="p">(</span><span class="o">%</span><span class="n">edx</span><span class="p">),</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class="line">        <span class="n">addl</span>    <span class="err">$</span><span class="mi">1</span><span class="p">,</span> <span class="o">%</span><span class="n">edx</span>
+</span><span class="line">        <span class="n">addl</span>    <span class="err">$</span><span class="mi">9977</span><span class="p">,</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class="line"><span class="p">.</span><span class="nl">L2</span><span class="p">:</span>
+</span><span class="line">        <span class="n">cmpl</span>    <span class="o">%</span><span class="n">ecx</span><span class="p">,</span> <span class="o">%</span><span class="n">edx</span>
+</span><span class="line">        <span class="n">jne</span>     <span class="p">.</span><span class="n">L3</span>
+</span><span class="line">        <span class="n">addl</span>    <span class="err">$</span><span class="mi">24</span><span class="p">,</span> <span class="o">%</span><span class="n">esp</span>
+</span><span class="line">        <span class="n">popl</span>    <span class="o">%</span><span class="n">ebx</span>
+</span><span class="line">        <span class="n">ret</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>编译器已经帮你做了优化了。Why？本质原因是什么？</p>
+
+<p>这是因为，首先，<code>strlen</code>函数的原型是：</p>
+
+<p><code>size_t strlen(const char *p)</code></p>
+
+<p>看到没，<code>const char</code>，也就是说这个函数不会改变输入参数，并且该函数不会对全局状态做一些设置和改变。而在函数g1内部，也只有对p的读，没有写，因此编译器可以放心地、大胆的做优化，把它当固定量。如果该函数可能有副作用，编译器是不会做这样的优化的。</p>
+
+<p>因此，如果这里不是strlen，而是memcpy这样的函数，显然编译器无法做优化。如果这里不是strlen，而是你的一个辅助函数，比如说help，它的函数签名除了名字之外，和strlen一模一样。为了帮助gcc施展优化，你可以给gcc更多更好的提示和信息，比如说：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">attribute</span> <span class="p">((</span><span class="n">pure</span><span class="p">))</span> <span class="n">help</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">p</span><span class="p">);</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>根据gcc文档，pure属性是用来修饰这样的函数：该函数除了返回一些值之外，不会产生其他作用和影响；并且它的返回值只依赖于它的输入参数和一些全局变量，比如说strlen和memcmp。</p>
+
+<p>练习：实现一个简单的help函数，参数分别是<code>const char *p</code>和<code>volatile char *p</code>，查看gcc策略的差异。这个练习有助于让你发现，volatile是如何阻止编译器优化的。</p>
+
+<h2 id="section-2">移位代替简单除法</h2>
+
+<p>对于除以2，它们建议用移位来代替。比如说，对于下面的函数：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">h1</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">a</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>它们建议改为：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">h2</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">a</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>查看h1函数的反汇编代码：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line">    <span class="n">movl</span>    <span class="mi">4</span><span class="p">(</span><span class="o">%</span><span class="n">esp</span><span class="p">),</span> <span class="o">%</span><span class="n">eax</span>
+</span><span class="line">    <span class="n">shrl</span>    <span class="o">%</span><span class="n">eax</span> <span class="c1">//移位指令</span>
+</span><span class="line">    <span class="n">ret</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>也就是说，编译器已经帮你做了优化。</p>
+
+<p>练习：对于以下函数和“优化”，查看是否必要，是否有效</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">h1</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="mi">9</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>对应的“优化”版本：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">h2</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">a</span><span class="p">)</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">return</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;&lt;</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">a</span><span class="p">;</span> <span class="c1">//括号不能丢哦。</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>那么，你可能会说了，什么是有效的呢？什么是编译器可能无法自动主动做的呢？你可以参考我的<a href="http://www.yebangyu.org/blog/2016/04/22/optimization/">这篇</a>博客。</p>
+
+<h2 id="section-3">写在最后</h2>
+
+<p>1，本文的演示仅仅是抛砖引玉，更重要的目的则有二：一是授人以鱼不如授人以渔，教会大家如何分析。二是，尽信书不如无书，必须报着怀疑的态度去读书，去验证，去思考。</p>
+
+<p>2，教科书自然是强调原理的，强调思想的，它和实际有脱节这是无法避免的，也是必须这样的。无可厚非。我并不是说教科书说的这些优化不好，相反，如你所见，非常好。本文的目的是，很可能编译器已经帮你做了。</p>
+
+<p>3，不同的编译器策略可能不同；同一个编译器不同版本策略可能也不同；同一个编译器的同一个版本在不同的上下文对于同一个函数的策略也可能不同。读者诸君务必不要过于相信本文，如我第一点所说：质疑！！！实践！！！</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Yebangyu</span></span>
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-12-03T17:04:10+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>5:04 pm</span></time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/xing-neng-you-hua/'>性能优化</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/10/13/debuggerforlockfreeprogamming/" title="Previous Post: 一个轻量的lock free程序调试工具">&laquo; 一个轻量的lock free程序调试工具</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2016/12/03/gccandperfopt/">性能优化的那些传说和迷思</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/10/13/debuggerforlockfreeprogamming/">一个轻量的lock free程序调试工具</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/09/epochbasedreclamation/">Lock Free中的Epoch Based Reclamation</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/08/21/mcslock/">MCS Lock</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/07/12/reentrantlock/">实现可重入锁</a>
+      </li>
+    
+  </ul>
+</section>
+<section>
+  <h1>Friends' Link</h1>
+  <ul>
+    <li>
+	  <li><a href="http://www.chongh.wiki/">Diting0x</a></li>
+	  <li><a href="http://www.xiaolili.net/">wangli</a></li>
+	  <li><a href="http://www.skykewei.top">dukewei</a></li>
+	  <li><a href="http://irwenqiang.github.io">chenwenqiang</a></li>
+      <li><a href="http://www.armsword.com">duruofei</a></li>
+    </li>
+  </ul>
+</section><section>
+  <h1>Yebangyu</h1>
+  <p>福建人。热爱历史、K歌、NBA</p>
+  <p>帝都码农</p>
+  <p>历史学家，专治秦汉史</p>
+</section>
+<section>
+ <h1>Categories</h1>
+ <ul id="categories">
+  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (10)</a></li>
+<li class='category'><a href='/blog/categories/soupen/'>soupen (4)</a></li>
+<li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
+<li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
+<li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (18)</a></li>
+<li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (2)</a></li>
+<li class='category'><a href='/blog/categories/suan-fa/'>算法 (4)</a></li>
+<li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>
+
+ </ul>
+</section>
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><!-- mathjax config similar to math.stackexchange -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  jax: ["input/TeX", "output/HTML-CSS"],
+  tex2jax: {
+    inlineMath: [ ['$', '$'] ],
+    displayMath: [ ['$$', '$$']],
+    processEscapes: true,
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+  },
+  messageStyle: "none",
+  "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }
+});
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+<p>
+  Copyright &copy; 2016 - Yebangyu -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+<script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1257548193'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1257548193' type='text/javascript'%3E%3C/script%3E"));</script>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</html>
