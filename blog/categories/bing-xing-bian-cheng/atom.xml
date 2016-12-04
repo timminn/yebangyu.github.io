@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-04T17:33:42+08:00</updated>
+  <updated>2016-12-04T17:42:22+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -28,17 +28,17 @@
 
 <!--more-->
 
-<p>1，Hazard Pointer本身的内存只分配，不释放。在stack、queue等数据结构里，需要的Hazard Pointer数量一般为1或者2，所以不释放问题不大。对于skip list这种数据结构又有遍历需求的，那么Hazard Pointer可能就不是非常适用了，可以考虑使用<a href="http://www.yebangyu.org/blog/2016/09/09/epochbasedreclamation/">Epoch Based Reclamation</a>技术。</p>
+<p>1，Hazard Pointer本身的内存只分配，不释放。在stack、queue等数据结构里，需要的Hazard Pointer数量一般为1或者2，所以不释放问题不大。对于skip list这种数据结构又有遍历需求的，那么Hazard Pointer可能就不是非常适用了，可以考虑使用<a href="http://www.yebangyu.org/blog/2016/09/09/epochbasedreclamation/">Epoch Based Reclamation</a>技术。据我所知，这也是memsql使用的内存回收策略。</p>
 
 <p>2，每个线程拥有、管理自己的retire list和hazard pointer list ，而不是所有线程共享一个retire list，这样可以避免维护retire list和hazard pointer list的开销，否则我们可能又得想尽脑汁去设计另外一套lock free的策略来管理这些list，先有鸡先有蛋，无穷无尽。所谓retire list就是指逻辑删除后待物理回收的指针列表。</p>
 
-<p>3，每个线程负责回收自己的retire list中的内存。这样，retire list是一个线程局部的数据结构，自己写，自己读，吃自己的狗粮。</p>
+<p>3，每个线程负责回收自己的retire list中记录维护的内存。这样，retire list是一个线程局部的数据结构，自己写，自己读，吃自己的狗粮。</p>
 
 <p>4，只有当retire list的大小（数量）达到一定的阈值时，才进行GC。这样，可以把GC的开销进行分摊，同时，应该尽可能使用Jemalloc或者TCmalloc这些高效的、带线程局部缓存的内存分配器。</p>
 
 <h2 id="acquirerelease">acquire和release动作</h2>
 
-<p>所谓acquire，就是线程需要对一个资源进行访问；所谓release，就是线程停止对资源的访问，结束对它的保护。</p>
+<p>所谓acquire，就是线程需要对一个资源进行访问，需要对它进行保护；所谓release，就是线程停止对资源的访问，结束对它的保护。</p>
 
 <p>这两个动作基本上都是成对出现的，因此，可以封装成一个Guard。</p>
 
