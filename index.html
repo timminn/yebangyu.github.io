@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="相信你在很多书籍中见到很多代码调优（tuning code）的建议和方法。这些书籍可能包括《编程珠玑》、《深入理解计算机系统》、《程序设计实践》、《Optimized C++》等等。坦白说，这些书我都看过，它们确实提供了不少有意思的性能调优的方法，那么我们的问题是，这些建议和方法有效吗？所谓有效， &hellip;">
+  <meta name="description" content="在前面几篇文章里，我们介绍了Hazard Pointer，一种用于lock free data structure设计中内存管理的利器，这个利器不仅思想简单，还可以用来防止ABA问题，读者诸君务必掌握。 本文作为第三部分，给出工业级代码中，实现Hazard Pointer的一些策略和需要注意的点 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,46 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/12/04/introductiontohazardpointer/">Lock Free中的Hazard Pointer(下)</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-12-04T17:29:10+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>5:29 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在前面几篇<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">文章</a>里，我们介绍了Hazard Pointer，一种用于lock free data structure设计中内存管理的利器，这个利器不仅思想简单，还可以用来防止ABA问题，读者诸君务必掌握。</p>
+
+<p>本文作为第三部分，给出工业级代码中，实现Hazard Pointer的一些策略和需要注意的点。</p>
+
+<h2 id="hazard-pointer">Hazard Pointer管理</h2>
+
+<p>我们知道Hazard Pointer封装了原始指针，那么Hazard Pointer的内存和生命周期本身如何管理呢？以下是常见的策略：</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/12/04/introductiontohazardpointer/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -669,58 +709,6 @@ MathJax.Hub.Config({
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/05/07/treappkskiplist/">Soupen源码解析之rank实现</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-05-07T10:00:12+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>7</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:00 am</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2 id="section">写在最前</h2>
-
-<p><a href="https://github.com/yebangyu/Soupen">Soupen</a>是一款高性能的nosql数据库，旨在能在某些方面替代Redis。它由不著名码农、秦汉史历史学家、本站站长Yebangyu同学在业余时间独立开发完成。</p>
-
-<p>Github请访问<a href="https://github.com/yebangyu/Soupen">这里</a> ，Python客户端请点击<a href="https://github.com/yebangyu/Soupen/blob/master/src/client/soupen_client.py">这里</a></p>
-
-<p>和Redis一样，Soupen也同样支持rank功能，但是所使用的数据结构是Treap(Redis使用的是Skip List)。Treap和Skip List都是概率性的高级数据结构。</p>
-
-<p>那么，什么是Treap呢？</p>
-
-<h2 id="what-is-treap">What is Treap</h2>
-
-<p><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/TreapAlphaKey.svg/440px-TreapAlphaKey.svg.png" alt="Treap" /></p>
-
-<p>(图片来源于WikiMedia)</p>
-
-<p>简单说来，Treap是这样的树：Treap中的每个节点至少包含key和优先级两个字段，其中key满足搜索树性质，优先级满足堆序性。如上图所示，数字是优先级字段，字母是key字段。其中优先级构成了一个大根堆。</p>
-
-<p>也就是说，在Treap中，key组成了一个二叉搜索树，优先级组成了一个堆。所谓Treap = Tree + Heap。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/05/07/treappkskiplist/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -736,6 +724,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2016/12/04/introductiontohazardpointer/">Lock Free中的Hazard Pointer(下)</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/12/03/gccandperfopt/">性能优化的那些传说和迷思</a>
       </li>
     
@@ -749,10 +741,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/08/21/mcslock/">MCS Lock</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/07/12/reentrantlock/">实现可重入锁</a>
       </li>
     
   </ul>
@@ -782,7 +770,7 @@ MathJax.Hub.Config({
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
-<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (18)</a></li>
+<li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (19)</a></li>
 <li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (2)</a></li>
 <li class='category'><a href='/blog/categories/suan-fa/'>算法 (4)</a></li>
 <li class='category'><a href='/blog/categories/bian-yi-lian-jie/'>编译链接 (2)</a></li>

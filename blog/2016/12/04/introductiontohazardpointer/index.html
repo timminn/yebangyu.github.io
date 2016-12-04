@@ -5,12 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Spinlock and mutex - Yebangyu's Blog</title>
+  <title>Lock Free中的Hazard Pointer(下) - Yebangyu's Blog</title>
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="本文介绍Spinlock 自旋锁和mutex的区别和联系">
-  <meta name="keywords" content="Spinlock mutex 互斥锁 自旋锁">
+  <meta name="description" content="本文介绍了工业级实现Hazard Pointer的一些策略和细节，很可供参考的。">
+  <meta name="keywords" content="Hazard Pointer 内存管理 无锁 lock free">
 
   <!-- http://t.co/dKP3o1e -->
   <meta name="HandheldFriendly" content="True">
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://www.yebangyu.org/blog/2016/01/24/spinlock-and-mutex/">
+  <link rel="canonical" href="http://www.yebangyu.org/blog/2016/12/04/introductiontohazardpointer/">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
   <link href="/atom.xml" rel="alternate" title="Yebangyu's Blog" type="application/atom+xml">
@@ -84,7 +84,7 @@ MathJax.Hub.Config({
   
   <header>
     
-      <h1 class="entry-title">Spinlock and mutex</h1>
+      <h1 class="entry-title">Lock Free中的Hazard Pointer(下)</h1>
     
     
       <p class="meta">
@@ -93,22 +93,36 @@ MathJax.Hub.Config({
 
 
 
-<time class='entry-date' datetime='2016-01-24T15:50:31+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>24</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:50 pm</span></time>
+<time class='entry-date' datetime='2016-12-04T17:29:10+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>5:29 pm</span></time>
         
       </p>
     
   </header>
 
 
-<div class="entry-content"><p>Spinlock（自旋锁）和mutex作为两种互斥锁，在并行编程中都得到了广泛应用。那么，这两种锁有什么区别吗？</p>
+<div class="entry-content"><p>在前面几篇<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">文章</a>里，我们介绍了Hazard Pointer，一种用于lock free data structure设计中内存管理的利器，这个利器不仅思想简单，还可以用来防止ABA问题，读者诸君务必掌握。</p>
 
-<p>当一个线程对Spinlock加锁时，如果该锁被其他线程占用，那么该线程会通过一个loop不断地重试（ try again and again）；而使用mutex的线程没有得到锁时，会sleep。</p>
+<p>本文作为第三部分，给出工业级代码中，实现Hazard Pointer的一些策略和需要注意的点。</p>
 
-<p>因为，当临界区较短时，Spinlock因为没有上下文切换，可能性能更优；当临界区较长时，不断的spin将浪费大量的cpu资源。</p>
+<h2 id="hazard-pointer">Hazard Pointer管理</h2>
+
+<p>我们知道Hazard Pointer封装了原始指针，那么Hazard Pointer的内存和生命周期本身如何管理呢？以下是常见的策略：</p>
 
 <!--more-->
 
-<p>如何实现一个Spinlock呢？下面简单封装了一下，并在Ubuntu 14.04 32bit系统，X86体系结构，Intel I5双核处理器环境下，测试相应的性能：</p>
+<p>1，Hazard Pointer本身的内存只分配，不释放。在stack、queue等数据结构里，需要的Hazard Pointer数量一般为1或者2，所以不释放问题不大。对于skip list这种数据结构又有遍历需求的，那么Hazard Pointer可能就不是非常适用了，可以考虑使用<a href="http://www.yebangyu.org/blog/2016/09/09/epochbasedreclamation/">Epoch Based Reclamation</a>技术。</p>
+
+<p>2，每个线程拥有、管理自己的retire list和hazard pointer list ，而不是所有线程共享一个retire list，这样可以避免维护retire list和hazard pointer list的开销，否则我们可能又得想尽脑汁去设计另外一套lock free的策略来管理这些list，先有鸡先有蛋，无穷无尽。所谓retire list就是指逻辑删除后待物理回收的指针列表。</p>
+
+<p>3，每个线程负责回收自己的retire list中的内存。这样，retire list是一个线程局部的数据结构，自己写，自己读，吃自己的狗粮。</p>
+
+<p>4，只有当retire list的大小（数量）达到一定的阈值时，才进行GC。这样，可以把GC的开销进行分摊，同时，应该尽可能使用Jemalloc或者TCmalloc这些高效的、带线程局部缓存的内存分配器。</p>
+
+<h2 id="acquirerelease">acquire和release动作</h2>
+
+<p>所谓acquire，就是线程需要对一个资源进行访问；所谓release，就是线程停止对资源的访问，结束对它的保护。</p>
+
+<p>这两个动作基本上都是成对出现的，因此，可以封装成一个Guard。</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -130,87 +144,33 @@ MathJax.Hub.Config({
 <span class="line-number">18</span>
 <span class="line-number">19</span>
 <span class="line-number">20</span>
-<span class="line-number">21</span>
-<span class="line-number">22</span>
-<span class="line-number">23</span>
-<span class="line-number">24</span>
-<span class="line-number">25</span>
-<span class="line-number">26</span>
-<span class="line-number">27</span>
-<span class="line-number">28</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;thread&gt;</span>
-</span><span class="line"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
-</span><span class="line"><span class="kt">int</span> <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="kt">int</span> <span class="n">lock</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">spin_lock</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">while</span><span class="p">(</span><span class="n">__sync_lock_test_and_set</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lock</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">spin_unlock</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">__sync_lock_release</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lock</span><span class="p">);</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span>  <span class="mi">10000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="n">spin_lock</span><span class="p">();</span>
-</span><span class="line">    <span class="n">counter</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span><span class="c1">//tiny critical section</span>
-</span><span class="line">    <span class="n">spin_unlock</span><span class="p">();</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="kr">thread</span> <span class="n">t1</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
-</span><span class="line">  <span class="kr">thread</span> <span class="n">t2</span><span class="p">(</span><span class="n">f</span><span class="p">);</span>
-</span><span class="line">  <span class="n">t1</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class="line">  <span class="n">t2</span><span class="p">.</span><span class="n">join</span><span class="p">();</span>
-</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line">   <span class="k">struct</span> <span class="n">HazardPointerRecord</span>
+</span><span class="line">    <span class="p">{</span>
+</span><span class="line">      <span class="n">HazardPointerRecord</span><span class="p">(</span><span class="n">HplfdsHazardPointer</span><span class="o">&lt;</span><span class="n">MemoryAllocator</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">manager</span><span class="p">,</span>
+</span><span class="line">                          <span class="kt">void</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="kt">int</span> <span class="n">thread_id</span><span class="p">)</span><span class="o">:</span> <span class="n">manager_</span><span class="p">(</span><span class="n">manager</span><span class="p">)</span>
+</span><span class="line">      <span class="p">{</span>
+</span><span class="line">        <span class="n">p_</span> <span class="o">=</span> <span class="n">p</span><span class="p">;</span>
+</span><span class="line">        <span class="n">thread_id_</span> <span class="o">=</span> <span class="n">thread_id</span><span class="p">;</span>
+</span><span class="line">        <span class="n">manager</span><span class="p">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">p_</span><span class="p">,</span> <span class="n">thread_id_</span><span class="p">);</span>
+</span><span class="line">      <span class="p">}</span>
+</span><span class="line">      <span class="o">~</span><span class="n">HazardPointerRecord</span><span class="p">()</span>
+</span><span class="line">      <span class="p">{</span>
+</span><span class="line">        <span class="n">manager_</span><span class="p">.</span><span class="n">release</span><span class="p">(</span><span class="n">p_</span><span class="p">,</span> <span class="n">thread_id_</span><span class="p">);</span>
+</span><span class="line">      <span class="p">}</span>
+</span><span class="line">      <span class="n">HplfdsHazardPointer</span><span class="o">&lt;</span><span class="n">MemoryAllocator</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">manager_</span><span class="p">;</span>
+</span><span class="line">      <span class="kt">void</span> <span class="o">*</span><span class="n">p_</span><span class="p">;</span>
+</span><span class="line">      <span class="kt">int</span> <span class="n">thread_id_</span><span class="p">;</span>
+</span><span class="line">    <span class="p">};</span>
+</span><span class="line">
+</span><span class="line">    <span class="cp">#define ACQUIRE_POINTER(p)\</span>
+</span><span class="line"><span class="cp">  HazardPointerRecord record##p(memory_manager_, p, thread_id);</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>更多细节，可以参考业余时间编写的<a href="https://github.com/yebangyu/HPLFDS/blob/master/src/queue/hplfds_ms_queue.h">lock free ms queue</a>中的用法。</p>
 
-<p>2个线程时，这个程序的运行时间为：</p>
+<h2 id="section">实现</h2>
 
-<pre><code>real	0m1.082s
-user	0m2.060s
-sys	0m0.000s
-</code></pre>
+<p>我在我的<a href="https://github.com/yebangyu/HPLFDS">HPLFDS</a>开源项目中，给出了一个<a href="https://github.com/yebangyu/HPLFDS/blob/master/src/hazardpointer/hplfds_hazard_pointer.h">实现</a>。虽然reclaim可以做的更加高效，然而在大部分场景下已经足够用了。</p>
 
-<p>4个线程时：</p>
-
-<pre><code>real	0m5.701s
-user	0m19.400s
-sys	0m0.000s
-</code></pre>
-
-<p>如果改为std::mutex(lock和unlock成员函数)呢？对比一下：</p>
-
-<p>2个线程：</p>
-
-<pre><code>real	0m3.081s
-user	0m2.796s
-sys	0m3.344s
-</code></pre>
-
-<p>4个线程：</p>
-
-<pre><code>real	0m5.860s
-user	0m6.004s
-sys	0m14.936s
-</code></pre>
-
-<p>不难发现，由于大量的上下文切换，使用mutex时，花在sys上的时间要远比使用Spinlock的要多。</p>
-
-<h2 id="section">小结</h2>
-
-<p>以下两种情况，应该考虑使用spinlock代替mutex：</p>
-
-<p>1，每个processor上（只）运行一个线程。</p>
-
-<p>2，线程平均等待（spin）时间少于两次上下文切换的开销。</p>
-
-<p>当然，一切都离不开实际的测试和分析。</p>
-
-<p>下次，我们将研究更多、更高效的spinlock实现。</p>
 </div>
 
 
@@ -226,7 +186,7 @@ sys	0m14.936s
 
 
 
-<time class='entry-date' datetime='2016-01-24T15:50:31+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>24</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>3:50 pm</span></time>
+<time class='entry-date' datetime='2016-12-04T17:29:10+08:00'><span class='date'><span class='date-month'>Dec</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>5:29 pm</span></time>
       
 
 <span class="categories">
@@ -247,10 +207,8 @@ sys	0m14.936s
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2016/01/23/insidethebloomfilter/" title="Previous Post: 深入解析Bloom Filter(上)">&laquo; 深入解析Bloom Filter(上)</a>
+        <a class="basic-alignment left" href="/blog/2016/12/03/gccandperfopt/" title="Previous Post: 性能优化的那些传说和迷思">&laquo; 性能优化的那些传说和迷思</a>
       
-      
-        <a class="basic-alignment right" href="/blog/2016/01/29/insidethebloomfilter/" title="Next Post: 深入解析Bloom Filter(中)">深入解析Bloom Filter(中) &raquo;</a>
       
     </p>
   </footer>

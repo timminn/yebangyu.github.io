@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-03T17:15:25+08:00</updated>
+  <updated>2016-12-04T17:33:42+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,67 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Lock Free中的Hazard Pointer(下)]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/12/04/introductiontohazardpointer/"/>
+    <updated>2016-12-04T17:29:10+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/12/04/introductiontohazardpointer</id>
+    <content type="html"><![CDATA[<p>在前面几篇<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">文章</a>里，我们介绍了Hazard Pointer，一种用于lock free data structure设计中内存管理的利器，这个利器不仅思想简单，还可以用来防止ABA问题，读者诸君务必掌握。</p>
+
+<p>本文作为第三部分，给出工业级代码中，实现Hazard Pointer的一些策略和需要注意的点。</p>
+
+<h2 id="hazard-pointer">Hazard Pointer管理</h2>
+
+<p>我们知道Hazard Pointer封装了原始指针，那么Hazard Pointer的内存和生命周期本身如何管理呢？以下是常见的策略：</p>
+
+<!--more-->
+
+<p>1，Hazard Pointer本身的内存只分配，不释放。在stack、queue等数据结构里，需要的Hazard Pointer数量一般为1或者2，所以不释放问题不大。对于skip list这种数据结构又有遍历需求的，那么Hazard Pointer可能就不是非常适用了，可以考虑使用<a href="http://www.yebangyu.org/blog/2016/09/09/epochbasedreclamation/">Epoch Based Reclamation</a>技术。</p>
+
+<p>2，每个线程拥有、管理自己的retire list和hazard pointer list ，而不是所有线程共享一个retire list，这样可以避免维护retire list和hazard pointer list的开销，否则我们可能又得想尽脑汁去设计另外一套lock free的策略来管理这些list，先有鸡先有蛋，无穷无尽。所谓retire list就是指逻辑删除后待物理回收的指针列表。</p>
+
+<p>3，每个线程负责回收自己的retire list中的内存。这样，retire list是一个线程局部的数据结构，自己写，自己读，吃自己的狗粮。</p>
+
+<p>4，只有当retire list的大小（数量）达到一定的阈值时，才进行GC。这样，可以把GC的开销进行分摊，同时，应该尽可能使用Jemalloc或者TCmalloc这些高效的、带线程局部缓存的内存分配器。</p>
+
+<h2 id="acquirerelease">acquire和release动作</h2>
+
+<p>所谓acquire，就是线程需要对一个资源进行访问；所谓release，就是线程停止对资源的访问，结束对它的保护。</p>
+
+<p>这两个动作基本上都是成对出现的，因此，可以封装成一个Guard。</p>
+
+<p>```c++
+   struct HazardPointerRecord
+    {
+      HazardPointerRecord(HplfdsHazardPointer<memoryallocator> &amp;manager,
+                          void *p, int thread_id): manager_(manager)
+      {
+        p_ = p;
+        thread_id_ = thread_id;
+        manager.acquire(p_, thread_id_);
+      }
+      ~HazardPointerRecord()
+      {
+        manager_.release(p_, thread_id_);
+      }
+      HplfdsHazardPointer<memoryallocator> &manager_;
+      void *p_;
+      int thread_id_;
+    };</memoryallocator></memoryallocator></p>
+
+<pre><code>#define ACQUIRE_POINTER(p)\   HazardPointerRecord record##p(memory_manager_, p, thread_id);
+</code></pre>
+
+<p>```
+更多细节，可以参考业余时间编写的<a href="https://github.com/yebangyu/HPLFDS/blob/master/src/queue/hplfds_ms_queue.h">lock free ms queue</a>中的用法。</p>
+
+<h2 id="section">实现</h2>
+
+<p>我在我的<a href="https://github.com/yebangyu/HPLFDS">HPLFDS</a>开源项目中，给出了一个<a href="https://github.com/yebangyu/HPLFDS/blob/master/src/hazardpointer/hplfds_hazard_pointer.h">实现</a>。虽然reclaim可以做的更加高效，然而在大部分场景下已经足够用了。</p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[一个轻量的lock free程序调试工具]]></title>
@@ -486,119 +547,6 @@ pthread_mutex_init(&amp;mutex, &amp;attr);
 <p>2，<a href="http://preshing.com/20120305/implementing-a-recursive-mutex/">Implementing a Recursive Mutex</a></p>
 
 <p>很好的博客，每篇都非常高水准。我们最近正在翻译其中和并发编程相关的文章。可以点击这里查看：<a href="http://www.chongh.wiki/categories/High-performance/">深入探索并发编程系列</a></p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Sequence Lock]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/06/26/sequence-lock/"/>
-    <updated>2016-06-26T14:24:59+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/06/26/sequence-lock</id>
-    <content type="html"><![CDATA[<p>在读多写少(Read Mostly)的场景里，我们可能会使用的同步设施包括：</p>
-
-<blockquote>
-  <ul>
-    <li>Mutex / Spin Lock</li>
-    <li>Reader Writer Lock</li>
-    <li>Sequence Lock</li>
-    <li>Read Copy Update</li>
-  </ul>
-</blockquote>
-
-<p>前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您对Spin Lock的实现细节有兴趣，建议您阅读我的这几篇博客：</p>
-
-<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">Peterson Lock</a></p>
-
-<p><a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">Ticket Lock</a></p>
-
-<p><a href="http://www.yebangyu.org/blog/2016/08/21/mcslock/">MCS Queue Lock</a></p>
-
-<p>从今天起，我们介绍后面两种同步设施。今天我们先介绍Sequence Lock。</p>
-
-<!--more-->
-
-<h2 id="section">基本原理</h2>
-
-<p>我们知道，传统的Reader Writer Lock是reader preference的，可能会产生writer starvation。和Reader Writer Lock不同，sequence lock是writer preference的，writer随时都可以更新临界资源。</p>
-
-<p>sequence lock的精髓在于一个sequence count。当writer在更新时，count为奇数；不存在writer更新时，该count为偶数。</p>
-
-<p>count初始化为一个偶数，比如说0。当writer操作临界资源前，先将count++，这时候count变成奇数；然后writer操作临界资源，完毕后，再count++，这时候count将又恢复为偶数。</p>
-
-<p>对于reader，每次进入临界区前读取count值，如果为偶数，说明没有writer存在，那么它可以进入临界区；如果为奇数，那么它需要等待，不断重试，读取count直到count为偶数。进入临界区读取临界资源后，你知道，从reader进入临界区到试图离开临界区这段时间里，可能writer进来了，因此reader需要重新读取count，看和它进入临界区时的count是否相等，不等的话说明此次读取失败，需要重试。</p>
-
-<h2 id="section-1">基本实现</h2>
-
-<p>```c++
-#include<mutex> //c++11的mutex
-using namespace std;</mutex></p>
-
-<p>struct SequenceLock
-{
-  volatile uint64_t sequence_count;
-  mutex lock; //这把锁是用于writer们互斥的。保证只有一个writer能更新。和reader无关。
-};</p>
-
-<p>static void seqlock_init(SequenceLock &amp;sl)
-{
-  sl.sequence_count = 0;//初始化为偶数
-}</p>
-
-<p>static uint64_t read_seqbegin(SequenceLock &amp;sl)
-{
-  uint64_t sc = 0;
-  while(true) {
-    sc = sl.sequence_count;
-    if (!(sc &amp; 1)) {
-      break; //sc是偶数，说明没有writer，返回
-    } 
-  }
-  return sc;
-}</p>
-
-<p>static bool reader_need_retry(SequenceLock &amp;sl, uint64_t oldseq)
-{
-  return sl.sequence_count != oldseq;
-}</p>
-
-<p>static void write_seqlock(SequenceLock &amp;sl)
-{
-  sl.lock.lock();
-  ++sl.sequence_count;//让count变为奇数，和读者声明自己的存在
-}</p>
-
-<p>static void write_sequnlock(SequenceLock &amp;sl)
-{
-  ++sl.sequence_count;//让count恢复为偶数
-  sl.lock.unlock();
-}</p>
-
-<p>```</p>
-
-<h2 id="section-2">深度思考</h2>
-
-<p>1，sequence lock和reader writer lock相比，有什么区别？</p>
-
-<p>最主要的区别，如上所述，就是writer随时随地可以进行更新，不会出现writer starvation的情况。正因为如此，如果update heavily，那么可能造成reader starvation。然而，正如我们一早所说的，sequence lock用于read mostly的situation。因此，reader starvation几乎不会发生。</p>
-
-<p>reader端并不需要加锁，只在极少情况下需要重试而已。因此，从某种角度来说，sequence lock是一种乐观锁。</p>
-
-<p>2，sequence_count声明为<code>uint32_t</code>是否可以？</p>
-
-<p>看你的writer更新的频率。假如你的writer每小时才更新一次，那么一天更新24次，一个月更新720次，一年才262800次，一百年才26280000次，是没有溢出危险的。如果每纳秒更新一次呢？算算看。</p>
-
-<p>我知道，C语言uint32_max（奇数）再自增1之后溢出会回滚到0（偶数）不会影响到程序的正确性，但是好的程序个人认为不应该对此有依赖。</p>
-
-<p>3，使用sequence lock可能会有什么坑？</p>
-
-<p>假如我们的临界资源是这样的：</p>
-
-<p><code>c++
-something *p;
-</code></p>
-
-<p>reader进入临界区后读取p，存放在自己的变量something *q里，然后返回。之后writer对p进行了free操作；如果reader之后使用<code>*q</code>将发生错误。对于这种情况，需要使用值拷贝语义，或者通过引入<a href="http://www.yebangyu.org/blog/2015/12/10/introduction-to-hazard-pointer/">hazard pointer</a>等其他机制来避免内存释放问题。不仅如此，实际上在临界区里，reader都不可以使用<code>*p</code>，这是因为和reader writer lock不同，sequence lock是不保证writer的不存在的，也就是说在临界区里，是可能随时有writer对p进行释放等操作的，这也是它和读写锁的最大不同。</p>
-
 ]]></content>
   </entry>
   
