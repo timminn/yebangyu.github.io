@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-04T17:42:22+08:00</updated>
+  <updated>2016-12-23T23:01:27+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -338,48 +338,59 @@ void spin_unlock (spinlock_t *lock)
 
 <p>这次，我们先给出实现（环境为：GCC 4.8 + X86体系结构 + Ubuntu 14.04 32bit系统），然后再讲解算法。</p>
 
-<p>```c++
-#include<pthread.h> //just for test demo.
+<p><code>c++
+#include&lt;pthread.h&gt; //just for test demo.
 #define COMPILER_BARRIER() __asm__ __volatile__("" : : : "memory")
 #define CPU_RELAX() __asm__ __volatile__("pause\n": : :"memory")
 #define CAS(address, exp, target) __sync_bool_compare_and_swap(address, exp, target)
 #define ATOMIC_EXCHANGE(address, val) __atomic_exchange_n(address, val, __ATOMIC_SEQ_CST)
 //=========================================
-struct MCSLockNode
+</code>c++
+struct mcs_lock_node 
 {
-  volatile MCSLockNode *volatile next;
-  volatile int spin;
-};</pthread.h></p>
+  volatile int waiting;
+  mcs_lock_node *volatile next;
+};</p>
 
-<p>typedef MCSLockNode MCSLock;
-static void lock(MCSLock **m, MCSLockNode *me)
+<p>typedef mcs_lock_node *volatile mcs_lock;</p>
+
+<p>static mcs_lock_node* get_my_mcs_node()
 {
-  me-&gt;next = NULL;
-  me-&gt;spin = 0;
-  MCSLockNode *tail = ATOMIC_EXCHANGE(m, me);
-  if (!tail) {
-    return;
-  }
-  tail-&gt;next = me;
-  COMPILER_BARRIER();
-  while (!me-&gt;spin) {
-    CPU_RELAX();
-  }
-  return;
+  static __thread mcs_lock_node my_mcs_node;
+  return &amp;my_mcs_node;
 }</p>
 
-<p>static void unlock(MCSLock <em>*m, MCSLockNode *me)
+<p>static void spin_lock(mcs_lock &amp;lock)
 {
-  if (!me-&gt;next) {
-    if (CAS(m, me, NULL)) {
-      return;
-    }
-    while (!me-&gt;next) {
-      CPU_RELAX();
-    }
+  mcs_lock_node *me = get_my_mcs_node();
+  mcs_lock_node *tmp = me;
+  mcs_lock_node *pre;
+  me-&gt;next = NULL;
+  pre = ATOMIC_EXCHANGE(lock, tmp);                            <br />
+  if (pre == NULL) {
+    return;	                                           <br />
   }
-  /</em>It holds that me-&gt;next != NULL here */
-  me-&gt;next-&gt;spin = 1;
+  me-&gt;waiting = 1;                                             <br />
+  COMPILER_BARRIER();
+  pre-&gt;next = me;                                              <br />
+  while (me-&gt;waiting) {                                       <br />
+    CPU_RELAX();
+  }	
+}</p>
+
+<p>static void spin_unlock(mcs_lock &amp;lock)
+{
+  mcs_lock_node *me = get_my_mcs_node();
+  mcs_lock_node *tmp = me;
+  if (me-&gt;next == NULL) {                                    <br />
+    if (CAS(lock, tmp, NULL)) {<br />
+	  return;
+	}
+	while (me-&gt;next == NULL) {                        <br />
+	  CPU_RELAX();
+	}
+  }
+  me-&gt;next-&gt;waiting = 0; 
 }
 ```</p>
 
@@ -412,24 +423,23 @@ static void lock(MCSLock **m, MCSLockNode *me)
 <p>MCS Lock测试程序Demo</p>
 
 <p><code>c++
-MCSLock *global_lock = NULL;
+mcs_lock global_lock = NULL;
 void* f(void *arg)
 {
-  MCSLockNode mcs_node;
   for(int i = 0; i &lt; 1000000; i++) {
-    lock(&amp;global_lock, &amp;mcs_node);
-    unlock(&amp;global_lock, &amp;mcs_node);
+    lock(global_lock);
+    unlock(global_lock);
   }
   return NULL;
 }
 int main()
 {
   pthread_t pthread1;
-  pthread_t pthread2;  
+  pthread_t pthread2;
   pthread_create(&amp;pthread1, NULL, f, NULL);
   pthread_create(&amp;pthread2, NULL, f, NULL);
-  pthread_join(pthread1, NULL);  
-  pthread_join(pthread2, NULL);  
+  pthread_join(pthread1, NULL);
+  pthread_join(pthread2, NULL);
   return 0;
 }
 </code></p>

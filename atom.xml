@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-04T17:42:22+08:00</updated>
+  <updated>2016-12-23T23:01:27+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -727,6 +727,66 @@
 <span class="line-number">4</span>
 <span class="line-number">5</span>
 <span class="line-number">6</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;pthread.h&gt; </span><span class="c1">//just for test demo.</span>
+</span><span class="line"><span class="cp">#define COMPILER_BARRIER() __asm__ __volatile__(&quot;&quot; : : : &quot;memory&quot;)</span>
+</span><span class="line"><span class="cp">#define CPU_RELAX() __asm__ __volatile__(&quot;pause\n&quot;: : :&quot;memory&quot;)</span>
+</span><span class="line"><span class="cp">#define CAS(address, exp, target) __sync_bool_compare_and_swap(address, exp, target)</span>
+</span><span class="line"><span class="cp">#define ATOMIC_EXCHANGE(address, val) __atomic_exchange_n(address, val, __ATOMIC_SEQ_CST)</span>
+</span><span class="line"><span class="c1">//=========================================</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>c++
+struct mcs_lock_node 
+{
+  volatile int waiting;
+  mcs_lock_node *volatile next;
+};</p>
+
+<p>typedef mcs_lock_node *volatile mcs_lock;</p>
+
+<p>static mcs_lock_node* get_my_mcs_node()
+{
+  static __thread mcs_lock_node my_mcs_node;
+  return &amp;my_mcs_node;
+}</p>
+
+<p>static void spin_lock(mcs_lock &amp;lock)
+{
+  mcs_lock_node *me = get_my_mcs_node();
+  mcs_lock_node *tmp = me;
+  mcs_lock_node *pre;
+  me-&gt;next = NULL;
+  pre = ATOMIC_EXCHANGE(lock, tmp);                            <br />
+  if (pre == NULL) {
+    return;	                                           <br />
+  }
+  me-&gt;waiting = 1;                                             <br />
+  COMPILER_BARRIER();
+  pre-&gt;next = me;                                              <br />
+  while (me-&gt;waiting) {                                       <br />
+    CPU_RELAX();
+  }	
+}</p>
+
+<p>static void spin_unlock(mcs_lock &amp;lock)
+{
+  mcs_lock_node *me = get_my_mcs_node();
+  mcs_lock_node *tmp = me;
+  if (me-&gt;next == NULL) {                                    <br />
+    if (CAS(lock, tmp, NULL)) {<br />
+	  return;
+	}
+	while (me-&gt;next == NULL) {                        <br />
+	  CPU_RELAX();
+	}
+  }
+  me-&gt;next-&gt;waiting = 0; 
+}</p>
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
 <span class="line-number">7</span>
 <span class="line-number">8</span>
 <span class="line-number">9</span>
@@ -748,134 +808,55 @@
 <span class="line-number">25</span>
 <span class="line-number">26</span>
 <span class="line-number">27</span>
-<span class="line-number">28</span>
-<span class="line-number">29</span>
-<span class="line-number">30</span>
-<span class="line-number">31</span>
-<span class="line-number">32</span>
-<span class="line-number">33</span>
-<span class="line-number">34</span>
-<span class="line-number">35</span>
-<span class="line-number">36</span>
-<span class="line-number">37</span>
-<span class="line-number">38</span>
-<span class="line-number">39</span>
-<span class="line-number">40</span>
-<span class="line-number">41</span>
-<span class="line-number">42</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#include&lt;pthread.h&gt; </span><span class="c1">//just for test demo.</span>
-</span><span class="line"><span class="cp">#define COMPILER_BARRIER() __asm__ __volatile__(&quot;&quot; : : : &quot;memory&quot;)</span>
-</span><span class="line"><span class="cp">#define CPU_RELAX() __asm__ __volatile__(&quot;pause\n&quot;: : :&quot;memory&quot;)</span>
-</span><span class="line"><span class="cp">#define CAS(address, exp, target) __sync_bool_compare_and_swap(address, exp, target)</span>
-</span><span class="line"><span class="cp">#define ATOMIC_EXCHANGE(address, val) __atomic_exchange_n(address, val, __ATOMIC_SEQ_CST)</span>
-</span><span class="line"><span class="c1">//=========================================</span>
-</span><span class="line"><span class="k">struct</span> <span class="n">MCSLockNode</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">volatile</span> <span class="n">MCSLockNode</span> <span class="o">*</span><span class="k">volatile</span> <span class="n">next</span><span class="p">;</span>
-</span><span class="line">  <span class="k">volatile</span> <span class="kt">int</span> <span class="n">spin</span><span class="p">;</span>
-</span><span class="line"><span class="p">};</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">## 算法</span>
 </span><span class="line">
-</span><span class="line"><span class="k">typedef</span> <span class="n">MCSLockNode</span> <span class="n">MCSLock</span><span class="p">;</span>
-</span><span class="line"><span class="k">static</span> <span class="kt">void</span> <span class="nf">lock</span><span class="p">(</span><span class="n">MCSLock</span> <span class="o">**</span><span class="n">m</span><span class="p">,</span> <span class="n">MCSLockNode</span> <span class="o">*</span><span class="n">me</span><span class="p">)</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">me</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class="line">  <span class="n">me</span><span class="o">-&gt;</span><span class="n">spin</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line">  <span class="n">MCSLockNode</span> <span class="o">*</span><span class="n">tail</span> <span class="o">=</span> <span class="n">ATOMIC_EXCHANGE</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">me</span><span class="p">);</span>
-</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">tail</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="k">return</span><span class="p">;</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="n">tail</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">=</span> <span class="n">me</span><span class="p">;</span>
-</span><span class="line">  <span class="n">COMPILER_BARRIER</span><span class="p">();</span>
-</span><span class="line">  <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">me</span><span class="o">-&gt;</span><span class="n">spin</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="n">CPU_RELAX</span><span class="p">();</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="k">return</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="n">MCS</span> <span class="n">Lock</span><span class="err">算法维护一个队列</span><span class="p">(</span><span class="err">队尾指针</span><span class="n">tail</span><span class="p">)</span><span class="err">。</span>
 </span><span class="line">
-</span><span class="line"><span class="k">static</span> <span class="kt">void</span> <span class="nf">unlock</span><span class="p">(</span><span class="n">MCSLock</span> <span class="o">**</span><span class="n">m</span><span class="p">,</span> <span class="n">MCSLockNode</span> <span class="o">*</span><span class="n">me</span><span class="p">)</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">me</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">CAS</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">me</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">))</span> <span class="p">{</span>
-</span><span class="line">      <span class="k">return</span><span class="p">;</span>
-</span><span class="line">    <span class="p">}</span>
-</span><span class="line">    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">me</span><span class="o">-&gt;</span><span class="n">next</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">      <span class="n">CPU_RELAX</span><span class="p">();</span>
-</span><span class="line">    <span class="p">}</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="cm">/*It holds that me-&gt;next != NULL here */</span>
-</span><span class="line">  <span class="n">me</span><span class="o">-&gt;</span><span class="n">next</span><span class="o">-&gt;</span><span class="n">spin</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
+</span><span class="line"><span class="n">lock</span><span class="err">：尝试加锁的线程创建一个节点，并将其中的`</span><span class="n">spin</span><span class="err">`域设置为</span><span class="mi">0</span><span class="err">。为</span><span class="mi">0</span><span class="err">表示不是锁的持有者</span><span class="p">(</span><span class="n">lock</span> <span class="n">holder</span><span class="p">)</span><span class="err">，接着通过原子操作`</span><span class="n">ATOMIC_EXCHANGE</span><span class="err">`，将自己插入队列中，并获得插入前队尾指针</span><span class="n">tail</span><span class="err">。如果</span><span class="n">tail</span><span class="err">指针为空，说明当前锁是空闲的，没有被任何线程占用，因此获得锁成功；如果</span><span class="n">tail</span><span class="err">指针不空，那么设置自己的前驱，然后自旋，等待它的前驱</span><span class="p">(</span><span class="err">线程</span><span class="p">)</span><span class="err">将自己的`</span><span class="n">spin</span><span class="err">`域置为</span><span class="mi">1</span><span class="err">。`</span><span class="n">spin</span><span class="err">`域为</span><span class="mi">1</span><span class="err">，那么该线程就变成锁的持有者了。</span>
+</span><span class="line">
+</span><span class="line"><span class="n">unlock</span><span class="err">：释放锁的线程需要检查是否存在后继，如果存在后继，那么将它的后继的`</span><span class="n">spin</span><span class="err">`域设置为</span><span class="mi">1</span><span class="err">即可，后继将结束</span><span class="n">spin</span><span class="err">，成功获得锁。一切搞定，如</span><span class="mi">41</span><span class="err">行代码所示。</span>
+</span><span class="line">
+</span><span class="line"><span class="err">如果不存在后继，那么这里需要特别特别注意。不存在后继有两种可能：</span>
+</span><span class="line">
+</span><span class="line"><span class="err">它是最后一个线程。</span><span class="mi">33</span><span class="o">-</span><span class="mi">35</span><span class="err">行处理的就是这种情况。那么这时候只需要把队列置为空即可。</span>
+</span><span class="line">
+</span><span class="line"><span class="err">它不是最后一个线程。那么此时存在另外一个线程在进行加锁操作，尝试加锁的线程已经通过</span><span class="mi">18</span><span class="o">-</span><span class="mi">21</span><span class="err">行设置了新的队尾指针，但是还没设置它的前驱，也就是还没执行到</span><span class="mi">22</span><span class="err">行。因此释放锁的线程需要等待，等待</span><span class="mi">22</span><span class="err">行被其他线程执行，等待它被人设置为别人的前驱。这也就是</span><span class="mi">36</span><span class="o">-</span><span class="mi">38</span><span class="err">行所做的事。</span>
+</span><span class="line">
+</span><span class="line"><span class="err">简单说来，</span><span class="n">MCS</span> <span class="n">Lock</span><span class="err">就是将线程们用队列管理起来；加锁的线程</span><span class="n">spin</span><span class="err">在自己的变量上；释放锁的线程只更新它后继的变量。</span>
+</span><span class="line">
+</span><span class="line"><span class="cp">## 练习</span>
+</span><span class="line">
+</span><span class="line"><span class="mi">1</span><span class="err">，</span><span class="n">MCS</span> <span class="n">Lock</span><span class="err">的优点是显而易见的，因为每个等待锁的线程都</span><span class="n">spin</span><span class="err">在自己的局部的变量上。以至于新版的</span><span class="n">linux</span><span class="err">内核已经开始采用它，来代替之前的</span><span class="n">ticket</span> <span class="n">lock</span><span class="err">实现。那么，它的缺点呢？</span>
+</span><span class="line">
+</span><span class="line"><span class="mi">2</span><span class="err">，列出表格，从公平性、是否出现饥饿、时间空间复杂度等方面，全面对比</span><span class="n">ticket</span> <span class="n">lock</span><span class="err">、</span><span class="n">mcs</span> <span class="n">lock</span><span class="err">、</span><span class="n">peterson</span> <span class="n">lock</span><span class="err">等。</span>
+</span><span class="line">
+</span><span class="line"><span class="mi">3</span><span class="err">，编写程序测试这几个算法的性能，考察它们的</span><span class="n">scalability</span><span class="err">。</span>
+</span><span class="line">
+</span><span class="line"><span class="cp">## 附录</span>
+</span><span class="line">
+</span><span class="line"><span class="n">MCS</span> <span class="n">Lock</span><span class="err">测试程序</span><span class="n">Demo</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<h2 id="section-2">算法</h2>
-
-<p>MCS Lock算法维护一个队列(队尾指针tail)。</p>
-
-<p>lock：尝试加锁的线程创建一个节点，并将其中的<code>spin</code>域设置为0。为0表示不是锁的持有者(lock holder)，接着通过原子操作<code>ATOMIC_EXCHANGE</code>，将自己插入队列中，并获得插入前队尾指针tail。如果tail指针为空，说明当前锁是空闲的，没有被任何线程占用，因此获得锁成功；如果tail指针不空，那么设置自己的前驱，然后自旋，等待它的前驱(线程)将自己的<code>spin</code>域置为1。<code>spin</code>域为1，那么该线程就变成锁的持有者了。</p>
-
-<p>unlock：释放锁的线程需要检查是否存在后继，如果存在后继，那么将它的后继的<code>spin</code>域设置为1即可，后继将结束spin，成功获得锁。一切搞定，如41行代码所示。</p>
-
-<p>如果不存在后继，那么这里需要特别特别注意。不存在后继有两种可能：</p>
-
-<p>它是最后一个线程。33-35行处理的就是这种情况。那么这时候只需要把队列置为空即可。</p>
-
-<p>它不是最后一个线程。那么此时存在另外一个线程在进行加锁操作，尝试加锁的线程已经通过18-21行设置了新的队尾指针，但是还没设置它的前驱，也就是还没执行到22行。因此释放锁的线程需要等待，等待22行被其他线程执行，等待它被人设置为别人的前驱。这也就是36-38行所做的事。</p>
-
-<p>简单说来，MCS Lock就是将线程们用队列管理起来；加锁的线程spin在自己的变量上；释放锁的线程只更新它后继的变量。</p>
-
-<h2 id="section-3">练习</h2>
-
-<p>1，MCS Lock的优点是显而易见的，因为每个等待锁的线程都spin在自己的局部的变量上。以至于新版的linux内核已经开始采用它，来代替之前的ticket lock实现。那么，它的缺点呢？</p>
-
-<p>2，列出表格，从公平性、是否出现饥饿、时间空间复杂度等方面，全面对比ticket lock、mcs lock、peterson lock等。</p>
-
-<p>3，编写程序测试这几个算法的性能，考察它们的scalability。</p>
-
-<h2 id="section-4">附录</h2>
-
-<p>MCS Lock测试程序Demo</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-<span class="line-number">15</span>
-<span class="line-number">16</span>
-<span class="line-number">17</span>
-<span class="line-number">18</span>
-<span class="line-number">19</span>
-<span class="line-number">20</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">MCSLock</span> <span class="o">*</span><span class="n">global_lock</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class="line"><span class="kt">void</span><span class="o">*</span> <span class="nf">f</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="n">MCSLockNode</span> <span class="n">mcs_node</span><span class="p">;</span>
-</span><span class="line">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="n">lock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">global_lock</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mcs_node</span><span class="p">);</span>
-</span><span class="line">    <span class="n">unlock</span><span class="p">(</span><span class="o">&amp;</span><span class="n">global_lock</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">mcs_node</span><span class="p">);</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line">  <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span><span class="line"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="kt">pthread_t</span> <span class="n">pthread1</span><span class="p">;</span>
-</span><span class="line">  <span class="kt">pthread_t</span> <span class="n">pthread2</span><span class="p">;</span>
-</span><span class="line">  <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pthread1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-</span><span class="line">  <span class="n">pthread_create</span><span class="p">(</span><span class="o">&amp;</span><span class="n">pthread2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-</span><span class="line">  <span class="n">pthread_join</span><span class="p">(</span><span class="n">pthread1</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-</span><span class="line">  <span class="n">pthread_join</span><span class="p">(</span><span class="n">pthread2</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
-</span><span class="line">  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>c++
+mcs_lock global_lock = NULL;
+void* f(void *arg)
+{
+  for(int i = 0; i &lt; 1000000; i++) {
+    lock(global_lock);
+    unlock(global_lock);
+  }
+  return NULL;
+}
+int main()
+{
+  pthread_t pthread1;
+  pthread_t pthread2;
+  pthread_create(&amp;pthread1, NULL, f, NULL);
+  pthread_create(&amp;pthread2, NULL, f, NULL);
+  pthread_join(pthread1, NULL);
+  pthread_join(pthread2, NULL);
+  return 0;
+}
+```</p>
 
 ]]></content>
   </entry>
