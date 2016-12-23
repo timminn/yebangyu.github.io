@@ -247,7 +247,7 @@ MathJax.Hub.Config({
 </span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">me</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">CAS</span><span class="p">(</span><span class="n">lock</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">))</span> <span class="p">{</span>
 </span><span class="line">      <span class="k">return</span><span class="p">;</span>
-</span><span class="line">	<span class="p">}</span>
+</span><span class="line">    <span class="p">}</span>
 </span><span class="line">    <span class="k">while</span> <span class="p">(</span><span class="n">me</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">      <span class="n">CPU_RELAX</span><span class="p">();</span>
 </span><span class="line">    <span class="p">}</span>
