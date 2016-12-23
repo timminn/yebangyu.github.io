@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-23T23:34:17+08:00</updated>
+  <updated>2016-12-23T23:38:17+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -819,7 +819,7 @@
 </span><span class="line">  <span class="n">mcs_lock_node</span> <span class="o">*</span><span class="n">me</span> <span class="o">=</span> <span class="n">get_my_mcs_node</span><span class="p">();</span>
 </span><span class="line">  <span class="n">mcs_lock_node</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="n">me</span><span class="p">;</span>
 </span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">me</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">CAS</span><span class="p">(</span><span class="n">lock</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">))</span> <span class="p">{</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">CAS</span><span class="p">(</span><span class="o">&amp;</span><span class="n">lock</span><span class="p">,</span> <span class="n">tmp</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">))</span> <span class="p">{</span>
 </span><span class="line">      <span class="k">return</span><span class="p">;</span>
 </span><span class="line">    <span class="p">}</span>
 </span><span class="line">    <span class="k">while</span> <span class="p">(</span><span class="n">me</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
