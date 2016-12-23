@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-23T23:30:36+08:00</updated>
+  <updated>2016-12-23T23:34:17+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -366,7 +366,7 @@ void spin_unlock (spinlock_t *lock)
   mcs_lock_node *tmp = me;
   mcs_lock_node *pre;
   me-&gt;next = NULL;
-  pre = ATOMIC_EXCHANGE(lock, tmp);                            <br />
+  pre = ATOMIC_EXCHANGE(&amp;lock, tmp);                            <br />
   if (pre == NULL) {
     return;	                                           <br />
   }
