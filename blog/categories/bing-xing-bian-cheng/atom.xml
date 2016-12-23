@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-23T23:04:42+08:00</updated>
+  <updated>2016-12-23T23:16:45+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -384,11 +384,11 @@ void spin_unlock (spinlock_t *lock)
   mcs_lock_node *tmp = me;
   if (me-&gt;next == NULL) {                                    <br />
     if (CAS(lock, tmp, NULL)) {<br />
-	  return;
+      return;
 	}
-	while (me-&gt;next == NULL) {                        <br />
-	  CPU_RELAX();
-	}
+    while (me-&gt;next == NULL) {                        <br />
+      CPU_RELAX();
+    }
   }
   me-&gt;next-&gt;waiting = 0; 
 }
@@ -398,15 +398,15 @@ void spin_unlock (spinlock_t *lock)
 
 <p>MCS Lock算法维护一个队列(队尾指针tail)。</p>
 
-<p>lock：尝试加锁的线程创建一个节点，并将其中的<code>spin</code>域设置为0。为0表示不是锁的持有者(lock holder)，接着通过原子操作<code>ATOMIC_EXCHANGE</code>，将自己插入队列中，并获得插入前队尾指针tail。如果tail指针为空，说明当前锁是空闲的，没有被任何线程占用，因此获得锁成功；如果tail指针不空，那么设置自己的前驱，然后自旋，等待它的前驱(线程)将自己的<code>spin</code>域置为1。<code>spin</code>域为1，那么该线程就变成锁的持有者了。</p>
+<p>lock：尝试加锁的线程首先获得自己的节点，接着通过原子操作<code>ATOMIC_EXCHANGE</code>，将自己插入队列中，并获得插入前队尾指针tail。如果tail指针为空，说明当前锁是空闲的，没有被任何线程占用，因此获得锁成功；如果tail指针不空，那么设置自己的前驱，然后自旋，等待它的前驱(线程)将自己的<code>waiting</code>域置为0。<code>waiting</code>域为0，那么线程结束spin，该线程就变成锁的持有者了。</p>
 
-<p>unlock：释放锁的线程需要检查是否存在后继，如果存在后继，那么将它的后继的<code>spin</code>域设置为1即可，后继将结束spin，成功获得锁。一切搞定，如41行代码所示。</p>
+<p>unlock：释放锁的线程需要检查是否存在后继，如果存在后继，那么将它的后继的<code>waiting</code>域设置为0即可，后继将结束spin，成功获得锁。一切搞定，如52行代码所示。</p>
 
 <p>如果不存在后继，那么这里需要特别特别注意。不存在后继有两种可能：</p>
 
-<p>它是最后一个线程。33-35行处理的就是这种情况。那么这时候只需要把队列置为空即可。</p>
+<p>它是最后一个线程。45-47行处理的就是这种情况。那么这时候只需要把队列置为空即可。</p>
 
-<p>它不是最后一个线程。那么此时存在另外一个线程在进行加锁操作，尝试加锁的线程已经通过18-21行设置了新的队尾指针，但是还没设置它的前驱，也就是还没执行到22行。因此释放锁的线程需要等待，等待22行被其他线程执行，等待它被人设置为别人的前驱。这也就是36-38行所做的事。</p>
+<p>它不是最后一个线程。那么此时存在另外一个线程在进行加锁操作，尝试加锁的线程已经通过28-33行设置了新的队尾指针，但是还没设置它的前驱，也就是还没执行到34行。因此释放锁的线程需要等待，等待34行被其他线程执行，等待它被人设置为别人的前驱。这也就是48-50行所做的事。</p>
 
 <p>简单说来，MCS Lock就是将线程们用队列管理起来；加锁的线程spin在自己的变量上；释放锁的线程只更新它后继的变量。</p>
 
