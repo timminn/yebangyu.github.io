@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-23T23:18:56+08:00</updated>
+  <updated>2016-12-23T23:22:06+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -833,7 +833,7 @@
 
 <p>MCS Lock算法维护一个队列(队尾指针tail)。</p>
 
-<p>lock：尝试加锁的线程首先获得自己的节点，接着通过原子操作<code>ATOMIC_EXCHANGE</code>，将自己插入队列中，并获得插入前队尾指针tail。如果tail指针为空，说明当前锁是空闲的，没有被任何线程占用，因此获得锁成功；如果tail指针不空，那么设置自己的前驱，然后自旋，等待它的前驱(线程)将自己的<code>waiting</code>域置为0。<code>waiting</code>域为0，那么线程结束spin，该线程就变成锁的持有者了。</p>
+<p>lock：尝试加锁的线程首先获得自己的节点，接着通过原子操作<code>ATOMIC_EXCHANGE</code>，将自己插入队列中，并获得插入前队尾指针tail。如果tail指针为空，说明当前锁是空闲的，没有被任何线程占用，因此获得锁成功；如果tail指针不空，那么设置自己的前驱，然后自旋，等待它的前驱(线程)将自己的<code>waiting</code>域置为0。<code>waiting</code>域一旦为0，那么线程结束spin，该线程就变成锁的持有者了。</p>
 
 <p>unlock：释放锁的线程需要检查是否存在后继，如果存在后继，那么将它的后继的<code>waiting</code>域设置为0即可，后继将结束spin，成功获得锁。一切搞定，如52行代码所示。</p>
 
@@ -880,8 +880,8 @@
 </span><span class="line"><span class="kt">void</span><span class="o">*</span> <span class="nf">f</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">arg</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">1000000</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="n">lock</span><span class="p">(</span><span class="n">global_lock</span><span class="p">);</span>
-</span><span class="line">    <span class="n">unlock</span><span class="p">(</span><span class="n">global_lock</span><span class="p">);</span>
+</span><span class="line">    <span class="n">spin_lock</span><span class="p">(</span><span class="n">global_lock</span><span class="p">);</span>
+</span><span class="line">    <span class="n">spin_unlock</span><span class="p">(</span><span class="n">global_lock</span><span class="p">);</span>
 </span><span class="line">  <span class="p">}</span>
 </span><span class="line">  <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>
