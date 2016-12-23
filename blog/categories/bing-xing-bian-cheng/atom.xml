@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-23T23:22:06+08:00</updated>
+  <updated>2016-12-23T23:30:36+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -339,12 +339,12 @@ void spin_unlock (spinlock_t *lock)
 <p>这次，我们先给出实现（环境为：GCC 4.8 + X86体系结构 + Ubuntu 14.04 32bit系统），然后再讲解算法。</p>
 
 <p>```c++
-#include<pthread.h> //just for test demo.
-#define COMPILER_BARRIER() __asm__ __volatile__("" : : : "memory")
-#define CPU_RELAX() __asm__ __volatile__("pause\n": : :"memory")
+#define COMPILER_BARRIER() <strong>asm</strong> <strong>volatile</strong>(“” : : : “memory”)
+#define CPU_RELAX() <strong>asm</strong> <strong>volatile</strong>(“pause\n”: : :”memory”)
 #define CAS(address, exp, target) __sync_bool_compare_and_swap(address, exp, target)
 #define ATOMIC_EXCHANGE(address, val) __atomic_exchange_n(address, val, __ATOMIC_SEQ_CST)
-//=========================================</pthread.h></p>
+#define FLUSH_STORE_BUFFER() __sync_synchronize()
+//=========================================</p>
 
 <p>struct mcs_lock_node 
 {
@@ -391,6 +391,7 @@ void spin_unlock (spinlock_t *lock)
     }
   }
   me-&gt;next-&gt;waiting = 0; 
+  FLUSH_STORE_BUFFER();
 }
 ```</p>
 
@@ -423,6 +424,7 @@ void spin_unlock (spinlock_t *lock)
 <p>MCS Lock测试程序Demo</p>
 
 <p><code>c++
+#include&lt;pthread.h&gt;
 mcs_lock global_lock = NULL;
 void* f(void *arg)
 {
