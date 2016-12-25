@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-23T23:38:17+08:00</updated>
+  <updated>2016-12-25T19:43:16+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,344 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Singleton与多线程]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/12/25/singleton/"/>
+    <updated>2016-12-25T18:42:32+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/12/25/singleton</id>
+    <content type="html"><![CDATA[<p>如果您和我一样，都只有C++背景，之前对设计模式也一窍不通，那么也没有关系，因为本文不需要您对设计模式有多么了解。</p>
+
+<h2 id="singleton">Singleton模式</h2>
+
+<p>所谓的单例模式，single instance模式，简单实现如下：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">Singleton</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">public</span><span class="o">:</span>
+</span><span class="line">    <span class="k">static</span> <span class="n">Singleton</span><span class="o">*</span> <span class="n">instance</span><span class="p">();</span>
+</span><span class="line">  <span class="k">private</span><span class="o">:</span>
+</span><span class="line">    <span class="k">static</span> <span class="n">Singleton</span><span class="o">*</span> <span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line">
+</span><span class="line"><span class="n">Singleton</span><span class="o">*</span> <span class="n">Singleton</span><span class="o">::</span><span class="n">pInstance</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line"><span class="n">Singleton</span><span class="o">*</span> <span class="n">Singleton</span><span class="o">::</span><span class="n">instance</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">pInstance</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Singleton</span><span class="p">();</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h2 id="singleton-1">多线程下的Singleton模式实现</h2>
+
+<p>以上实现在单线程下运行良好（不考虑构造函数抛异常，注意，本文我们都不考虑C++ Exception）。如果是多线程呢？很自然的，我们想到可以加一把锁，或许就万事大吉了</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">Singleton</span><span class="o">*</span> <span class="n">Singleton</span><span class="o">::</span><span class="n">instance</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">LockGuard</span> <span class="n">guard</span><span class="p">(</span><span class="n">yourlock</span><span class="p">);</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">pInstance</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Singleton</span><span class="p">();</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line">  <span class="c1">//guard析构，自动调用unlock</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<h2 id="double-check-locking">double check locking</h2>
+
+<p>前面的实现中，存在一个问题：因为只初始化一次，因此大部分情况下其实pInstance都不会为空，只需要简单返回pInstance。既然如此，何必大部分情况下都需要加锁呢？毕竟锁会带来不小的代价的。因此就引入了double check locking，降低锁的使用和冲突，fast path的时候尽最大可能没有任何锁的使用和开销：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">Singleton</span><span class="o">*</span> <span class="n">Singleton</span><span class="o">::</span><span class="n">instance</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">LockGuard</span> <span class="n">guard</span><span class="p">(</span><span class="n">yourlock</span><span class="p">);</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="n">pInstance</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Singleton</span><span class="p">();</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">    <span class="c1">//guard析构，自动调用unlock</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>如你所见，当pInstance不为空时，不需要任何加锁、释放锁的动作，额外增加的是两次检查pInstance是否为空。这是因为：假设线程1执行第三行，发现pInstance为空，还是执行第四行的时候，被调度了出去；线程2执行第三行，发现pInstance为空，获得锁，创建了实例，释放锁；当线程1重新恢复调度的时候，实例已经被创建，这时候它必须再次检查pInstance是否为空，否则就两次创建了，既不符合单例模式的语义，可能还会有其他更严重的问题（资源泄漏可能还算小事）。</p>
+
+<h2 id="memory-reordering">memory reordering</h2>
+
+<p>完美了？看起来很完美，但是问题很大。</p>
+
+<p>注意其中的第6行：</p>
+
+<p><code>pInstance = new Singleton();</code></p>
+
+<p>它不是原子操作。这条语句，从逻辑和功能上包括三个部分：</p>
+
+<p>1，分配内存空间，大小是sizeof(Singleton)</p>
+
+<p>2，在该内存空间上调用Singleton的构造函数，完成初始化。</p>
+
+<p>3，将pInstance指向该内存空间</p>
+
+<p>信不信由你，编译器可能会对这三个步骤进行乱序，乱序后可能出现这样的情况：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">Singleton</span><span class="o">*</span> <span class="n">Singleton</span><span class="o">::</span><span class="n">instance</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">LockGuard</span> <span class="n">guard</span><span class="p">(</span><span class="n">yourlock</span><span class="p">);</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="n">pInstance</span> <span class="o">=</span> <span class="k">operator</span> <span class="k">new</span> <span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Singleton</span><span class="p">));</span>
+</span><span class="line">      <span class="k">new</span> <span class="p">(</span><span class="n">pInstance</span><span class="p">)</span> <span class="n">Singleton</span><span class="p">();</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">    <span class="c1">//guard析构，自动调用unlock</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>也就是说，乱序后，编译器生成的代码的逻辑是：</p>
+
+<p>1，分配内存单元。</p>
+
+<p>2，将pInstance指向该内存空间。</p>
+
+<p>3，在该内存空间调用构造函数，完成初始化。</p>
+
+<p>乱序后，可能出现如下的data race：线程1执行完第6行后，pInstance不为空；线程2执行第3行判断，发现非空，返回，然而pInstance这时候还没有初始化，这几乎带来严重的问题。</p>
+
+<h2 id="section">临时变量也于事无补</h2>
+
+<p>你可能想使用一个temp指针来避开这个问题：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">Singleton</span><span class="o">*</span> <span class="n">Singleton</span><span class="o">::</span><span class="n">instance</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">LockGuard</span> <span class="n">guard</span><span class="p">(</span><span class="n">yourlock</span><span class="p">);</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="n">Singleton</span> <span class="o">*</span><span class="n">temp</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Singleton</span><span class="p">();</span>
+</span><span class="line">      <span class="n">pInstance</span> <span class="o">=</span> <span class="n">temp</span><span class="p">;</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">    <span class="c1">//guard析构，自动调用unlock</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>这下总没有问题了吧？有问题。聪明的非常aggressive的编译器会认为temp在这里是毫无必要的，因此会将它去除，根本不引入任何的temp，乱序还是会发生。</p>
+
+<p>哦，你突然想到，volatile可能可以帮你的忙。因此，你可能将程序变为：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">Singleton</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">public</span><span class="o">:</span>
+</span><span class="line">    <span class="k">static</span> <span class="k">volatile</span> <span class="n">Singleton</span><span class="o">*</span> <span class="k">volatile</span> <span class="n">instance</span><span class="p">();</span>
+</span><span class="line">  <span class="k">private</span><span class="o">:</span>
+</span><span class="line">    <span class="k">static</span> <span class="k">volatile</span> <span class="n">Singleton</span><span class="o">*</span> <span class="k">volatile</span> <span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line">
+</span><span class="line"><span class="k">volatile</span> <span class="n">Singleton</span><span class="o">*</span> <span class="n">Singleton</span><span class="o">::</span><span class="k">volatile</span> <span class="n">pInstance</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+</span><span class="line"><span class="k">volatile</span> <span class="n">Singleton</span><span class="o">*</span> <span class="k">volatile</span> <span class="n">Singleton</span><span class="o">::</span><span class="n">instance</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">LockGuard</span> <span class="n">guard</span><span class="p">(</span><span class="n">yourlock</span><span class="p">);</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="k">volatile</span> <span class="n">Singleton</span> <span class="o">*</span><span class="k">volatile</span> <span class="n">temp</span> <span class="o">=</span> <span class="k">new</span> <span class="k">volatile</span> <span class="n">Singleton</span><span class="p">();</span>
+</span><span class="line">      <span class="n">pInstance</span> <span class="o">=</span> <span class="n">temp</span><span class="p">;</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">    <span class="c1">//guard析构，自动调用unlock</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>好多volatile，好吓人。简单解释一下：</p>
+
+<p>volatile int * volatile p;</p>
+
+<p>第一个volatile表明，p指向的内容随时可能会变</p>
+
+<p>第二个volatile表明，p本身可能随便会变（p可能改变所指区域）</p>
+
+<p>好了，temp也是volatile，我们试图这样，让编译器不要乱序。</p>
+
+<p>然而，这是compiler dependent的，它可能会work，也可能不会work。如果它碰巧在我们的环境下是有效的，只能说我们是幸运的，然而它显然不可移植了。</p>
+
+<h2 id="section-1">明确大胆的说出来</h2>
+
+<p>不就是想防止编译器乱序吗？用了那么多volatile看得真心很烦。其实，我们需要的仅仅是一个memory barrier，防止编译器乱序。因此，我们应该显式的告诉编译器，比如这样(以gcc为例)：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">Singleton</span><span class="o">*</span> <span class="n">Singleton</span><span class="o">::</span><span class="n">instance</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">LockGuard</span> <span class="n">guard</span><span class="p">(</span><span class="n">yourlock</span><span class="p">);</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">pInstance</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="n">Singleton</span> <span class="o">*</span><span class="n">temp</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Singleton</span><span class="p">();</span>
+</span><span class="line">      <span class="n">__asm__</span> <span class="nf">__volatile__</span><span class="p">(</span><span class="s">&quot;&quot;</span> <span class="o">:</span> <span class="o">:</span> <span class="o">:</span> <span class="s">&quot;memory&quot;</span><span class="p">);</span>
+</span><span class="line">      <span class="n">pInstance</span> <span class="o">=</span> <span class="n">temp</span><span class="p">;</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">    <span class="c1">//guard析构，自动调用unlock</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>是的，这里需要一个memory barrier，告诉编译器不要乱序。</p>
+
+<p>即使这么做了，可能还是有问题。怎么说？C++标准并没有对多个线程读取同一个变量会发生什么进行任何规定。因此，上面的第3行、第5、第8行存在data race，因此这是一个未定义的、不可移植的行为。BTW，在X86下，问题不大，只要该指针是cacheline aligned即可。</p>
+
+<h2 id="c11">C++11来解救</h2>
+
+<p>写出可移植的、线程安全的Singleton，这么难么？在C++11之前，很难。非常难。</p>
+
+<p>现在，有了C++11，有了C++11的memory model，就不算太难了。</p>
+
+<p>熟悉memory model的同学知道，其实我们这里需要的是一个acquire release语义。设置pInstance的时候使用release语义，读取pInstance的时候使用acquire语义。简单实现如下：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">Singleton</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">public</span><span class="o">:</span>
+</span><span class="line">    <span class="k">static</span> <span class="n">Singleton</span><span class="o">*</span> <span class="n">instance</span><span class="p">();</span>
+</span><span class="line">  <span class="k">private</span><span class="o">:</span>
+</span><span class="line">    <span class="k">static</span> <span class="n">atomic</span><span class="o">&lt;</span><span class="n">Singleton</span><span class="o">*&gt;</span> <span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span><span class="line">
+</span><span class="line"><span class="n">atomic</span><span class="o">&lt;</span><span class="n">Singleton</span><span class="o">*&gt;</span> <span class="n">Singleton</span><span class="o">::</span><span class="n">pInstance</span><span class="p">;</span>
+</span><span class="line">
+</span><span class="line"><span class="n">Singleton</span><span class="o">*</span> <span class="n">Singleton</span><span class="o">::</span><span class="n">instance</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">Singleton</span><span class="o">*</span> <span class="n">temp</span> <span class="o">=</span> <span class="n">pInstance</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">memory_order_acquire</span><span class="p">);</span>
+</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">temp</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">    <span class="n">LockGuard</span> <span class="n">guard</span><span class="p">(</span><span class="n">yourlock</span><span class="p">);</span>
+</span><span class="line">    <span class="n">temp</span> <span class="o">=</span> <span class="n">pInstance</span><span class="p">.</span><span class="n">load</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">memory_order_acquire</span><span class="p">);</span>
+</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">temp</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">      <span class="n">temp</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Singleton</span><span class="p">();</span>
+</span><span class="line">      <span class="n">pInstance</span><span class="p">.</span><span class="n">store</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">memory_order_release</span><span class="p">);</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">    <span class="c1">//guard析构，自动调用unlock</span>
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">tmp</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+<p>思考：第16行能否使用<code>memory_order_relaxed</code>内存序？</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Lock Free中的Hazard Pointer(下)]]></title>
@@ -2999,194 +3337,6 @@
 <p>本文发出后，微博网友@finalpatch 指出应在代码的29、30行加上volatile。非常感谢。</p>
 
 <p>本文发出后，微博网友@linyvxiang 指出了文中的两处笔误。非常感谢。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[编写高质量代码(下)]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/02/24/writeelegantcodes/"/>
-    <updated>2016-02-24T22:26:44+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/02/24/writeelegantcodes</id>
-    <content type="html"><![CDATA[<p><a href="http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes/">上回</a>我们从微观角度，以一个实际的例子，从正确、高效、易读等特性着手，介绍了如何编写高质量的代码。这次，我们从宏观出发，从软件开发流程入手，着重介绍其中的几个方面，包括代码规范、Code Review、测试等。</p>
-
-<p>如果说<a href="http://www.yebangyu.org/blog/2015/11/06/how-to-write-elegant-cpp-codes/">上回</a>的内容注重个人编码，那么本文将偏向团队开发。</p>
-
-<h2 id="section">代码规范</h2>
-
-<p>团队的代码规范，一般由领导和大佬们制定后，大家统一实行。这里面有几个问题：</p>
-
-<h3 id="section-1">真的需要代码规范吗？</h3>
-
-<p>言下之意，制定和执行代码规范是否浪费时间？</p>
-
-<!--more-->
-
-<p>答案是：It depends。如果项目很庞大、代码质量要求很高，那么，制定和执行代码规范所花费的时间，将大大少于后期因为不规范开发带来的种种调试和维护成本。如果是小打小闹的代码，就无所谓了。</p>
-
-<h3 id="section-2">代码规范的制定为什么这么难？</h3>
-
-<p>原因众多，其中一个很重要的部分是团队每个人的口味和观点不尽相同。就代码风格而言，有人喜欢对内置类型变量i使用i++，有人坚持认为应该使用++i不管i是不是复杂类型。因此，制定代码规范需要在讨论之后最后拍板决定，这里面甚至需要独裁！是的，独裁！</p>
-
-<h3 id="section-3">代码规范制定需要注意什么事项？</h3>
-
-<p>如果代码规范限制太松，那么等于没有规范；如果太严，大大影响开发效率。这里面的尺度，需要根据项目需要、团队成员特点全面考量，进行取舍。</p>
-
-<p>需要注意的是，没有任何一种代码规范是完美的。例如，在C++中，如果启用异常，那么代码的流程将会被各种异常处理中断，各种try catch throw让代码很不美观；如果禁用异常，也就是在开发的过程中不能使用异常特性，那么团队成员可能因为长期没有接触这项语言feature而造成知识和技能短板。</p>
-
-<h3 id="section-4">代码风格举例</h3>
-
-<p>举两个我认为比较重要、比较新鲜、比较有趣的代码风格。</p>
-
-<p>1，使用引用需要判空吗？</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">void</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span> <span class="o">&amp;</span><span class="n">p</span><span class="p">);</span>
-</span><span class="line"><span class="kt">void</span> <span class="nf">g</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">p</span><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<p>我们都知道，在g中，使用*p前需要对p是否为NULL进行判断，那么f呢？如果质量非常关键、代码安全非常重要的场景，那么实际上，也是需要的。因为调用者可能这样：</p>
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="o">*</span><span class="n">q</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class="line"><span class="c1">//......</span>
-</span><span class="line"><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">q</span><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>因此，需要在f里增加<code>if(NULL == &amp;p)</code>的判断。</p>
-
-<p>2，级联if else语句。</p>
-
-<p>首先看一个我个人认为不好的代码风格：</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-<span class="line-number">14</span>
-<span class="line-number">15</span>
-<span class="line-number">16</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="k">if</span> <span class="p">(</span><span class="n">b</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">      <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&gt;=</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">        <span class="c1">//do sth</span>
-</span><span class="line">      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span><span class="line">        <span class="c1">//error1</span>
-</span><span class="line">      <span class="p">}</span>
-</span><span class="line">    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span><span class="line">      <span class="c1">//error2</span>
-</span><span class="line">    <span class="p">}</span>
-</span><span class="line">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span><span class="line">    <span class="c1">//error3</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>这个函数的核心在于do sth部分。其实我们可以改写为级联if－else形式，如下：</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-<span class="line-number">6</span>
-<span class="line-number">7</span>
-<span class="line-number">8</span>
-<span class="line-number">9</span>
-<span class="line-number">10</span>
-<span class="line-number">11</span>
-<span class="line-number">12</span>
-<span class="line-number">13</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="nf">f</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="c1">//error3</span>
-</span><span class="line">  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">b</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="c1">//error2</span>
-</span><span class="line">  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
-</span><span class="line">    <span class="c1">//error1</span>
-</span><span class="line">  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-</span><span class="line">    <span class="c1">//so, a&gt;=1 &amp;&amp; b&gt;=1 &amp;&amp; a&gt;=b</span>
-</span><span class="line">    <span class="c1">//do sth</span>
-</span><span class="line">  <span class="p">}</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>是不是优美多了？前面只做一些错误处理、前期准备、参数检查等，最后的else分支做实实在在的功能性事情。</p>
-
-<h2 id="code-review">Code Review</h2>
-
-<h3 id="code-review-1">什么是Code Review？</h3>
-
-<p>很多人把它翻译为代码审查，我觉得太政治味了。程序员尤其是新手写完代码后，可能会有风格问题（比如不符合团队的代码规范）、安全性问题(比如忘记指针判空)、优雅性问题(比如大量冗余代码)、正确性问题（比如算法设计错误），那么在发布代码到公共库之前，提交给师兄或者mentor，让他帮你review一下代码，并提出可能的问题和建议，让你好好修改。这样的过程，就叫做Code Review。</p>
-
-<h3 id="section-5">我的天呐，那这不是很占用时间？</h3>
-
-<p>是的。一个写代码，一个看代码，看代码的时间可能并不比全新写一份代码少。那么，这又是何必呢？</p>
-
-<p>主要的原因有：</p>
-
-<p>1，review确实占用了开发时间，然而开发，或者说写代码，其实只占很少的时间比例。很多时间花在debug、调试、写文档、需求分析、设计算法、维护等等上。</p>
-
-<p>2，代码质量非常重要，这点时间投入是值得的。与其后期苦逼追bug，不如前期多投入点时间和人力。</p>
-
-<p>3，培养新人，让新手更快成长。</p>
-
-<h3 id="code-review-2">如何更好的执行Code Review</h3>
-
-<p>这里给几点建议：</p>
-
-<p>1，不走过场。走过场，还不如不要这个流程。</p>
-
-<p>2，作为Reviewer，看不懂代码就把作者拉过来，当面询问，不要不懂装懂，也不要爱面子不好意思问。</p>
-
-<p>3，作为Coder，心里要有感激之情。真的。不要得了便宜还卖乖，感恩reviewer，感激reviewer对自己的进步和成长所做出的贡献，所花费的心血。中国人里狼心狗肺、忘恩负义、不懂感恩的人还算少吗？</p>
-
-<p>4，作为Coder，给Reviewer Review之前，请先做单元测试并确保通过，并自己尝试先整体看一遍自己本次提交的代码。注意，不要给别人提还没调试通过的代码，这是非常不尊重别人的表现。</p>
-
-<h2 id="section-6">质量保证</h2>
-
-<p>1，测试不是专属QA的活儿，对自己写的代码提供质量保证，是程序员的职责。QA要负责的，是系统的质量，不是模块的质量。</p>
-
-<p>2，测试，需要意识，需要坚持。我发现C++程序员、前端程序员的测试意识或者说质量意识最强；数据科学家或者数据工程师的质量意识最差，很多人甚至不写测试用例。当然，这不怪他们，毕竟，有时候代码里有个bug，准确率和召回率会更高。</p>
-
-<p>3，测试用例的编写和设计需要保证一定的代码覆盖率，力求让每个分支和流程的代码都走到，然后分析运行结果是否是符合期望的，不要只考虑正确路径上的那些分支。</p>
-
-<p>4，测试用例的编写和设计力求全面，考虑到方方面面。以非常经典的二分搜索为例：</p>
-
-<p>int binary_search(int *p, int n, int target, int &amp;idx);</p>
-
-<p>binary_search函数返回值为0表示成功执行，输出参数idx返回target在有序数组p中(第一次出现)的位置，－1表示不存在。</p>
-
-<p>那么测试用例至少应该涵盖：</p>
-
-<ul>
-  <li>
-    <p>p为NULL的情况</p>
-  </li>
-  <li>
-    <p>数组大小n分别为负数、0、1、2时情况</p>
-  </li>
-  <li>
-    <p>数组p不是有序数组的情况</p>
-  </li>
-  <li>
-    <p>target在数组中出现0次、1次、n次的情况</p>
-  </li>
-</ul>
-
-<p>你是否都考虑到了呢？</p>
-
-<p>4，有时候，自己书写测试用例显得刀耕火种，现在已经有很多辅助的工具，读者可以自行google一下。</p>
 ]]></content>
   </entry>
   
