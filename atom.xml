@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-25T19:43:16+08:00</updated>
+  <updated>2016-12-25T19:57:48+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -60,6 +60,8 @@
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
+<!--more-->
+
 <h2 id="singleton-1">多线程下的Singleton模式实现</h2>
 
 <p>以上实现在单线程下运行良好（不考虑构造函数抛异常，注意，本文我们都不考虑C++ Exception）。如果是多线程呢？很自然的，我们想到可以加一把锁，或许就万事大吉了</p>
@@ -111,7 +113,7 @@
 </span><span class="line">  <span class="k">return</span> <span class="n">pInstance</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>如你所见，当pInstance不为空时，不需要任何加锁、释放锁的动作，额外增加的是两次检查pInstance是否为空。这是因为：假设线程1执行第三行，发现pInstance为空，还是执行第四行的时候，被调度了出去；线程2执行第三行，发现pInstance为空，获得锁，创建了实例，释放锁；当线程1重新恢复调度的时候，实例已经被创建，这时候它必须再次检查pInstance是否为空，否则就两次创建了，既不符合单例模式的语义，可能还会有其他更严重的问题（资源泄漏可能还算小事）。</p>
+<p>如你所见，当pInstance不为空时，不需要任何加锁、释放锁的动作，不过这回得两次检查pInstance是否为空。这是因为：假设线程1执行第三行，发现pInstance为空，还未执行第四行的时候，被调度了出去；线程2执行第三行，发现pInstance为空，获得锁，创建了实例，释放锁；当线程1重新恢复调度的时候，实例已经被创建，这时候它必须再次检查pInstance是否为空，否则就两次创建了，既不符合单例模式的语义，可能还会有其他更严重的问题（资源泄漏可能还算小事）。</p>
 
 <h2 id="memory-reordering">memory reordering</h2>
 
@@ -164,7 +166,7 @@
 
 <p>3，在该内存空间调用构造函数，完成初始化。</p>
 
-<p>乱序后，可能出现如下的data race：线程1执行完第6行后，pInstance不为空；线程2执行第3行判断，发现非空，返回，然而pInstance这时候还没有初始化，这几乎带来严重的问题。</p>
+<p>乱序后，可能出现如下的data race：线程1执行完第六行后，pInstance不为空；线程2执行第三行判断，发现非空，返回，然而pInstance这时候还没有初始化，这几乎肯定会带来严重的问题。</p>
 
 <h2 id="section">临时变量也于事无补</h2>
 
@@ -243,13 +245,14 @@
 </span><span class="line">  <span class="k">return</span> <span class="n">pInstance</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
+
 <p>好多volatile，好吓人。简单解释一下：</p>
 
-<p>volatile int * volatile p;</p>
+<p><code>volatile int * volatile p;</code></p>
 
 <p>第一个volatile表明，p指向的内容随时可能会变</p>
 
-<p>第二个volatile表明，p本身可能随便会变（p可能改变所指区域）</p>
+<p>第二个volatile表明，p本身可能随时会变（p可能改变所指区域）</p>
 
 <p>好了，temp也是volatile，我们试图这样，让编译器不要乱序。</p>
 
@@ -347,7 +350,26 @@
 </span><span class="line">  <span class="k">return</span> <span class="n">tmp</span><span class="p">;</span>
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
+
 <p>思考：第16行能否使用<code>memory_order_relaxed</code>内存序？</p>
+
+<h2 id="section-2">拓展</h2>
+
+<p>1，查阅资料，了解POSIX中，<code>pthread_once</code>的原理和用法</p>
+
+<p>2，使用volatile的版本中，我们对指针和指针所指之物都加了volatile，也就是：</p>
+
+<p><code>volatile Singleton *volatile p</code></p>
+
+<p>能否改为</p>
+
+<p><code>volatile Singleton *p</code></p>
+
+<p>或者</p>
+
+<p><code>Singleton * volatile p</code></p>
+
+<p>3，查阅资料，解释为什么编译器可能对 <code>p = new Singleton()</code> 进行乱序</p>
 ]]></content>
   </entry>
   
