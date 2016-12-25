@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-25T19:57:48+08:00</updated>
+  <updated>2016-12-25T20:03:34+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -211,6 +211,8 @@ Singleton* Singleton::instance()
 是的，这里需要一个memory barrier，告诉编译器不要乱序。</p>
 
 <p>即使这么做了，可能还是有问题。怎么说？C++标准并没有对多个线程读取同一个变量会发生什么进行任何规定。因此，上面的第3行、第5、第8行存在data race，因此这是一个未定义的、不可移植的行为。BTW，在X86下，问题不大，只要该指针是cacheline aligned即可。</p>
+
+<p>为什么防止第三行读取pInstance的动作被编译器优化，可以使用<code>ACCESS_ONCE</code>宏来读取。细节可以参考我的<a href="http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure/">这篇</a>博客。</p>
 
 <h2 id="c11">C++11来解救</h2>
 

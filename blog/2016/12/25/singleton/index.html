@@ -375,6 +375,8 @@ MathJax.Hub.Config({
 
 <p>即使这么做了，可能还是有问题。怎么说？C++标准并没有对多个线程读取同一个变量会发生什么进行任何规定。因此，上面的第3行、第5、第8行存在data race，因此这是一个未定义的、不可移植的行为。BTW，在X86下，问题不大，只要该指针是cacheline aligned即可。</p>
 
+<p>为什么防止第三行读取pInstance的动作被编译器优化，可以使用<code>ACCESS_ONCE</code>宏来读取。细节可以参考我的<a href="http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure/">这篇</a>博客。</p>
+
 <h2 id="c11">C++11来解救</h2>
 
 <p>写出可移植的、线程安全的Singleton，这么难么？在C++11之前，很难。非常难。</p>
