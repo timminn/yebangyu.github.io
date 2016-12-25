@@ -453,7 +453,9 @@ MathJax.Hub.Config({
 
 <p><code>Singleton * volatile p</code></p>
 
-<p>3，查阅资料，解释为什么编译器可能对 <code>p = new Singleton()</code> 进行乱序</p>
+<p>3，查阅资料，解释为什么编译器可能对 <code>pInstance = new Singleton()</code> 进行乱序</p>
+
+<p>4，我们一直没有涉及的一个问题是：pInstance的初始化。它的初始化，是否也可能存在data race？如何避免？</p>
 </div>
 
 
