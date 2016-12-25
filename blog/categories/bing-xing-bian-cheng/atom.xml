@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-25T20:06:49+08:00</updated>
+  <updated>2016-12-25T20:22:41+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -245,7 +245,7 @@ class Singleton
     }
     //guard析构，自动调用unlock
   }
-  return tmp;
+  return temp;
 }</p>
 
 <p>```</p>
