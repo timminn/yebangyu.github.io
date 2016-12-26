@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-25T20:27:14+08:00</updated>
+  <updated>2016-12-26T23:52:16+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -210,9 +210,21 @@ Singleton* Singleton::instance()
 <p>```
 是的，这里需要一个memory barrier，告诉编译器不要乱序。</p>
 
-<p>即使这么做了，可能还是有问题。怎么说？C++标准并没有对多个线程读取同一个变量会发生什么进行任何规定。因此，上面的第3、第5、第8行存在data race，因此这是一个未定义的、不可移植的行为。BTW，在X86下，问题不大，只要该指针是cacheline aligned即可。</p>
+<p>即使这么做了，可能还是有问题。怎么说？C++标准并没有对多个线程读取同一个变量会发生什么进行任何规定。因此，上面的第3、第5、第8行存在data race，因此这是一个未定义的、不可移植的行为。</p>
 
-<p>为了防止第三行、第五行的读取pInstance的动作被编译器优化，可以使用<code>ACCESS_ONCE</code>宏。细节可以参考我的<a href="http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure/">这篇</a>博客。</p>
+<p>BTW，在X86下，问题不大，只要该指针是cacheline aligned即可。</p>
+
+<p>让我们来分析下，在X86下，第3、5、8行的读写同步问题。假设该指针已经cacheline aligned，因此第3、5、8行的读写是原子的。</p>
+
+<p>如果cpu 0上的线程1执行了第8行设置操作，在cpu 1上运行的线程2执行第3行。注意，这时候pInstance的新值对线程2不一定可见。然而这里不会有问题，因为：</p>
+
+<p>1，假如可见，那么第3行if判断不成立，成功返回instance。</p>
+
+<p>2，假如不可见，那么第3行if判断成立，此时pInstance实际上已经不为空，实例已经被创建。线程2尝试加锁操作，成功后，在第5行必然看到pInstance不为空，也就是看到pInstance的新值。</p>
+
+<p>这是由锁的语义保证的：加锁解锁构成了一种synchronize with关系，加锁线程不管处在哪个处理器上，都可以看到上一个不管在哪个处理器上的释放锁的线程对变量的更新后的新值。</p>
+
+<p>值得注意的是，为了防止第3行、第5行的读取pInstance的动作被编译器优化，可以使用<code>ACCESS_ONCE</code>宏。细节可以参考我的<a href="http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure/">这篇</a>博客。</p>
 
 <h2 id="c11">C++11来解救</h2>
 
