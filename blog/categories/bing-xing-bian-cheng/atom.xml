@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2016-12-26T23:52:16+08:00</updated>
+  <updated>2016-12-27T00:01:55+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -283,6 +283,18 @@ class Singleton
 <p>3，查阅资料，解释为什么编译器可能对 <code>pInstance = new Singleton()</code> 进行乱序</p>
 
 <p>4，我们一直没有涉及的一个问题是：pInstance的初始化。它的初始化，是否也可能存在data race？如何避免？</p>
+
+<p>5，不少朋友可能想利用C++11标准中的某个用法：</p>
+
+<p><code>c++
+Singleton&amp; instance()
+{
+  static Singleton xx; //C++11规定，这个是线程安全的。
+  return xx;
+}
+</code></p>
+
+<p>然而这么做有一些缺点，这些缺点使得这种做法往往不是实现Singleton单例模式的可行方案。读者诸君不妨思考下，这种做法，都有哪些缺点。</p>
 ]]></content>
   </entry>
   
