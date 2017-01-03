@@ -9,7 +9,23 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="">
+  <meta name="description" content="如果您和我一样，都只有C++背景，之前对设计模式也一窍不通，那么也没有关系，因为本文不需要您对设计模式有多么了解。 Singleton模式 所谓的单例模式，single instance模式，简单实现如下： 1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,34 +97,6 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2017/01/01/plan.markdown/">IO Models Under Linux</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2017-01-01T16:27:40+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>1</span><span class='date-suffix'>st</span>, <span class='date-year'>2017</span></span> <span class='time'>4:27 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"></div>
-  
-  
-
-
-    </article>
   
   
     <article>
@@ -719,6 +707,52 @@ MathJax.Hub.Config({
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/05/26/ticketlock/">Ticket Lock</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-05-26T19:25:15+08:00'><span class='date'><span class='date-month'>May</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:25 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2 id="section">简单回顾</h2>
+
+<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">上回</a> 我们介绍了peterson算法来实现spin lock，算法简单，实现简单，但是值得注意和留心的点很多。</p>
+
+<p>粗略说来，peterson算法的主要缺点在于：</p>
+
+<p>1，很难推广到n个线程(n&gt;=3)。原始的算法针对两个线程，如果想应用在多个线程的场景里，需要做一定的修改。</p>
+
+<p>2，peterson算法的动机是仅仅使用load和store来实现互斥访问。然而，我们知道，现代体系结构下，CPU和编译器会对读写操作进行乱序，仅仅依靠读写操作而不使用memory barrier就编写正确的程序非常困难。</p>
+
+<h2 id="ticket-lock">Ticket Lock</h2>
+
+<p>在介绍Ticket Lock之前，我们首先分析一个妇孺皆知、地球人都知道的实现spin lock的方法（伪代码）：</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/05/26/ticketlock/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -734,10 +768,6 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2017/01/01/plan.markdown/">IO Models Under Linux</a>
-      </li>
-    
-      <li class="post">
         <a href="/blog/2016/12/25/singleton/">Singleton与多线程</a>
       </li>
     
@@ -751,6 +781,10 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/10/13/debuggerforlockfreeprogamming/">一个轻量的lock free程序调试工具</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/09/09/epochbasedreclamation/">Lock Free中的Epoch Based Reclamation</a>
       </li>
     
   </ul>

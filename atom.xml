@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2017-01-04T00:16:13+08:00</updated>
+  <updated>2017-01-04T00:29:20+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,14 +12,6 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[IO Models Under Linux]]></title>
-    <link href="http://www.yebangyu.org/blog/2017/01/01/plan.markdown/"/>
-    <updated>2017-01-01T16:27:40+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2017/01/01/plan.markdown</id>
-    <content type="html"><![CDATA[]]></content>
-  </entry>
   
   <entry>
     <title type="html"><![CDATA[Singleton与多线程]]></title>
@@ -3154,6 +3146,249 @@
 <p>3，快速排序所需的栈空间是多少？能否进一步优化？</p>
 
 <p>4，SoupenSort的时间复杂度是多少？O($n^2$)还是O($nlgn$)？如果是前者，那么，什么情况下是二次的？</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Peterson算法实现spin lock]]></title>
+    <link href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/"/>
+    <updated>2016-03-04T22:26:51+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm</id>
+    <content type="html"><![CDATA[<p>对spin lock和mutex不熟悉的朋友，可以看<a href="http://www.yebangyu.org/blog/2016/01/24/spinlock-and-mutex/">上篇</a>博客。</p>
+
+<h2 id="section">提出问题</h2>
+
+<p>如何仅仅通过load和store实现spin lock呢？</p>
+
+<p>本文只考虑、只针对只有两个线程的情形。假设这两个线程的id分别为0和1。编程环境为X86体系结构 + Intel CPU + gcc</p>
+
+<!--more-->
+
+<h2 id="section-1">分析问题</h2>
+
+<h3 id="section-2">尝试一：仅使用一个变量</h3>
+
+<p>仅使用一个bool类型变量flag，线程i申请锁时，查看flag是否为1-i，如果不是，说明另外一个线程没有在临界区，申请成功，并把flag的值设置为i。</p>
+
+<p>这种方法的问题在于，检查flag是否为1-i，以及设置flag为i这两步不是原子的，无法仅仅通过load和store来原子实现。（需要CAS等类似的原子操作）</p>
+
+<h3 id="section-3">尝试二：使用两个变量</h3>
+
+<p>根据前面的分析，我们可以使用两个bool变量flag[0]和flag[1]。线程i申请锁时，先把flag[i]设置为true，表示自己试图进入临界区，然后查看flag[1-i]是否为true，如果是，说明另一个线程在临界区，于是spin。</p>
+
+<p>这个方法的问题在于可能发生这样的问题：</p>
+
+<p>线程0把flag[0]设置为true，这时候还没开始检查flag[1]，此时线程1把flag[1]设置为true。</p>
+
+<p>接下去，每个线程都发现对方的flag为true，而实际上两个都没在临界区中，却谁都没法拿到锁，发生starvation现象。</p>
+
+<h3 id="section-4">尝试三：使用三个变量</h3>
+
+<p>在尝试二的基础上，再增加一个变量turn，表示谁先将自己的flag设置为true（仅仅通过那两个flag是没法区分的，想想看，是不是这样的）。因此这个变量可以用来裁决谁取得进入临界区的权利。</p>
+
+<h2 id="section-5">解决问题</h2>
+
+<p>以上尝试三所描述的方法，就是大名鼎鼎的peterson算法的雏形了。简单实现如下（注意，本文的平台是x86体系结构 + Intel CPU + gcc）：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+<span class="line-number">6</span>
+<span class="line-number">7</span>
+<span class="line-number">8</span>
+<span class="line-number">9</span>
+<span class="line-number">10</span>
+<span class="line-number">11</span>
+<span class="line-number">12</span>
+<span class="line-number">13</span>
+<span class="line-number">14</span>
+<span class="line-number">15</span>
+<span class="line-number">16</span>
+<span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
+<span class="line-number">22</span>
+<span class="line-number">23</span>
+<span class="line-number">24</span>
+<span class="line-number">25</span>
+<span class="line-number">26</span>
+<span class="line-number">27</span>
+<span class="line-number">28</span>
+<span class="line-number">29</span>
+<span class="line-number">30</span>
+<span class="line-number">31</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">PetersonSpinLock</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">public</span><span class="o">:</span>
+</span><span class="line">    <span class="n">PetersonSpinLock</span><span class="p">()</span>
+</span><span class="line">    <span class="p">{</span>
+</span><span class="line">      <span class="n">flags_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span><span class="line">      <span class="n">flags_</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span><span class="line">      <span class="n">turn_</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span><span class="c1">//initial value does not matter</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">    <span class="kt">bool</span> <span class="n">lock</span><span class="p">(</span><span class="kt">int</span> <span class="n">thread_id</span><span class="p">)</span>
+</span><span class="line">    <span class="p">{</span>
+</span><span class="line">      <span class="kt">int</span> <span class="n">other</span> <span class="o">=</span> <span class="o">!</span><span class="n">thread_id</span><span class="p">;</span>
+</span><span class="line">      <span class="n">flags_</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span><span class="line">      <span class="n">COMPILER_BARRIER</span><span class="p">();</span>
+</span><span class="line">      <span class="n">turn_</span> <span class="o">=</span> <span class="n">thread_id</span><span class="p">;</span>
+</span><span class="line">      <span class="n">CPU_BARRIER</span><span class="p">();</span><span class="c1">// essential</span>
+</span><span class="line">      <span class="k">while</span><span class="p">(</span><span class="n">flags_</span><span class="p">[</span><span class="n">other</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">turn_</span> <span class="o">==</span> <span class="n">thread_id</span><span class="p">)</span> <span class="p">{</span>
+</span><span class="line">        <span class="n">CPU_RELAX</span><span class="p">();</span><span class="c1">//spin</span>
+</span><span class="line">      <span class="p">}</span>
+</span><span class="line">      <span class="c1">//get lock successfully</span>
+</span><span class="line">      <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">    <span class="kt">bool</span> <span class="n">unlock</span><span class="p">(</span><span class="kt">int</span> <span class="n">thread_id</span><span class="p">)</span>
+</span><span class="line">    <span class="p">{</span>
+</span><span class="line">      <span class="n">flags_</span><span class="p">[</span><span class="n">thread_id</span><span class="p">]</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span><span class="line">      <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+</span><span class="line">    <span class="p">}</span>
+</span><span class="line">  <span class="k">private</span><span class="o">:</span>
+</span><span class="line">    <span class="k">volatile</span> <span class="kt">bool</span> <span class="n">flags_</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span><span class="line">    <span class="k">volatile</span> <span class="kt">bool</span> <span class="n">turn_</span><span class="p">;</span>
+</span><span class="line"><span class="p">};</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>以下是对peterson算法的思考和讨论。在看我的分析之前，请自己尝试思考以下问题：（温馨提示：在C/C++中，if条件判断是短路求值的。也就是说对于if(A &amp;&amp; B)，一旦知道A是false，那么B将不用evaluate了）</p>
+
+<blockquote>
+  <ul>
+    <li>peterson算法如何防止starvation的发生？</li>
+  </ul>
+</blockquote>
+
+<blockquote>
+  <ul>
+    <li>peterson算法如何防止两个线程同时进入临界区？</li>
+  </ul>
+</blockquote>
+
+<blockquote>
+  <ul>
+    <li>代码13行和15行能否调换执行顺序？</li>
+  </ul>
+</blockquote>
+
+<blockquote>
+  <ul>
+    <li>代码15行能否改为<code>turn_ = !thread_id</code> ？</li>
+  </ul>
+</blockquote>
+
+<blockquote>
+  <ul>
+    <li>16行的cpu 级别的memory barrier是否必要？</li>
+  </ul>
+</blockquote>
+
+<blockquote>
+  <ul>
+    <li>实现（针对两个线程的）peterson算法所需最少空间为多少？</li>
+  </ul>
+</blockquote>
+
+<p>思考了没？下面我们来分析讨论一下：</p>
+
+<h3 id="petersonstarvation">peterson算法如何防止starvation的发生？</h3>
+
+<p>假设某时刻两个线程都在spin，也就是17行中while的条件对两个线程都成立，也就是说：</p>
+
+<p>flag_[0] == true 并且 trun_ == 0 并且 flag_[1] == true 并且turn_ == 1</p>
+
+<p>但是turn_只能有一个值，矛盾。</p>
+
+<h3 id="peterson">peterson算法如何防止两个线程同时进入临界区？</h3>
+
+<p>如果两者同时进入临界区，说明17行中的while判断对两个线程都为false，也就是说</p>
+
+<p>flag_[1] == false 或者 turn _ == 1</p>
+
+<p>同时</p>
+
+<p>flag_[0] == false 或者 turn_ == 0</p>
+
+<p>因此只有四种情形：</p>
+
+<p>flag_[1] == false  &amp;&amp; flag_[0] == false  与13行矛盾</p>
+
+<p>flag_[1] == false  &amp;&amp; turn_ == 0  与13行矛盾</p>
+
+<p>turn_ == 1 &amp;&amp; flag_[0] == false 与13行矛盾</p>
+
+<p>turn _ == 1 &amp;&amp; turn _ == 0 不可能发生</p>
+
+<p>而一旦例如说，线程0，进入临界区后，线程1会因为turn_的值而spin，直到线程0通过unlock将flag_[0]设置为false。</p>
+
+<p>因此，13、15两行的顺序很重要。是这样的吗？接着往下看。</p>
+
+<h3 id="section-6">代码13行和15行能否调换执行顺序？</h3>
+
+<p>不可以，否则可能发生两个线程同时进入临界区。</p>
+
+<p>考虑以下情形：</p>
+
+<p>线程0执行turn_ = 0</p>
+
+<p>线程1执行turn_ = 1</p>
+
+<p>线程1执行flag_[1] = true</p>
+
+<p>线程1执行17行的判断，因为flag_[0]为false，所以线程1进入临界区。</p>
+
+<p>线程0执行flag_[0] = true</p>
+
+<p>线程0执行17行判断，此时turn_等于1，所以线程0也进入临界区。</p>
+
+<p>因此13行和15行执行顺序不可以交换；而这两个都是store操作，在X86 Intel CPU下，cpu不会乱序执行它们，因此只需要在14行增加一个compiler级别的memory barrier，防止编译器乱序即可。</p>
+
+<h3 id="turn--threadid">代码15行能否改为<code>turn_ = !thread_id</code></h3>
+
+<p>可以。只是如果15行改为<code>turn_ = !thread_id</code>，那么17行需要将<code>turn_ == thread_id</code>也改为<code>turn_ == !thread_id</code>。也就是说turn_的初始值是什么并不重要，turn_设置成什么值也不太重要，重要的是通过turn_能区分出谁先尝试申请锁。</p>
+
+<h3 id="cpu-memory-barrier">16行的cpu 级别的Memory Barrier是否必要？</h3>
+
+<p>非常必要。否则17行对flags_[other]的读取（判断）操作可能和15行发生乱序（写读乱序。而13、15属于写写，是不会被CPU乱序执行的，不用加cpu 级别的memory barrier），最后可能导致两个线程同时进入临界区。这点，请读者务必自己亲自分析。非常重要！</p>
+
+<p>不加Memory Barrier，乱序后，考虑以下情形：</p>
+
+<p>线程0判断flag_[1]，发现为false（此时线程1还没开始调用lock函数，flag_[1]还是它的初始值false），进入临界区。</p>
+
+<p>线程1判断flag_[0]，发现为true</p>
+
+<p>线程1执行<code>turn_ = 1</code></p>
+
+<p>线程0执行<code>turn_ = 0</code></p>
+
+<p>线程1执行17行判断，此时turn_等于0，所以线程1也进入临界区。</p>
+
+<h3 id="peterson-1">实现（针对两个线程的）peterson算法所需最少空间为多少？</h3>
+
+<p>3个bit足矣。两个flag_两个bit，turn_也只需要1个bit。</p>
+
+<h2 id="section-7">附录：</h2>
+
+<p>在X86下，<code>CPU_BARRIER</code>和<code>CPU_RELAX</code>以及<code>COMPILER_BARRIER</code>可以用gcc内置feature，通过宏来实现：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#define CPU_BARRIER() __sync_synchronize()</span>
+</span><span class="line"><span class="cp">#define COMPILER_BARRIER() __asm__ __volatile__(&quot;&quot; : : : &quot;memory&quot;)</span>
+</span><span class="line"><span class="cp">#define CPU_RELAX() __asm__ __volatile__(&quot;pause&quot;: : :&quot;memory&quot;)</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>18行不用CPU_RELAX而是简单的一个分号行吗？可以的。不过加了CPU_RELAX可以提高性能、节能减排。</p>
+
+<h2 id="section-8">致谢</h2>
+
+<p>本文发出后，微博网友@finalpatch 指出应在代码的29、30行加上volatile。非常感谢。</p>
+
+<p>本文发出后，微博网友@linyvxiang 指出了文中的两处笔误。非常感谢。</p>
 ]]></content>
   </entry>
   
