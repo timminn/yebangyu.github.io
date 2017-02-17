@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="上回我们从微观角度，以一个实际的例子，从正确、高效、易读等特性着手，介绍了如何编写高质量的代码。这次，我们从宏观出发，从软件开发流程入手，着重介绍其中的几个方面，包括代码规范、Code Review、测试等。 如果说上回的内容注重个人编码，那么本文将偏向团队开发。 代码规范 团队的代码规范， &hellip;">
+  <meta name="description" content="对spin lock和mutex不熟悉的朋友，可以看上篇博客。 提出问题 如何仅仅通过load和store实现spin lock呢？ 本文只考虑、只针对只有两个线程的情形。假设这两个线程的id分别为0和1。编程环境为X86体系结构 + Intel CPU + gcc ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,46 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/04/petersonalgorithm/">Peterson算法实现spin lock</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-04T22:26:51+08:00'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>4</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:26 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>对spin lock和mutex不熟悉的朋友，可以看<a href="http://www.yebangyu.org/blog/2016/01/24/spinlock-and-mutex/">上篇</a>博客。</p>
+
+<h2 id="section">提出问题</h2>
+
+<p>如何仅仅通过load和store实现spin lock呢？</p>
+
+<p>本文只考虑、只针对只有两个线程的情形。假设这两个线程的id分别为0和1。编程环境为X86体系结构 + Intel CPU + gcc</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/03/04/petersonalgorithm/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -468,47 +508,6 @@ MathJax.Hub.Config({
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2016/01/07/timingcprograminlinux/">Linux下C++程序计时方法</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2016-01-07T23:02:14+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>7</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>11:02 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>最近简单学习了下<strong>Linux</strong>下<strong>C++</strong>程序计时的一些函数和方法，总结如下。没啥<strong>insight</strong>了。</p>
-
-<p>方法一：</p>
-
-<p>如果是想统计某个程序的运行时间，那么可以使用</p>
-
-<pre><code>time ./a.out
-</code></pre>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2016/01/07/timingcprograminlinux/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/4">&larr; Older</a>
@@ -526,6 +525,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2017/02/17/virtualfunctionandvariadicparametertemplate/">虚函数和变长参数模板的妙用</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2016/12/25/singleton/">Singleton与多线程</a>
       </li>
     
@@ -539,10 +542,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/10/13/debuggerforlockfreeprogamming/">一个轻量的lock free程序调试工具</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/09/09/epochbasedreclamation/">Lock Free中的Epoch Based Reclamation</a>
       </li>
     
   </ul>
@@ -567,7 +566,7 @@ MathJax.Hub.Config({
 <section>
  <h1>Categories</h1>
  <ul id="categories">
-  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (10)</a></li>
+  <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (11)</a></li>
 <li class='category'><a href='/blog/categories/soupen/'>soupen (4)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>

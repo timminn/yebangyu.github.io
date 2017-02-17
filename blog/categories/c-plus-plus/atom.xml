@@ -4,7 +4,7 @@
   <title><![CDATA[Category: c++ | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/c-plus-plus/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2017-02-08T20:31:42+08:00</updated>
+  <updated>2017-02-17T22:36:48+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,168 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[虚函数和变长参数模板的妙用]]></title>
+    <link href="http://www.yebangyu.org/blog/2017/02/17/virtualfunctionandvariadicparametertemplate/"/>
+    <updated>2017-02-17T22:32:08+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2017/02/17/virtualfunctionandvariadicparametertemplate</id>
+    <content type="html"><![CDATA[<p>假如我们需要设计和实现自己的容器，比如说vector，list，queue等。</p>
+
+<p>同一类容器，我们可能有不同的实现和用途，因此我们抽象出了一个Base Class，比如说(以Vector为例)：</p>
+
+<p>```c++
+#include<iostream>
+using namespace std;
+template<typename t="">
+class BaseVector
+{
+public:
+  virtual void pre_allocate(int capacity) = 0;
+};</typename></iostream></p>
+
+<p>template<typename t="">
+class SmallVector: public BaseVector<t> //一种特定的实现
+{
+public:
+  virtual void pre_allocate(int capacity)
+  {
+    p_ = (T*)malloc(sizeof(T) * capacity); //实际里可能不是malloc，而是自己实现的allocator
+   //错误处理等等不在本文考虑范围之内
+    for (int i = 0; i &lt; capacity; ++i) {
+      new(&amp;p_[i]) T(); //预先构造好。注意，这里需要参数个数为0的默认构造函数
+    }
+  }
+private:
+  T *p_;
+};
+class NoParameters
+{
+  //do something
+};
+int main()
+{
+  SmallVector<noparameters> vec0;
+  vec0.pre_allocate(1000);
+  return 0;
+}
+```</noparameters></t></typename></p>
+
+<p>没问题。一切完美。不过你试图这样使用vector类，就不行了：</p>
+
+<!--more-->
+
+<p><code>c++
+class OneParameter
+{
+public:
+  OneParameter(int a)
+  {
+    //do something
+  }
+};
+SmallVector&lt;OneParameter&gt; vec1;
+vec1.pre_allocate(1000);
+</code></p>
+
+<p>编译不过，因为以上实现要求函数参数列表为空的默认构造函数，而OneParameter类（只）提供了带一个参数的构造函数，因此编译出问题，如下所示。</p>
+
+<p><code>c++
+../src/hehe.cpp:15:19: error: no matching constructor for initialization of 'OneParameter'
+      new(&amp;p_[i]) T();
+1 error generated.
+make: *** [src/hehe.o] Error 1
+</code></p>
+
+<p>怎么办？使用C++11的变长参数模板，我们可以这样：</p>
+
+<p><code>c++
+#include&lt;iostream&gt;
+using namespace std;
+template&lt;typename T, class... Args&gt;
+class BaseVector
+{
+public:
+  virtual void pre_allocate(int capacity, Args...) = 0;
+};
+template&lt;typename T, class... Args&gt;
+class SmallVector: public BaseVector&lt;T, Args...&gt;
+{
+public:
+  virtual void pre_allocate(int capacity, Args... args)
+  {
+    cout&lt;&lt;"small vector"&lt;&lt;endl;
+    p_ = (T*)malloc(sizeof(T) * capacity);
+    for (int i = 0; i &lt; capacity; ++i) {
+      new(&amp;p_[i]) T(std::forward&lt;Args&gt;(args)...);
+    }
+  }
+private:
+  T *p_;
+};
+template&lt;typename T, class... Args&gt;
+class FastVector: public BaseVector&lt;T, Args...&gt;
+{
+public:
+  virtual void pre_allocate(int capacity, Args... args)
+  {
+    cout&lt;&lt;"fast vector"&lt;&lt;endl;
+    p_ = (T*)malloc(sizeof(T) * capacity);
+    for (int i = 0; i &lt; capacity; ++i) {
+      new(&amp;p_[i]) T(std::forward&lt;Args&gt;(args)...);
+    }
+  }
+private:
+  T *p_;
+};
+class TwoParameters
+{
+public:
+  TwoParameters(int a, int b)
+  {
+    //do something
+  }
+};
+class ThreeParameters
+{
+public:
+  ThreeParameters(int a, int b, double c)
+  {
+    //do something
+  }
+};
+int main()
+{
+  SmallVector&lt;TwoParameters, int , int&gt; small_vec2;
+  SmallVector&lt;ThreeParameters, int , int, double&gt; small_vec3;
+  FastVector&lt;TwoParameters, int , int&gt; fast_vec2;
+  FastVector&lt;ThreeParameters, int , int, double&gt; fast_vec3;
+  ////////////////////////////////////////////////////////
+  BaseVector&lt;TwoParameters, int , int&gt; *p = &amp;small_vec2;
+  p-&gt;pre_allocate(1,1,1);
+  p = &amp;fast_vec2;
+  p-&gt;pre_allocate(1,1,1);
+  //////////////
+  BaseVector&lt;ThreeParameters, int , int, double&gt; *q = &amp;small_vec3;
+  q-&gt;pre_allocate(1,2,2,2);
+  q = &amp;fast_vec3;
+  q-&gt;pre_allocate(1,2,2,2);
+  return 0;
+}
+</code></p>
+
+<p>输出如下：</p>
+
+<p><code>c++
+small vector
+fast vector
+small vector
+fast vector
+</code></p>
+
+<p>啊，看起来多么完美！！！</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[String与Copy On Write]]></title>
@@ -448,96 +610,6 @@ int f(int a, int b)
 <p>你是否都考虑到了呢？</p>
 
 <p>4，有时候，自己书写测试用例显得刀耕火种，现在已经有很多辅助的工具，读者可以自行google一下。</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[C++函数对象(function object)的应用]]></title>
-    <link href="http://www.yebangyu.org/blog/2016/02/20/object-function-in-cpp/"/>
-    <updated>2016-02-20T23:30:53+08:00</updated>
-    <id>http://www.yebangyu.org/blog/2016/02/20/object-function-in-cpp</id>
-    <content type="html"><![CDATA[<p>假如我们实现了这样的一个单向链表：
-<code>c++
-class LinkedListNode
-{
-  int data_;
-  LinkedListNode *next_;
-};
-class LinkedList
-{
-  public:
-    void insert(LinkedListNode* &amp;p);
-    void del(LinkedListNode *p);
-  private:
-    LinkedListNode *head_;
-};
-</code>
-<!--more--></p>
-
-<p>其中insert将p插入到head_为头指针的链表中，而p对应的内存由外面分配好，调用的时候类似于这样：</p>
-
-<p><code>c++
-LinkedList list;
-LinkedListNode *p = new LinkedListNode(2, NULL);
-list.insert(p);
-</code></p>
-
-<p>其中，p可能是通过new得到，也可能是malloc出来。好，问题来了：</p>
-
-<p>这个类的del函数应该如何实现呢？如果节点是new出来的，我们得delete；如果是malloc出来的，我们得使用配套的free。否则，行为就是undefined。而且，用户还可能实现了自己的定制的内存分配回收例程。</p>
-
-<p>我们并不知道该内存是如何分配得到的。这就是问题所在。</p>
-
-<p>解决方法是让用户将正确的、对应的、适配的资源释放例程传递进来，然而delete是expression，free是函数，更悲剧的是不同用户实现的资源回收函数原型不尽相同。如何做呢？</p>
-
-<p>函数对象是解决这个问题的利器。我们可以这样：</p>
-
-<p><code>c++
-template&lt;typename CallBack&gt;
-class LinkedList
-{
-  public:
-    void insert(LinkedListNode* &amp;p);
-    void del(LinkedListNode *p);
-  private:
-    LinkedListNode *head_;
-};
-</code></p>
-
-<p>在del中：</p>
-
-<p><code>c++
-void del(LinkedListNode *p)
-{
-  //...
-  LinkedListNode *prev = get_prev(p);
-  prev-&gt;next_ = p-&gt;next_;
-  CallBack cb;
-  cb(p);//调用用户提供的资源回收例程
-}
-</code></p>
-
-<p>用户需要实现自己的CallBack类的operator()成员函数。如下所示：</p>
-
-<p><code>c++
-class MyReclaimRoutine
-{
-  public:
-    void operator() (LinkedListNode *p)
-    {
-      delete p; //free(p) ? my_release_func(p) ? all up to you!
-    }
-};
-</code></p>
-
-<p>然后就万事大吉了：</p>
-
-<p><code>c++
-LinkedList&lt;MyReclaimRoutine&gt; list;
-LinkedListNode *p = new LinkedListNode(2, NULL);
-list.insert(p);
-list.del(p);//ok! delete p will be called
-</code></p>
 ]]></content>
   </entry>
   
