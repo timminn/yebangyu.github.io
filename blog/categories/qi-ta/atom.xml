@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 其他 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/qi-ta/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2017-02-21T21:52:54+08:00</updated>
+  <updated>2017-03-11T15:27:17+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -12,6 +12,40 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[2017技术成长之路]]></title>
+    <link href="http://www.yebangyu.org/blog/2017/03/11/2017/"/>
+    <updated>2017-03-11T15:23:02+08:00</updated>
+    <id>http://www.yebangyu.org/blog/2017/03/11/2017</id>
+    <content type="html"><![CDATA[<p>记录2017年阅读过的技术相关的书籍、博客、Slides等</p>
+
+<h2 id="machine-learning">Machine Learning</h2>
+
+<p><a href="https://www.amazon.com/Deep-Learning-Adaptive-Computation-Machine/dp/0262035618/ref=sr_1_1?ie=UTF8&amp;qid=1489217130&amp;sr=8-1&amp;keywords=deep+learning">Deep Learning, By  Ian Goodfellow et al</a></p>
+
+<p><a href="http://sebastianruder.com/optimizing-gradient-descent/">An overview of gradient descent optimization algorithms</a></p>
+
+<p><a href="http://www.di.ens.fr/~fbach/fbach_tutorial_vr_nips_2016.pdf">Stochastic optimization: Beyond stochastic gradients and convexity. Part I</a></p>
+
+<p><a href="http://www.di.ens.fr/~fbach/ssra_tutorial_vr_nips_2016.pdf">Stochastic optimization: Beyond stochastic gradients and convexity. Part II</a></p>
+
+<p><a href="http://engineering.skymind.io/distributed-deep-learning-part-1-an-introduction-to-distributed-training-of-neural-networks">Distributed Deep Learning, Part 1: An Introduction to Distributed Training of Neural Networks</a></p>
+
+<!--more-->
+
+<h2 id="system">System</h2>
+
+<p><a href="https://www.ibm.com/developerworks/cn/linux/l-cn-deadlock/">一个Linux上分析死锁的简单方法</a></p>
+
+<p><a href="http://david-grs.github.io/tls_performance_overhead_cost_linux/">TLS performance overhead and cost on GNU/Linux</a></p>
+
+<p><a href="http://www.cubrid.org/blog/dev-platform/understanding-tcp-ip-network-stack/">Understanding TCP/IP Network Stack &amp; Writing Network Apps</a></p>
+
+<p><a href="https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/">Understanding glibc malloc</a></p>
+
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[程序员时钟解读]]></title>

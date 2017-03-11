@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="最近简单学习了下Linux下C++程序计时的一些函数和方法，总结如下。没啥insight了。 方法一： 如果是想统计某个程序的运行时间，那么可以使用 time ./a.out ">
+  <meta name="description" content="Memory Consistency Memory Consistency(MC)，有时候又叫做Memory Consistency Model或者Memory Model。为了理解为什么需要引入这种东西，我们首先看以下程序： ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -81,6 +81,42 @@ MathJax.Hub.Config({
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/01/09/memoryconsistencyandcachecoherence/">Memory Consistency和Cache Coherence</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-01-09T22:52:52+08:00'><span class='date'><span class='date-month'>Jan</span> <span class='date-day'>9</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>10:52 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2 id="memory-consistency">Memory Consistency</h2>
+
+<p><strong>Memory Consistency</strong>(<strong>MC</strong>)，有时候又叫做<strong>Memory Consistency Model</strong>或者<strong>Memory Model</strong>。为了理解为什么需要引入这种东西，我们首先看以下程序：</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/01/09/memoryconsistencyandcachecoherence/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
   
   
     <article>
@@ -436,44 +472,6 @@ MathJax.Hub.Config({
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2015/11/15/static-const-in-cpp/">再谈C++中的static const</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2015-11-15T12:45:16+08:00'><span class='date'><span class='date-month'>Nov</span> <span class='date-day'>15</span><span class='date-suffix'>th</span>, <span class='date-year'>2015</span></span> <span class='time'>12:45 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>废话不多说了，开始这次的讨论吧。</p>
-
-<h2 id="section">提出问题</h2>
-
-<p>同事颜廷帅（微博：@颜挺帅）拿了一段代码让我分析。以下代码，能编译链接通过吗？</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2015/11/15/static-const-in-cpp/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/posts/5">&larr; Older</a>
@@ -491,6 +489,10 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
+        <a href="/blog/2017/03/11/2017/">2017技术成长之路</a>
+      </li>
+    
+      <li class="post">
         <a href="/blog/2017/02/17/virtualfunctionandvariadicparametertemplate/">虚函数和变长参数模板的妙用</a>
       </li>
     
@@ -504,10 +506,6 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/12/03/gccandperfopt/">性能优化的那些传说和迷思</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2016/10/13/debuggerforlockfreeprogamming/">一个轻量的lock free程序调试工具</a>
       </li>
     
   </ul>
@@ -535,7 +533,7 @@ MathJax.Hub.Config({
   <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (11)</a></li>
 <li class='category'><a href='/blog/categories/soupen/'>soupen (4)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
-<li class='category'><a href='/blog/categories/qi-ta/'>其他 (4)</a></li>
+<li class='category'><a href='/blog/categories/qi-ta/'>其他 (5)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (20)</a></li>
 <li class='category'><a href='/blog/categories/xing-neng-you-hua/'>性能优化 (2)</a></li>
