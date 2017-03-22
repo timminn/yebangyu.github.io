@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2017-03-11T15:27:17+08:00</updated>
+  <updated>2017-03-23T00:01:22+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -628,7 +628,7 @@ void spin_unlock (spinlock_t *lock)
 #define CPU_RELAX() <strong>asm</strong> <strong>volatile</strong>(“pause\n”: : :”memory”)
 #define CAS(address, exp, target) __sync_bool_compare_and_swap(address, exp, target)
 #define ATOMIC_EXCHANGE(address, val) __atomic_exchange_n(address, val, __ATOMIC_SEQ_CST)
-#define FLUSH_STORE_BUFFER() __sync_synchronize()
+#define CPU_BARRIER() __sync_synchronize()
 //=========================================</p>
 
 <p>struct mcs_lock_node 
@@ -660,11 +660,13 @@ void spin_unlock (spinlock_t *lock)
   pre-&gt;next = me;                                              <br />
   while (me-&gt;waiting) {                                       <br />
     CPU_RELAX();
-  }	
+  }
+  CPU_BARRIER();
 }</p>
 
 <p>static void spin_unlock(mcs_lock &amp;lock)
 {
+  CPU_BARRIER();
   mcs_lock_node *me = get_my_mcs_node();
   mcs_lock_node *tmp = me;
   if (me-&gt;next == NULL) {                                    <br />
@@ -676,7 +678,6 @@ void spin_unlock (spinlock_t *lock)
     }
   }
   me-&gt;next-&gt;waiting = 0; 
-  FLUSH_STORE_BUFFER();
 }
 ```</p>
 

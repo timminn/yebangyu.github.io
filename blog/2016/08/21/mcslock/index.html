@@ -202,11 +202,12 @@ MathJax.Hub.Config({
 <span class="line-number">52</span>
 <span class="line-number">53</span>
 <span class="line-number">54</span>
+<span class="line-number">55</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="cp">#define COMPILER_BARRIER() __asm__ __volatile__(&quot;&quot; : : : &quot;memory&quot;)</span>
 </span><span class="line"><span class="cp">#define CPU_RELAX() __asm__ __volatile__(&quot;pause\n&quot;: : :&quot;memory&quot;)</span>
 </span><span class="line"><span class="cp">#define CAS(address, exp, target) __sync_bool_compare_and_swap(address, exp, target)</span>
 </span><span class="line"><span class="cp">#define ATOMIC_EXCHANGE(address, val) __atomic_exchange_n(address, val, __ATOMIC_SEQ_CST)</span>
-</span><span class="line"><span class="cp">#define FLUSH_STORE_BUFFER() __sync_synchronize()</span>
+</span><span class="line"><span class="cp">#define CPU_BARRIER() __sync_synchronize()</span>
 </span><span class="line"><span class="c1">//=========================================</span>
 </span><span class="line">
 </span><span class="line"><span class="k">struct</span> <span class="n">mcs_lock_node</span>
@@ -238,11 +239,13 @@ MathJax.Hub.Config({
 </span><span class="line">  <span class="n">pre</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">=</span> <span class="n">me</span><span class="p">;</span>
 </span><span class="line">  <span class="k">while</span> <span class="p">(</span><span class="n">me</span><span class="o">-&gt;</span><span class="n">waiting</span><span class="p">)</span> <span class="p">{</span>
 </span><span class="line">    <span class="n">CPU_RELAX</span><span class="p">();</span>
-</span><span class="line">  <span class="p">}</span>	
+</span><span class="line">  <span class="p">}</span>
+</span><span class="line">  <span class="n">CPU_BARRIER</span><span class="p">();</span>
 </span><span class="line"><span class="p">}</span>
 </span><span class="line">
 </span><span class="line"><span class="k">static</span> <span class="kt">void</span> <span class="nf">spin_unlock</span><span class="p">(</span><span class="n">mcs_lock</span> <span class="o">&amp;</span><span class="n">lock</span><span class="p">)</span>
 </span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="n">CPU_BARRIER</span><span class="p">();</span>
 </span><span class="line">  <span class="n">mcs_lock_node</span> <span class="o">*</span><span class="n">me</span> <span class="o">=</span> <span class="n">get_my_mcs_node</span><span class="p">();</span>
 </span><span class="line">  <span class="n">mcs_lock_node</span> <span class="o">*</span><span class="n">tmp</span> <span class="o">=</span> <span class="n">me</span><span class="p">;</span>
 </span><span class="line">  <span class="k">if</span> <span class="p">(</span><span class="n">me</span><span class="o">-&gt;</span><span class="n">next</span> <span class="o">==</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
@@ -254,7 +257,6 @@ MathJax.Hub.Config({
 </span><span class="line">    <span class="p">}</span>
 </span><span class="line">  <span class="p">}</span>
 </span><span class="line">  <span class="n">me</span><span class="o">-&gt;</span><span class="n">next</span><span class="o">-&gt;</span><span class="n">waiting</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
-</span><span class="line">  <span class="n">FLUSH_STORE_BUFFER</span><span class="p">();</span>
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
