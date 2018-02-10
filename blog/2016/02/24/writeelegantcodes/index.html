@@ -138,19 +138,11 @@ MathJax.Hub.Config({
 </span><span class="line"><span class="kt">void</span> <span class="nf">g</span><span class="p">(</span><span class="kt">int</span> <span class="o">*</span><span class="n">p</span><span class="p">);</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>我们都知道，在g中，使用*p前需要对p是否为NULL进行判断，那么f呢？如果质量非常关键、代码安全非常重要的场景，那么实际上，也是需要的。因为调用者可能这样：</p>
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="kt">int</span> <span class="o">*</span><span class="n">q</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
-</span><span class="line"><span class="c1">//......</span>
-</span><span class="line"><span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">q</span><span class="p">);</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-<p>因此，需要在f里增加<code>if(NULL == &amp;p)</code>的判断。</p>
+<p>我们都知道，在g中，使用*p前需要对p是否为NULL进行判断，那么f呢？如果质量非常关键、代码安全非常重要的场景，那么实际上，也是需要的。想想看，这是为什么。</p>
 
 <p>2，级联if else语句。</p>
 
-<p>首先看一个我个人认为不好的代码风格：</p>
+<p>首先看一个个人认为不好的代码风格：</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>
@@ -250,7 +242,7 @@ MathJax.Hub.Config({
 
 <p>1，测试不是专属QA的活儿，对自己写的代码提供质量保证，是程序员的职责。QA要负责的，是系统的质量，不是模块的质量。</p>
 
-<p>2，测试，需要意识，需要坚持。我发现C++程序员、前端程序员的测试意识或者说质量意识最强；数据科学家或者数据工程师的质量意识最差，很多人甚至不写测试用例。当然，这不怪他们，毕竟，有时候代码里有个bug，准确率和召回率会更高。</p>
+<p>2，测试，需要意识，需要坚持。我发现C++程序员、前端程序员的测试意识或者说质量意识最强。</p>
 
 <p>3，测试用例的编写和设计需要保证一定的代码覆盖率，力求让每个分支和流程的代码都走到，然后分析运行结果是否是符合期望的，不要只考虑正确路径上的那些分支。</p>
 
@@ -279,7 +271,7 @@ MathJax.Hub.Config({
 
 <p>你是否都考虑到了呢？</p>
 
-<p>4，有时候，自己书写测试用例显得刀耕火种，现在已经有很多辅助的工具，读者可以自行google一下。</p>
+<p>5，有时候，自己书写测试用例显得刀耕火种，现在已经有很多辅助的工具，读者可以自行google一下。</p>
 </div>
 
 
@@ -414,7 +406,7 @@ MathJax.Hub.Config({
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
 <p>
-  Copyright &copy; 2017 - Yebangyu -
+  Copyright &copy; 2018 - Yebangyu -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 <script type="text/javascript">var cnzz_protocol = (("https:" == document.location.protocol) ? " https://" : " http://");document.write(unescape("%3Cspan id='cnzz_stat_icon_1257548193'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "s11.cnzz.com/z_stat.php%3Fid%3D1257548193' type='text/javascript'%3E%3C/script%3E"));</script>
