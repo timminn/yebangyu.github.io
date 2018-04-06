@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 并行编程 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/bing-xing-bian-cheng/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2018-04-06T22:02:14+08:00</updated>
+  <updated>2018-04-06T22:13:47+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -29,6 +29,10 @@ class Singleton
 {
   public:
     static Singleton* instance();
+	//非常重要！别忘了这个！
+	//C++11的用法。如果是C++98，可以简单的设置为私有。
+	Singleton(const Singleton&amp;) = delete; 
+　　Singleton &amp; operator=(const Singleton&amp;) = delete;
   private:
     static Singleton* pInstance;
 };</p>
@@ -294,7 +298,7 @@ Singleton&amp; instance()
 }
 </code></p>
 
-<p>然而这么做有一些缺点，这些缺点使得这种做法往往不是实现Singleton单例模式的可行方案。读者诸君不妨思考下，这种做法，都有哪些缺点。</p>
+<p>然而这么做有一些缺点，这些缺点使得这种做法在有些场景下不是实现单例模式的最佳方案。读者诸君不妨思考下，什么缺点，哪些场景。</p>
 ]]></content>
   </entry>
   

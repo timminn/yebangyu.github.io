@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2018-04-06T22:02:14+08:00</updated>
+  <updated>2018-04-06T22:13:47+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -580,10 +580,18 @@
 <span class="line-number">15</span>
 <span class="line-number">16</span>
 <span class="line-number">17</span>
+<span class="line-number">18</span>
+<span class="line-number">19</span>
+<span class="line-number">20</span>
+<span class="line-number">21</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">Singleton</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="k">public</span><span class="o">:</span>
 </span><span class="line">    <span class="k">static</span> <span class="n">Singleton</span><span class="o">*</span> <span class="n">instance</span><span class="p">();</span>
+</span><span class="line">	<span class="c1">//非常重要！别忘了这个！</span>
+</span><span class="line">	<span class="c1">//C++11的用法。如果是C++98，可以简单的设置为私有。</span>
+</span><span class="line">	<span class="n">Singleton</span><span class="p">(</span><span class="k">const</span> <span class="n">Singleton</span><span class="o">&amp;</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+</span><span class="line"><span class="err">　　</span><span class="n">Singleton</span> <span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">Singleton</span><span class="o">&amp;</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
 </span><span class="line">  <span class="k">private</span><span class="o">:</span>
 </span><span class="line">    <span class="k">static</span> <span class="n">Singleton</span><span class="o">*</span> <span class="n">pInstance</span><span class="p">;</span>
 </span><span class="line"><span class="p">};</span>
@@ -940,7 +948,7 @@
 </span><span class="line"><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure></notextile></div>
 
-<p>然而这么做有一些缺点，这些缺点使得这种做法往往不是实现Singleton单例模式的可行方案。读者诸君不妨思考下，这种做法，都有哪些缺点。</p>
+<p>然而这么做有一些缺点，这些缺点使得这种做法在有些场景下不是实现单例模式的最佳方案。读者诸君不妨思考下，什么缺点，哪些场景。</p>
 ]]></content>
   </entry>
   
