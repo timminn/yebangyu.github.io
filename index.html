@@ -334,14 +334,16 @@ MathJax.Hub.Config({
 <span class="line-number">19</span>
 <span class="line-number">20</span>
 <span class="line-number">21</span>
+<span class="line-number">22</span>
 </pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="k">class</span> <span class="nc">Singleton</span>
 </span><span class="line"><span class="p">{</span>
 </span><span class="line">  <span class="k">public</span><span class="o">:</span>
 </span><span class="line">    <span class="k">static</span> <span class="n">Singleton</span><span class="o">*</span> <span class="n">instance</span><span class="p">();</span>
-</span><span class="line">    <span class="c1">//非常重要！别忘了这个！</span>
-</span><span class="line">    <span class="c1">//C++11的用法。如果是C++98，可以简单的设置为私有。</span>
-</span><span class="line">    <span class="n">Singleton</span><span class="p">(</span><span class="k">const</span> <span class="n">Singleton</span><span class="o">&amp;</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
-</span><span class="line">    <span class="n">Singleton</span> <span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">Singleton</span><span class="o">&amp;</span><span class="p">)</span> <span class="o">=</span> <span class="k">delete</span><span class="p">;</span>
+</span><span class="line">  <span class="k">private</span><span class="o">:</span>
+</span><span class="line">    <span class="c1">//非常重要！别忘了这些！</span>
+</span><span class="line">    <span class="n">Singleton</span><span class="p">()</span> <span class="p">{</span><span class="cm">/*your implementation*/</span><span class="p">}</span>
+</span><span class="line">    <span class="n">Singleton</span><span class="p">(</span><span class="k">const</span> <span class="n">Singleton</span><span class="o">&amp;</span><span class="p">);</span>
+</span><span class="line">    <span class="n">Singleton</span><span class="o">&amp;</span> <span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span> <span class="n">Singleton</span><span class="o">&amp;</span><span class="p">);</span>
 </span><span class="line">  <span class="k">private</span><span class="o">:</span>
 </span><span class="line">    <span class="k">static</span> <span class="n">Singleton</span><span class="o">*</span> <span class="n">pInstance</span><span class="p">;</span>
 </span><span class="line"><span class="p">};</span>
