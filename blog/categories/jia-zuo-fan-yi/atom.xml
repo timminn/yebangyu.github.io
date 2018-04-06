@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 佳作翻译 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/jia-zuo-fan-yi/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2018-04-06T21:48:41+08:00</updated>
+  <updated>2018-04-06T21:52:09+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -18,13 +18,21 @@
     <link href="http://www.yebangyu.org/blog/2018/04/06/lock/"/>
     <updated>2018-04-06T21:19:05+08:00</updated>
     <id>http://www.yebangyu.org/blog/2018/04/06/lock</id>
-    <content type="html"><![CDATA[<p>译者按：[Preshing] (http://preshing.com)的博客是学习并发编程的不可多得的资料，讲解比较详细。身边的很多朋友从中受益良多。</p>
+    <content type="html"><![CDATA[<h2 id="section">译者按</h2>
+
+<p><a href="http://preshing.com">Preshing</a> 的博客是学习并发编程的不可多得的资料，讲解比较详细。身边的很多朋友从中受益良多。</p>
 
 <p>我们在和作者沟通后，获得了授权，着手翻译了他的博客，刊登在这里，以飨朋友诸君。</p>
 
 <p>和一般的翻译不同，我们加上了独家的注释。注释要么是纠正错误，要么是辅助理解，要么是补充扩展；相信对大家会大有裨益。</p>
 
-<p>希望朋友们能享受阅读！</p>
+<p>正文翻译：<a href="http://weibo.com/2767520802/profile?topnav=1&amp;wvr=6&amp;is_all=1">@Diting0x</a></p>
+
+<p>审校 &amp;&amp; 注释：<a href="http://weibo.com/yebangyu">@睡眼惺忪的小叶先森</a></p>
+
+<p>原文地址：[Preshing] (http://preshing.com/20111118/locks-arent-slow-lock-contention-is/)</p>
+
+<h2 id="section-1">原文</h2>
 
 <p>锁(也叫互斥量)在很长一段时间都被误解了。1986年，在Usenet的有关于多线程的讨论会中，Matthew Dillon说过：大多数人都对锁有个误解，认为锁是慢的。25年后，这种误解似乎在某一时间段又突然出现了。</p>
 
@@ -109,7 +117,7 @@ if (elapsedTime &gt;= timeLimit)
 
 <p>写这篇文章的目的是为了让锁得到应有的尊敬–欢迎批评指正。锁在工业应用程序中有广泛的应用，至于锁的性能，并不总是能达到一个很好的均衡。如果你在自己的经验中发现类似这样的例子，非常乐意看到你的评论<sup>注4</sup>。</p>
 
-<h3 id="section">译者注</h3>
+<h2 id="section-2">译者注</h2>
 
 <p>注释1:一种避免或者降低锁冲突的科学思想是partition，避免资源集中。例如，对于hashtable，可以由之前的一个hashtable对应一把锁，改为每个bucket配置一把锁，这样冲突将大大降低。再例如，计数程序，如果大家都对同一个全局变量进行读写而加一把锁，那么冲突严重，可以适当的选择多个计数器，不同的线程累加对应的计数器，一个线程负责将这些计数器的值求和。等等等等。</p>
 
@@ -161,14 +169,6 @@ void *reader(void *arg)
 </code></p>
 
 <p>其中16-18行等待测试开始的信号；19行开始测试；holdtime控制临界区的长短，thinktime用来控制两次申请锁之间的间隔。测试的时候有三个变量：holdtime、thinktime、线程数（1个、2个、4个、直到核数的两倍）。试试看。</p>
-
-<h3 id="section-1">写在最后</h3>
-
-<p>正文翻译：<a href="http://weibo.com/2767520802/profile?topnav=1&amp;wvr=6&amp;is_all=1">@Diting0x</a></p>
-
-<p>审校 &amp;&amp; 注释：<a href="http://weibo.com/yebangyu">@睡眼惺忪的小叶先森</a></p>
-
-<p>原文地址：[Preshing] (http://preshing.com/20111118/locks-arent-slow-lock-contention-is/)</p>
 
 ]]></content>
   </entry>
