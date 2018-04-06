@@ -4,7 +4,7 @@
   <title><![CDATA[Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2018-04-06T21:39:59+08:00</updated>
+  <updated>2018-04-06T21:48:41+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -14,11 +14,19 @@
 
   
   <entry>
-    <title type="html"><![CDATA[深入探索并发编程系列(一)-锁不慢；锁竞争慢]]></title>
+    <title type="html"><![CDATA[【翻译】深入探索并发编程系列(一)：锁不慢；锁竞争慢]]></title>
     <link href="http://www.yebangyu.org/blog/2018/04/06/lock/"/>
     <updated>2018-04-06T21:19:05+08:00</updated>
     <id>http://www.yebangyu.org/blog/2018/04/06/lock</id>
-    <content type="html"><![CDATA[<p>锁(也叫互斥量)在很长一段时间都被误解了。1986年，在Usenet的有关于多线程的讨论会中，Matthew Dillon说过：大多数人都对锁有个误解，认为锁是慢的。25年后，这种误解似乎在某一时间段又突然出现了。</p>
+    <content type="html"><![CDATA[<p>译者按：[Preshing] (http://preshing.com)的博客是学习并发编程的不可多得的资料，讲解比较详细。身边的很多朋友从中受益良多。</p>
+
+<p>我们在和作者沟通后，获得了授权，着手翻译了他的博客，刊登在这里，以飨朋友诸君。</p>
+
+<p>和一般的翻译不同，我们加上了独家的注释。注释要么是纠正错误，要么是辅助理解，要么是补充扩展；相信对大家会大有裨益。</p>
+
+<p>希望朋友们能享受阅读！</p>
+
+<p>锁(也叫互斥量)在很长一段时间都被误解了。1986年，在Usenet的有关于多线程的讨论会中，Matthew Dillon说过：大多数人都对锁有个误解，认为锁是慢的。25年后，这种误解似乎在某一时间段又突然出现了。</p>
 
 <!--more -->
 
@@ -224,7 +232,7 @@
 
 <p>审校 &amp;&amp; 注释：<a href="http://weibo.com/yebangyu">@睡眼惺忪的小叶先森</a></p>
 
-<p>原文地址： http://preshing.com/20111118/locks-arent-slow-lock-contention-is/</p>
+<p>原文地址：[Preshing] (http://preshing.com/20111118/locks-arent-slow-lock-contention-is/)</p>
 
 ]]></content>
   </entry>
