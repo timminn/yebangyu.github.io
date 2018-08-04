@@ -399,7 +399,7 @@ MathJax.Hub.Config({
 
 <p>值得注意的是，为了防止第3行、第5行的读取pInstance的动作被编译器优化，可以使用<code>ACCESS_ONCE</code>宏。细节可以参考我的<a href="http://www.yebangyu.org/blog/2015/10/31/linux-parallen-programmming-infrastructure/">这篇</a>博客。</p>
 
-<h2 id="c11">C++11来解救</h2>
+<h2 id="section-2">正确但是不推荐的做法</h2>
 
 <p>写出可移植的、线程安全的Singleton，这么难么？在C++11之前，很难。非常难。</p>
 
@@ -459,7 +459,27 @@ MathJax.Hub.Config({
 
 <p>思考：第16行能否使用<code>memory_order_relaxed</code>内存序？</p>
 
-<h2 id="section-2">拓展</h2>
+<h2 id="section-3">正确且推荐的方案</h2>
+
+<p>看上去很复杂？嗯，不过好在，从C++11开始，我们有更简洁的方法：</p>
+
+<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
+<span class="line-number">2</span>
+<span class="line-number">3</span>
+<span class="line-number">4</span>
+<span class="line-number">5</span>
+</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">Singleton</span><span class="o">&amp;</span> <span class="n">instance</span><span class="p">()</span>
+</span><span class="line"><span class="p">{</span>
+</span><span class="line">  <span class="k">static</span> <span class="n">Singleton</span> <span class="n">xx</span><span class="p">;</span> <span class="c1">// C++11规定，这个是线程安全的。</span>
+</span><span class="line">  <span class="k">return</span> <span class="n">xx</span><span class="p">;</span>
+</span><span class="line"><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure></notextile></div>
+
+<p>只有一种例外，否则我们强烈建议大家坚持使用这种简洁的方法来实现单例模式，强烈不建议自己去拨弄memory model和锁。</p>
+
+<p>只有一种例外？是什么例外？请读者诸君思考（提示：考虑内存管理和生命周期）</p>
+
+<h2 id="section-4">拓展</h2>
 
 <p>1，查阅资料，了解POSIX中，<code>pthread_once</code>的原理和用法</p>
 
@@ -478,22 +498,6 @@ MathJax.Hub.Config({
 <p>3，查阅资料，解释为什么编译器可能对 <code>pInstance = new Singleton()</code> 进行乱序</p>
 
 <p>4，我们一直没有涉及的一个问题是：pInstance的初始化。它的初始化，是否也可能存在data race？如何避免？</p>
-
-<p>5，不少朋友可能想利用C++11标准中的某个用法：</p>
-
-<div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
-<span class="line-number">2</span>
-<span class="line-number">3</span>
-<span class="line-number">4</span>
-<span class="line-number">5</span>
-</pre></td><td class="code"><pre><code class="c++"><span class="line"><span class="n">Singleton</span><span class="o">&amp;</span> <span class="n">instance</span><span class="p">()</span>
-</span><span class="line"><span class="p">{</span>
-</span><span class="line">  <span class="k">static</span> <span class="n">Singleton</span> <span class="n">xx</span><span class="p">;</span> <span class="c1">//C++11规定，这个是线程安全的。</span>
-</span><span class="line">  <span class="k">return</span> <span class="n">xx</span><span class="p">;</span>
-</span><span class="line"><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure></notextile></div>
-
-<p>然而这么做有一些缺点，这些缺点使得这种做法在有些场景下不是实现单例模式的最佳方案。读者诸君不妨思考下，什么缺点，哪些场景。</p>
 </div>
 
 
