@@ -144,9 +144,7 @@ MathJax.Hub.Config({
 
 <p>显然，现在是有多个对象绑定或者说涉及或者说引用到某个字符串缓冲区上了。事实上，正如你能想到的，引用计数（Reference Counting，RC）是实现COW的重要基础。当执行上面最上面代码的第二行时，并不为t分配内存、拷贝字符串，而是相应的字符串的引用计数加1即可。</p>
 
-<p>那么，引用计数应该放在哪里呢？它是string类的普通成员么？不行，这样子每个string对象都有一个引用计数了；成为string类的静态成员变量么？也不行，这样子每个类都只有一个引用计数了。</p>
-
-<p>实际上，我们应该把buffer和引用计数抽离出来，单独放到某处。</p>
+<p>我们把buffer和引用计数抽离出来，单独放到某处。这种实现方式一般称为非侵入式。</p>
 
 <div class="bogus-wrapper"><notextile><figure class="code"><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class="line-number">1</span>
 <span class="line-number">2</span>

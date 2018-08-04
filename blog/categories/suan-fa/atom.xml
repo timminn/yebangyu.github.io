@@ -4,7 +4,7 @@
   <title><![CDATA[Category: 算法 | Yebangyu's Blog]]></title>
   <link href="http://www.yebangyu.org/blog/categories/suan-fa/atom.xml" rel="self"/>
   <link href="http://www.yebangyu.org/"/>
-  <updated>2018-08-04T20:59:22+08:00</updated>
+  <updated>2018-08-04T21:19:08+08:00</updated>
   <id>http://www.yebangyu.org/</id>
   <author>
     <name><![CDATA[Yebangyu]]></name>
@@ -172,8 +172,6 @@ INLINE const T&amp; SoupenSort&lt;T, CompareOperator, threshold&gt;::get_pivot(T
 我们把以上实现的快速排序称为SoupenSort。是的，90行不到。</p>
 
 <h2 id="section-6">测试结果</h2>
-
-<p>测试程序已经放到了github上，可以从<a href="https://github.com/yebangyu/Soupen/blob/master/src/bad/test.cpp">这里</a>下载。</p>
 
 <p>我们pk的对象包括STL中的sort，以及C语言里大名鼎鼎的qsort。</p>
 
