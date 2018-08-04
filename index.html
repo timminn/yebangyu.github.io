@@ -9,7 +9,7 @@
   <meta name="author" content="Yebangyu">
 
   
-  <meta name="description" content="译者按 Preshing 的博客是学习并发编程的不可多得的资料，讲解比较详细。身边的很多朋友从中受益良多。 我们在和作者沟通后，获得了授权，着手翻译了他的博客，刊登在这里，以飨朋友诸君。 和一般的翻译不同，我们加上了独家的注释。注释要么是纠正错误，要么是辅助理解，要么是补充扩展； &hellip;">
+  <meta name="description" content="记录2017年上半年阅读过的技术相关的书籍、博客、Slides等 Machine Learning Deep Learning, By Ian Goodfellow et al An overview of gradient descent optimization algorithms &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -87,57 +87,7 @@ MathJax.Hub.Config({
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2018/04/06/lock/">【翻译】深入探索并发编程系列(一)：锁不慢；锁竞争慢</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-<time class='entry-date' datetime='2018-04-06T21:19:05+08:00'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>6</span><span class='date-suffix'>th</span>, <span class='date-year'>2018</span></span> <span class='time'>9:19 pm</span></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><h2 id="section">译者按</h2>
-
-<p><a href="http://preshing.com">Preshing</a> 的博客是学习并发编程的不可多得的资料，讲解比较详细。身边的很多朋友从中受益良多。</p>
-
-<p>我们在和作者沟通后，获得了授权，着手翻译了他的博客，刊登在这里，以飨朋友诸君。</p>
-
-<p>和一般的翻译不同，我们加上了独家的注释。注释要么是纠正错误，要么是辅助理解，要么是补充扩展；相信对大家会大有裨益。</p>
-
-<p>正文翻译：<a href="http://weibo.com/2767520802/profile?topnav=1&amp;wvr=6&amp;is_all=1">@Diting0x</a></p>
-
-<p>审校 &amp;&amp; 注释：<a href="http://weibo.com/yebangyu">@睡眼惺忪的小叶先森</a></p>
-
-<p>原文地址: <a href="http://preshing.com/20111118/locks-arent-slow-lock-contention-is/">Preshing</a></p>
-
-<h2 id="section-1">原文</h2>
-
-<p>锁(也叫互斥量)在很长一段时间都被误解了。1986年，在Usenet的有关于多线程的讨论会中，Matthew Dillon说过：大多数人都对锁有个误解，认为锁是慢的。25年后，这种误解似乎在某一时间段又突然出现了。</p>
-
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2018/04/06/lock/">阅读更多 →</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2017/03/11/2017/">2017技术成长之路</a></h1>
+      <h1 class="entry-title"><a href="/blog/2017/03/11/2017/">2017上半年技术积累</a></h1>
     
     
       <p class="meta">
@@ -153,7 +103,7 @@ MathJax.Hub.Config({
   </header>
 
 
-  <div class="entry-content"><p>记录2017年阅读过的技术相关的书籍、博客、Slides等</p>
+  <div class="entry-content"><p>记录2017年上半年阅读过的技术相关的书籍、博客、Slides等</p>
 
 <h2 id="machine-learning">Machine Learning</h2>
 
@@ -806,6 +756,59 @@ MathJax.Hub.Config({
 
     </article>
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/06/26/sequence-lock/">Sequence Lock</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-06-26T14:24:59+08:00'><span class='date'><span class='date-month'>Jun</span> <span class='date-day'>26</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>2:24 pm</span></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>在读多写少(Read Mostly)的场景里，我们可能会使用的同步设施包括：</p>
+
+<blockquote>
+  <ul>
+    <li>Mutex / Spin Lock</li>
+    <li>Reader Writer Lock</li>
+    <li>Sequence Lock</li>
+    <li>Read Copy Update</li>
+  </ul>
+</blockquote>
+
+<p>前面两种一般人都很清楚了，如雷贯耳、妇孺皆知。如果您对Spin Lock的实现细节有兴趣，建议您阅读我的这几篇博客：</p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/03/04/petersonalgorithm/">Peterson Lock</a></p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/05/26/ticketlock/">Ticket Lock</a></p>
+
+<p><a href="http://www.yebangyu.org/blog/2016/08/21/mcslock/">MCS Queue Lock</a></p>
+
+<p>从今天起，我们介绍后面两种同步设施。今天我们先介绍Sequence Lock。</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2016/06/26/sequence-lock/">阅读更多 →</a>
+    </footer>
+  
+
+
+    </article>
+  
   <div class="pagination">
     
       <a class="prev" href="/posts/2">&larr; Older</a>
@@ -821,11 +824,7 @@ MathJax.Hub.Config({
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2018/04/06/lock/">【翻译】深入探索并发编程系列(一)：锁不慢；锁竞争慢</a>
-      </li>
-    
-      <li class="post">
-        <a href="/blog/2017/03/11/2017/">2017技术成长之路</a>
+        <a href="/blog/2017/03/11/2017/">2017上半年技术积累</a>
       </li>
     
       <li class="post">
@@ -838,6 +837,10 @@ MathJax.Hub.Config({
     
       <li class="post">
         <a href="/blog/2016/12/04/introductiontohazardpointer/">Lock Free中的Hazard Pointer(下)</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2016/12/03/gccandperfopt/">性能优化的那些传说和迷思</a>
       </li>
     
   </ul>
@@ -865,7 +868,6 @@ MathJax.Hub.Config({
   <li class='category'><a href='/blog/categories/c-plus-plus/'>c++ (11)</a></li>
 <li class='category'><a href='/blog/categories/soupen/'>soupen (4)</a></li>
 <li class='category'><a href='/blog/categories/web/'>web (1)</a></li>
-<li class='category'><a href='/blog/categories/jia-zuo-fan-yi/'>佳作翻译 (1)</a></li>
 <li class='category'><a href='/blog/categories/qi-ta/'>其他 (5)</a></li>
 <li class='category'><a href='/blog/categories/li-shi/'>历史 (2)</a></li>
 <li class='category'><a href='/blog/categories/bing-xing-bian-cheng/'>并行编程 (20)</a></li>
